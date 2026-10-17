@@ -319,3 +319,33 @@
 .md-resource-block-editor{min-height:85px;display:block}
 .md-resource-step-editor{margin-bottom:12px;border-bottom:1px solid #d3e8d8;padding-bottom:10px}
 @media(max-width:650px){.md-resource-single-layout{padding-block:17px 35px}.md-resource-reading-card{padding:18px;border-radius:14px}.md-resource-tip,.md-resource-steps{padding:13px 15px}.md-resource-content{font-size:16px}}
+
+
+/* Course title card mirrors the standalone article heading. */
+.md-course-single,.md-lesson-single{display:grid;gap:21px;min-width:0}
+.md-course-header-card{background:linear-gradient(120deg,#eaf3ed,#fff4e8);border:1px solid #d8e6db;box-shadow:none;border-radius:21px;padding:clamp(18px,2.7vw,30px)}
+.md-course-header-card h1{font-size:clamp(26px,3vw,38px);font-weight:800;line-height:1.55;margin:9px 0 14px}
+.md-course-header-meta{margin:12px 0 0;padding-top:13px;border-top:1px solid #d3e2d6;gap:9px}
+.md-course-header-meta span{border-radius:999px;background:#ffffffb8}
+.md-course-summary{line-height:1.95;font-size:15px;color:#4c695c;margin:14px 0 0}
+.md-course-content-card,.md-course-lessons-card{background:#fff;border:1px solid #e4ece5;border-radius:23px;padding:clamp(19px,2.7vw,34px);min-width:0;box-shadow:0 8px 27px rgba(30,65,50,.045)}
+.md-course-lessons-card{background:#f9fcf9}
+.md-course-content-card>.entry-content{font-size:17px;line-height:2.1}
+.md-course-content-card .single-cover{margin:0 0 18px}
+.md-course-lessons-card>h2{margin-top:0;color:#285b48}
+/* Lesson pages use a different progression-oriented design from courses. */
+.md-lesson-header{background:linear-gradient(130deg,#264b40,#376e57);color:#fff;border-radius:26px;padding:clamp(20px,3.3vw,39px)}
+.md-lesson-breadcrumb a{color:#d8eee0;font-size:13px;font-weight:700;text-decoration:none}
+.md-lesson-breadcrumb a:hover{color:#fff;text-decoration:underline}
+.md-lesson-kicker{display:block;color:#e0d8bd;font-size:13px;margin-top:24px}
+.md-lesson-header h1{color:#fff;font-size:clamp(26px,3.2vw,41px);line-height:1.55;margin:8px 0 13px}
+.md-lesson-header-meta{margin:12px 0 0}
+.md-lesson-header-meta span{color:#ecf6ee;background:#ffffff20;border-color:#ffffff30}
+.md-lesson-header-meta a{color:#fff}
+.md-lesson-media-card{min-width:0;background:#f4f8f4;border:1px solid #dce9df;border-radius:25px;padding:clamp(17px,2.5vw,28px)}
+.md-lesson-section-label{font-size:15px;font-weight:800;color:#32664f;display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.md-lesson-reading-card{background:white;min-width:0;border:1px solid #e2ebe3;border-radius:23px;padding:clamp(20px,3vw,33px);font-size:17px;line-height:2.1}
+.md-lesson-reading-title{font-size:21px;margin:0 0 18px;color:#285744}
+.md-lesson-actions-card{border-radius:23px;padding:18px;background:#f4f8f5;min-width:0}
+.md-academy-single .md-featured-media,.md-academy-single .md-learning-media{min-width:0;max-width:100%;margin:0;overflow:visible}
+@media(max-width:650px){.md-academy-single{padding-block:21px 35px}.md-course-single,.md-lesson-single{gap:14px}.md-course-header-card,.md-course-content-card,.md-course-lessons-card,.md-lesson-header,.md-lesson-media-card,.md-lesson-reading-card,.md-lesson-actions-card{border-radius:20px}.md-course-content-card,.md-course-lessons-card,.md-lesson-media-card,.md-lesson-reading-card{padding:17px}.md-lesson-header{padding:22px}.md-lesson-kicker{margin-top:15px}}
