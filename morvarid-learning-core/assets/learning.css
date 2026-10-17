@@ -1,0 +1,55 @@
+/* Morvarid Learning Core — RTL, standalone theme-neutral UI. */
+.md-learning-app { direction: rtl; padding: clamp(30px, 5vw, 72px) 16px; color: #244739; }
+.md-learning-app *, .md-learning-admin * { box-sizing: border-box; }
+.md-learning-shell { width: min(100%, 960px); margin: 0 auto; }
+.md-learning-heading { text-align: center; max-width: 750px; margin: 0 auto 30px; }
+.md-learning-heading > span { display: inline-block; color: #668575; font-weight: 700; font-size: 12px; letter-spacing: .4px; }
+.md-learning-heading h1 { color: #25513d; font-size: clamp(25px, 3.1vw, 38px); line-height: 1.6; margin: 10px auto 12px; }
+.md-learning-heading p { font-size: 15px; color: #557163; margin: 0 auto; line-height: 2; }
+.md-learning-form { margin: 0 auto 22px; width: min(100%, 510px); background: #fff; border: 1px solid #d9e6db; border-radius: 22px; box-shadow: 0 16px 50px rgba(22,71,47,.06); padding: clamp(22px, 4vw, 38px); display: grid; gap: 20px; }
+.md-learning-form label { font-size: 14px; font-weight: 700; color: #355d46; display: grid; gap: 8px; }
+.md-learning-form input[type="text"] { font: inherit; width: 100%; min-height: 49px; border: 1px solid #cadbcf; border-radius: 11px; color: #274f3c; background: #fff; padding: 10px 13px; }
+.md-learning-form input:focus-visible, .md-learning-receipt input:focus-visible { outline: 3px solid #a6d5b9; outline-offset: 1px; }
+.md-learning-form .md-learning-code-input { text-align: center; font-size: 25px; font-weight: 700; letter-spacing: 6px; font-variant-numeric: tabular-nums; }
+.md-learning-form .md-learning-check { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: #567061; font-weight: 400; line-height: 1.9; }
+.md-learning-check input { margin-top: 7px; flex-shrink: 0; }
+.md-learning-button { appearance: none; display: inline-flex; align-items: center; justify-content: center; min-height: 45px; gap: 10px; text-decoration: none !important; background: #327354; color: white !important; font: inherit; font-weight: 700; font-size: 14px; padding: 10px 22px; border: 1px solid #327354; border-radius: 13px; cursor: pointer; transition: background .18s, transform .18s; }
+.md-learning-button:hover { background: #265c43; border-color: #265c43; color: white; transform: translateY(-1px); }
+.md-learning-button:focus-visible { outline: 3px solid #84bca0; outline-offset: 3px; }
+.md-learning-note { text-align: center; font-size: 13px; line-height: 2; color: #64786b; max-width: 700px; margin: 16px auto; }
+.md-learning-note a { color: #246b4b; text-decoration: underline; }
+.md-learning-error { max-width: 510px; margin: 0 auto 20px; color: #8a3036; background: #fff2f2; padding: 14px 17px; border-right: 4px solid #c24b53; border-radius: 10px; }
+.md-learning-trap { position: absolute; left: -10000px; height: 1px; width: 1px; overflow: hidden; }
+.md-learning-receipt { background: #eef8ee; border: 1px solid #a4cdae; border-radius: 22px; padding: clamp(20px, 3vw, 30px); margin: 25px 0 32px; }
+.md-learning-receipt h2 { color: #275d3f; margin-top: 0; font-size: 21px; }
+.md-learning-receipt p { line-height: 1.9; color: #46654f; }
+.md-learning-receipt label { display: grid; gap: 8px; font-weight: 700; font-size: 13px; margin: 20px 0; }
+.md-learning-receipt input { width: 100%; max-width: 100%; font-size: 15px; border: 1px solid #b0d0b6; background: #fff; padding: 12px; border-radius: 10px; text-align: left; font-variant-numeric: tabular-nums; }
+.md-learning-status { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 24px 0; }
+.md-learning-status > div { border: 1px solid #e0eade; border-radius: 15px; padding: 19px; background: #fff; display: grid; gap: 10px; }
+.md-learning-status span { color: #667f6b; font-size: 12px; }
+.md-learning-status strong { color: #2a6043; font-size: 19px; }
+.md-learning-overview { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.md-learning-overview > div { padding: 25px; border: 1px solid #dce8de; background: #fff; border-radius: 19px; min-height: 177px; box-shadow: 0 10px 24px rgba(40,86,52,.035); }
+.md-learning-overview .dashicons { font-size: 28px; width: 28px; height: 28px; color: #4a8965; }
+.md-learning-overview h3 { color: #2e624b; font-size: 17px; margin: 16px 0 8px; }
+.md-learning-overview p { color: #667b6b; font-size: 13px; line-height: 1.9; }
+.md-learning-logout-form { display: flex; justify-content: center; margin: 28px 0 0; }
+.md-learning-logout { background: transparent; color: #365845 !important; border-color: #adc9b5; }
+.md-learning-logout:hover { background: #e6f1e8; border-color: #8eae99; color: #264a34 !important; }
+/* Admin */
+.md-learning-admin { direction: rtl; max-width: 1400px; }
+.md-learning-admin > h1 { color: #255c43; margin-bottom: 12px; }
+.md-learning-admin-create { margin: 24px 0; padding: 20px; background: #f5faf6; border: 1px solid #cddfd0; border-radius: 14px; }
+.md-learning-admin-create h2 { font-size: 18px; margin-top: 0; }
+.md-learning-admin-create form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.md-learning-admin-create input { min-width: 250px; min-height: 37px; border-radius: 8px; }
+.md-learning-admin-search { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+.md-learning-admin-search input { min-width: 260px; }
+.md-learning-admin-table-wrap { overflow: auto; }
+.md-learning-admin-table th, .md-learning-admin-table td { padding: 13px 9px; vertical-align: middle; }
+.md-learning-admin-inline { display: inline-block; margin: 2px 0 2px 5px; }
+.md-learning-admin-receipt { padding: 20px !important; }
+.md-learning-admin-receipt input { padding: 7px 11px; }
+.md-learning-admin-receipt input.large-text { max-width: 700px; }
+@media (max-width: 760px) { .md-learning-overview { grid-template-columns: 1fr; } .md-learning-status { grid-template-columns: 1fr; } .md-learning-form { padding: 20px; } }
