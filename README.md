@@ -4,13 +4,13 @@
 
 The active WordPress theme is in `morvarid-daron-theme/`.
 
-## Unified learner identity — Phases A + B + C
+## Unified learner identity — Phases A + B + C + D
 
 A new **separately installable WordPress plugin** is in
 [`morvarid-learning-core/`](./morvarid-learning-core/README.md).
 
 This plugin is **not automatically installed by updating the theme**.
-To use Phases A–C, copy the `morvarid-learning-core` directory to
+To use Phases A–D, copy the `morvarid-learning-core` directory to
 `wp-content/plugins/`, activate **Morvarid Learning Core**, and open:
 
 - `/learning-register/` — create learner identity with name only.
@@ -24,11 +24,17 @@ Version 0.3.0 adds a five-section RTL learner workspace (home, challenges,
 recent activity, profile, account security) with self-service display-name
 editing, secure code/link rotation and device/session termination. Account
 settings use learner-session-bound nonces rather than globally shared
-WordPress guest nonces. No theme update beyond 1.3.8 is required for Phase C. Update the
+WordPress guest nonces. No theme update beyond 1.3.8 is required for Phase C.
+Version 0.4.0 adds a real dynamic Gutenberg question block for existing
+resource, podcast and lesson editors: reflective mode or per-learner private
+draft/final answers, stable block/question IDs, server-side save/ownership
+validation and a private personal-answers dashboard tab. No additional theme
+upgrade is required for Phase D; upgrade the standalone plugin. Update the
 WordPress theme **and** the separate plugin together. The original challenge-only
 codes and bearer links are intentionally retired when the plugin is active;
 old challenge participant records are left untouched but not transferred.
-Educational files and course enrollments remain future phases.
+A larger academy content/editor redesign, admin answer reporting and course
+enrollments remain future phases.
 
 Production login/registration requires HTTPS. No email and no login lockout
 are used, per project requirements. Eight-digit codes with unlimited login
