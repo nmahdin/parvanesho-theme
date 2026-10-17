@@ -387,15 +387,15 @@ function md_challenge_render_day_modal() {
  * @return string Gregorian Y-m-d or an empty string.
  */
 function md_challenge_posted_date($key) {
-    $jalali = isset($_POST[$key . '_jalali']) && is_scalar($_POST[$key . '_jalali']) ? wp_unslash($_POST[$key . '_jalali']) : '';
-    $date   = md_parse_jalali($jalali);
-
-    if (!$date) {
-        $fallback = isset($_POST[$key]) && is_scalar($_POST[$key]) ? wp_unslash($_POST[$key]) : '';
-        $date     = md_sanitize_date($fallback);
+    // The visible Jalali input is authoritative even when intentionally
+    // cleared; never resurrect an old hidden Gregorian value on save.
+    if (array_key_exists($key . '_jalali', $_POST)) {
+        $jalali = is_scalar($_POST[$key . '_jalali']) ? wp_unslash($_POST[$key . '_jalali']) : '';
+        return md_parse_jalali($jalali);
     }
 
-    return $date;
+    $fallback = isset($_POST[$key]) && is_scalar($_POST[$key]) ? wp_unslash($_POST[$key]) : '';
+    return md_sanitize_date($fallback);
 }
 
 /**
