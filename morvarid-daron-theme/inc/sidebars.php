@@ -126,14 +126,14 @@ function md_magazine_sidebar($layout = 'right') {
  * @param string $post_type Post type to restrict to.
  * @param string $title     Widget title.
  */
-function md_sidebar_search($post_type = '', $title = 'جستجو') {
+function md_sidebar_search($post_type = '', $title = 'جستجو', $placeholder = 'عبارت مورد نظر…') {
     $id = wp_unique_id('md-sidebar-search-');
     ?>
     <section class="md-widget md-widget-search">
         <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <form role="search" method="get" class="md-sidebar-search" action="<?php echo esc_url(home_url('/')); ?>">
             <label class="screen-reader-text" for="<?php echo esc_attr($id); ?>"><?php echo esc_html($title); ?></label>
-            <input id="<?php echo esc_attr($id); ?>" type="search" name="s" value="<?php echo esc_attr(get_search_query()); ?>" placeholder="عبارت مورد نظر…">
+            <input id="<?php echo esc_attr($id); ?>" type="search" name="s" value="<?php echo esc_attr(get_search_query()); ?>" placeholder="<?php echo esc_attr($placeholder); ?>">
             <?php if ($post_type) : ?>
                 <input type="hidden" name="post_type" value="<?php echo esc_attr($post_type); ?>">
             <?php endif; ?>
@@ -220,12 +220,12 @@ function md_sidebar_popular($title = 'تازه‌ترین مطالب', $count = 
  * @param string $taxonomy Taxonomy.
  * @param string $title    Widget title.
  */
-function md_sidebar_categories($taxonomy = 'category', $title = 'موضوعات') {
+function md_sidebar_categories($taxonomy = 'category', $title = 'موضوعات', $limit = 14) {
     $terms = get_terms(
         array(
             'taxonomy'   => $taxonomy,
             'hide_empty' => true,
-            'number'     => 14,
+            'number'     => max(1, min(30, absint($limit))),
         )
     );
 
