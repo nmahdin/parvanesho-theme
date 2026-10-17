@@ -71,7 +71,7 @@ add_action('wp_enqueue_scripts','md_typography_assets',5);
 add_action('wp_head', function () {
  echo '<link rel="preload" href="' . esc_url(MD_THEME_URI . '/assets/fonts/Vazirmatn-Variable.woff2') . '" as="font" type="font/woff2" crossorigin>' . "\n";
 }, 2);
-function md_editor_style(){ add_editor_style(['assets/css/fonts.css', 'assets/css/editor.css']); }
+function md_editor_style(){ add_editor_style(['assets/css/fonts.css','assets/css/main.css','assets/css/academy.css','assets/css/challenge.css','assets/css/sidebar.css','assets/css/gutenberg-blocks.css','assets/css/forms.css','assets/css/player.css','assets/css/editor.css']); }
 add_action('after_setup_theme','md_editor_style');
 
 
