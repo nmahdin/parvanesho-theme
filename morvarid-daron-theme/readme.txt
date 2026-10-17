@@ -3,7 +3,7 @@ Contributors: morvarid-daron
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: rtl-language-support, custom-colors, custom-logo, custom-menu, featured-images, blog, education, three-columns
@@ -77,6 +77,11 @@ Morvarid Daron یک قالب کامل و خودبسنده است:
 در صفحهٔ چالش، کادر «روزهای چالش» را پیدا کنید و «افزودن روز جدید» را بزنید. اگر چالش هنوز ذخیره نشده باشد، با اولین کلیک یک پیش‌نویس از همان اطلاعات ساخته می‌شود و پنجرهٔ افزودن روز باز می‌ماند.
 
 == Changelog ==
+
+= 1.3.6 =
+* رفع مشکل کار نکردن دکمه «افزودن روز جدید» در پیشخوان: حذف وابستگی نامعتبر wp-media که مانع بارگذاری JavaScript مدیریت روزها می‌شد.
+* بارگذاری ابزار صوت، تصویر و ویرایشگر از طریق توابع رسمی وردپرس حفظ شده و شماره نسخهٔ قالب برای نوسازی کش افزایش یافته است.
+
 
 = 1.3.5 =
 * بازطراحی نمای مدیریت روزهای چالش: شمارنده‌های آماده‌سازی، نوار پیشرفت، جست‌وجو و فیلتر وضعیت روزها.
