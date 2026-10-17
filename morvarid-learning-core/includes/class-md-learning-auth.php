@@ -232,7 +232,7 @@ final class MD_Learning_Auth {
 
     public static function nonce_learner_session($guest_id, $action) {
         if (!is_string($action) || !preg_match(
-            '/^(?:md_learning_(?:profile_update|rotate_self|revoke_session|signout_others|logout|challenge_join_[0-9]+)|md_challenge_entry_[0-9]+_[0-9]+|md_learning_question_save_[0-9]+_[a-f0-9]{32})$/D',
+            '/^(?:md_learning_(?:profile_update|rotate_self|revoke_session|signout_others|logout|challenge_join_[0-9]+)|md_challenge_entry_[0-9]+_[0-9]+|md_learning_question_save_[0-9]+_[a-f0-9]{32}|md_learning_course_join_[0-9]+|md_learning_lesson_progress_[0-9]+_[0-9]+)$/D',
             $action
         )) {
             return $guest_id;
@@ -314,6 +314,14 @@ final class MD_Learning_Auth {
             && get_post_status($id) === 'publish' ? $id : 0;
     }
 
+    public static function requested_course() {
+        $raw = isset($_POST['md_course']) ? $_POST['md_course']
+            : (isset($_GET['md_course']) ? $_GET['md_course'] : 0);
+        $id = absint($raw);
+        return $id && get_post_type($id) === 'md_course'
+            && get_post_status($id) === 'publish' ? $id : 0;
+    }
+
     public static function register() {
         $name = isset($_POST['md_name']) && is_string($_POST['md_name']) ? sanitize_text_field(wp_unslash($_POST['md_name'])) : '';
         check_admin_referer('md_learning_register');
@@ -329,8 +337,12 @@ final class MD_Learning_Auth {
         }
         $challenge_id = self::requested_challenge();
         $resource_id = self::requested_resource();
+        $course_id = self::requested_course();
         if (self::current_learner_id()) {
-            wp_safe_redirect($challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard'));
+            $dest = $challenge_id ? get_permalink($challenge_id)
+                : ($resource_id ? get_permalink($resource_id)
+                : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard')));
+            wp_safe_redirect($dest);
             exit;
         }
         $created = self::create_learner($name);
@@ -347,6 +359,8 @@ final class MD_Learning_Auth {
             $destination = add_query_arg('md_challenge', $challenge_id, $destination);
         } elseif ($resource_id) {
             $destination = add_query_arg('md_resource', $resource_id, $destination);
+        } elseif ($course_id) {
+            $destination = add_query_arg('md_course', $course_id, $destination);
         }
         wp_safe_redirect($destination);
         exit;
@@ -356,6 +370,7 @@ final class MD_Learning_Auth {
         check_admin_referer('md_learning_login');
         $challenge_id = self::requested_challenge();
         $resource_id = self::requested_resource();
+        $course_id = self::requested_course();
         if (!self::https_allowed()) {
             wp_die('برای ورود، ابتدا HTTPS سایت را فعال کنید.', '', array('response' => 403));
         }
@@ -368,6 +383,8 @@ final class MD_Learning_Auth {
                 $dest = add_query_arg('md_challenge', $challenge_id, $dest);
             } elseif ($resource_id) {
                 $dest = add_query_arg('md_resource', $resource_id, $dest);
+            } elseif ($course_id) {
+                $dest = add_query_arg('md_course', $course_id, $dest);
             }
             wp_safe_redirect($dest);
             exit;
@@ -377,7 +394,8 @@ final class MD_Learning_Auth {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
         }
         wp_safe_redirect($challenge_id ? get_permalink($challenge_id)
-            : ($resource_id ? get_permalink($resource_id) : MD_Learning_Schema::url('dashboard')));
+            : ($resource_id ? get_permalink($resource_id)
+            : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard'))));
         exit;
     }
 
