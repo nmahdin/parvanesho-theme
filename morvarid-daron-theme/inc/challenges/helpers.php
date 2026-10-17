@@ -146,11 +146,12 @@ function md_challenge_day_content_status($day) {
     $title   = trim(wp_strip_all_tags($day->post_title));
     $content = trim(wp_strip_all_tags($day->post_content));
 
-    if ('' === $title && '' === $content) {
-        return array('key' => 'incomplete', 'label' => 'تکمیل‌نشده');
+    // A placeholder title is not enough to count a day as meaningful content.
+    if ('' === $content) {
+        return array('key' => 'incomplete', 'label' => 'بدون محتوا');
     }
-    if ('' === $title || '' === $content) {
-        return array('key' => 'in-progress', 'label' => 'در حال تکمیل');
+    if ('' === $title) {
+        return array('key' => 'in-progress', 'label' => 'عنوان لازم است');
     }
     return array('key' => 'ready', 'label' => 'آماده انتشار');
 }
