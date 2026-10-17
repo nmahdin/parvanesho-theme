@@ -51,6 +51,10 @@ while (have_posts()) :
                 <?php the_content(); ?>
             </div>
 
+            <?php if (class_exists('MD_Learning_Courses')) : ?>
+                <?php echo MD_Learning_Courses::lesson_ui($lesson_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            <?php endif; ?>
+
             <?php echo md_academy_lesson_navigation($lesson_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         </article>
         </div>
