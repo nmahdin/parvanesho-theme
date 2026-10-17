@@ -77,6 +77,9 @@ final class MD_Learning_Challenges {
     }
 
     public static function members_for_challenge($challenge_id) {
+        if (!current_user_can('edit_post', absint($challenge_id))) {
+            return array();
+        }
         global $wpdb;
         $table = self::table();
         $ids = $wpdb->get_col($wpdb->prepare(
@@ -187,6 +190,11 @@ final class MD_Learning_Challenges {
 
     /** Challenge tiles, accessible only for the owner of this central identity. */
     public static function dashboard_html($learner_id) {
+        // The method is callable by third-party code, so enforce ownership
+        // here as well as at the dashboard shortcode.
+        if (!$learner_id || absint($learner_id) !== MD_Learning_Auth::current_learner_id()) {
+            return '<p>برای دیدن چالش‌های خود وارد حساب شوید.</p>';
+        }
         if (!self::enabled()) {
             return '<p>برای مشاهده چالش‌ها، قالب مروارید درون باید فعال باشد.</p>';
         }
