@@ -373,6 +373,19 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
     $token = $central ? '' : (string) get_post_meta($member->ID, '_md_member_key', true);
     ?>
     <main class="md-member-page container" dir="rtl">
+        <?php
+        // On first signup the visitor lands here directly. Show their newly
+        // issued credentials once, otherwise they would never see the code.
+        $receipt = $central && class_exists('MD_Learning_Auth') ? MD_Learning_Auth::take_receipt() : null;
+        if (is_array($receipt) && isset($receipt['code'], $receipt['link'])) : ?>
+            <section class="md-learning-receipt md-challenge-first-receipt" aria-label="اطلاعات ورود خصوصی">
+                <h2>کد و لینک ورود شما آماده است</h2>
+                <p><strong>این اطلاعات فقط یک بار نمایش داده می‌شود.</strong> آن‌ها را در جای امن نگه دارید.</p>
+                <label>کد ۸ رقمی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['code']); ?>"></label>
+                <label>لینک اختصاصی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['link']); ?>"></label>
+                <p>این اطلاعات محرمانه‌اند و نباید با دیگران به اشتراک گذاشته شوند.</p>
+            </section>
+        <?php endif; ?>
         <?php if (isset($_GET['md_joined']) && $_GET['md_joined'] === '1' && $central) : ?>
             <p class="md-enroll-message" role="status">عضویت شما در چالش با موفقیت ثبت شد. از اینجا می‌توانید گام‌های چالش را دنبال کنید.</p>
         <?php endif; ?>
