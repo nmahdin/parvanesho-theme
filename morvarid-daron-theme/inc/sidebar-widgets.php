@@ -227,7 +227,7 @@ add_action('widgets_init', function () {
  */
 function md_seed_default_sidebar_widgets() {
     if (!is_admin() || !current_user_can('edit_theme_options')
-        || get_option('md_sidebar_widgets_seeded_v2')) {
+        || get_option('md_sidebar_widgets_seeded_v3')) {
         return;
     }
     $layouts = array(
@@ -253,7 +253,7 @@ function md_seed_default_sidebar_widgets() {
         $existing = isset($config[$area]) && is_array($config[$area]) ? $config[$area] : array();
         // Keep every existing widget and its order; convert the old
         // always-visible family footer card to ONE removable real widget.
-        $seed_types = $existing ? array('family') : $types;
+        $seed_types = $existing ? array() : $types;
         foreach ($seed_types as $type) {
             if ($type === 'family') {
                 $found = false;
@@ -284,6 +284,6 @@ function md_seed_default_sidebar_widgets() {
     $instances['_multiwidget'] = 1;
     update_option('widget_md_sidebar_card', $instances);
     wp_set_sidebars_widgets($config);
-    update_option('md_sidebar_widgets_seeded_v2', '1', false);
+    update_option('md_sidebar_widgets_seeded_v3', '1', false);
 }
 add_action('admin_init', 'md_seed_default_sidebar_widgets', 20);
