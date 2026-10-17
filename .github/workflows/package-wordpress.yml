@@ -1,0 +1,23 @@
+name: Package Morvarid WordPress ZIPs
+on:
+  push:
+    branches:
+      - arena/339051c8-parvanesho-theme
+  workflow_dispatch:
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build installable ZIPs
+        run: |
+          mkdir -p dist
+          zip -q -r dist/morvarid-daron-theme-1.4.3.zip morvarid-daron-theme -x '*/tests/*'
+          zip -q -r dist/morvarid-learning-core-0.6.2.zip morvarid-learning-core -x '*/tests/*'
+          unzip -l dist/morvarid-daron-theme-1.4.3.zip | grep 'morvarid-daron-theme/style.css'
+          unzip -l dist/morvarid-learning-core-0.6.2.zip | grep 'morvarid-learning-core/morvarid-learning-core.php'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morvarid-wordpress-1.4.3-0.6.2
+          path: dist/*.zip
+          if-no-files-found: error
