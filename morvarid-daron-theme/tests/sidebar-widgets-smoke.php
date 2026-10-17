@@ -33,6 +33,8 @@ function update_option($key, $value, $autoload = null) {
     $GLOBALS['test_settings'][$key] = $value;
     return true;
 }
+function is_admin() { return true; }
+function current_user_can($capability) { return $capability === 'edit_theme_options'; }
 function is_active_sidebar($id) { return !empty($GLOBALS['test_sidebar_layouts'][$id]); }
 function dynamic_sidebar($id) {
     $GLOBALS['test_rendered_sidebars'][] = $id;
@@ -57,6 +59,11 @@ function absint($n) { return abs((int) $n); }
 function selected($v, $expected, $echo = true) { return (string)$v === (string)$expected ? 'selected' : ''; }
 function checked($v, $expected, $echo = true) { return (bool)$v === (bool)$expected ? 'checked' : ''; }
 function apply_filters($tag, $value) { return $value; }
+function md_social_networks() { return array(
+    'telegram' => array('label'=>'تلگرام'), 'bale'=>array('label'=>'بله'),
+    'eitaa'=>array('label'=>'ایتا'), 'instagram'=>array('label'=>'اینستاگرام'),
+); }
+function md_social_url($network) { return 'https://example.test/' . $network; }
 function md_social_links($opts) { return '<nav class="md-social-family">social buttons</nav>'; }
 function checkit($ok, $message) { if (!$ok) { throw new RuntimeException($message); } }
 require dirname(__DIR__) . '/inc/sidebars.php';
@@ -105,7 +112,7 @@ $updated = $widget->update(array('type'=>'search','title'=>'جست‌وجوی م
 checkit($updated['post_type'] === 'md_resource' && $updated['count'] === 12,
     'search content type or list count settings failed');
 $css = file_get_contents(dirname(__DIR__) . '/assets/css/sidebar.css');
-checkit(strpos($css, 'padding:0!important') !== false &&
-    strpos($css, 'justify-content:center') !== false,
+checkit((bool)preg_match('/padding:\\s*0\\s*!important/', $css) &&
+    (bool)preg_match('/justify-content:\\s*center/', $css),
     'magnifier must be centered without inherited button padding');
 echo "Dynamic widget-only sidebar defaults, customization, and search centering: PASS\n";
