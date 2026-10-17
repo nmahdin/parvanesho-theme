@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) {
 /**
  * Custom learner authentication (independent of WordPress administrator users).
  *
- * Deliberately no code-login rate limiter or lockout, per site owner's choice.
- * Eight-digit codes therefore provide materially weaker protection than links.
+ * Eight-digit code login is IP-throttled; long-lived bearer links remain
+ * stronger credentials and should be treated like passwords.
  */
 final class MD_Learning_Auth {
     const COOKIE = 'md_learning_session';
@@ -386,8 +386,21 @@ final class MD_Learning_Auth {
         exit;
     }
 
+    /**
+     * Soft throttle for passwordless eight-digit code guesses, keyed by the
+     * observed client IP, never locking a learner account permanently.
+     */
+    private static function login_attempt_key() {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? (string) $_SERVER['REMOTE_ADDR'] : '';
+        return 'md_login_attempt_' . substr(hash_hmac('sha256', $ip, wp_salt('auth')), 0, 32);
+    }
+
     public static function login() {
         check_admin_referer('md_learning_login');
+        $attempt_key = self::login_attempt_key();
+        if ((int) get_transient($attempt_key) >= 8) {
+            wp_die('تعداد تلاش‌های ورود زیاد بوده است. پس از ۱۵ دقیقه دوباره تلاش کنید.', '', array('response' => 429));
+        }
         $challenge_id = self::requested_challenge();
         $resource_id = self::requested_resource();
         $course_id = self::requested_course();
@@ -397,7 +410,9 @@ final class MD_Learning_Auth {
         $raw = isset($_POST['md_code']) && is_string($_POST['md_code']) ? wp_unslash($_POST['md_code']) : '';
         $learner = self::find_by_code($raw);
         if (!$learner) {
-            // Intentionally no attempt counter and no account lockout.
+            // Count failed guesses, not account identity, to protect all learners.
+            $attempts = (int) get_transient($attempt_key);
+            set_transient($attempt_key, $attempts + 1, 15 * MINUTE_IN_SECONDS);
             $dest = add_query_arg('md_learning_error', 'invalid', MD_Learning_Schema::url('login'));
             if ($challenge_id) {
                 $dest = add_query_arg('md_challenge', $challenge_id, $dest);
@@ -409,6 +424,7 @@ final class MD_Learning_Auth {
             wp_safe_redirect($dest);
             exit;
         }
+        delete_transient($attempt_key);
         $session = self::create_session($learner->id);
         if (is_wp_error($session)) {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
