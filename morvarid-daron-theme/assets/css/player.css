@@ -556,3 +556,9 @@
 .md-post-media .md-player {
     margin: 0;
 }
+
+
+/* Audio block needs no second decorated background: the controls provide the UI. */
+.md-audio-player{background:transparent;border:0;box-shadow:none;padding:6px 0;border-radius:0}
+.md-audio-player::after{display:none}
+.md-player.md-audio-player,.md-player:has(>.md-audio-player){background:transparent;border:0;box-shadow:none}
