@@ -123,6 +123,9 @@ final class MD_Learning_Admin {
             <h1>یادگیرندگان · هویت مرکزی</h1>
             <p>مدیریت مستقل از چالش‌ها و دوره‌ها؛ بدون ایمیل و بدون حساب کاربری وردپرس.</p>
             <p class="md-learning-admin-page-links">
+                <?php if (current_user_can(MD_Learning_Response_Admin::CAPABILITY)) : ?>
+                    <a class="button button-primary" href="<?php echo esc_url(MD_Learning_Response_Admin::page_url()); ?>">گزارش پاسخ‌های آموزشی</a>
+                <?php endif; ?>
                 <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('register')); ?>" target="_blank" rel="noopener">صفحه ثبت‌نام</a>
                 <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('login')); ?>" target="_blank" rel="noopener">صفحه ورود</a>
                 <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>" target="_blank" rel="noopener">داشبورد یادگیرنده</a>
