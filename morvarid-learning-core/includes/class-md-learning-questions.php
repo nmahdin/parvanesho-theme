@@ -38,6 +38,7 @@ final class MD_Learning_Questions {
                 'mode' => array('type' => 'string', 'default' => 'reflection'),
                 'appearance' => array('type' => 'string', 'default' => 'card'),
                 'allowEdit' => array('type' => 'boolean', 'default' => true),
+                'managerVisible' => array('type' => 'boolean', 'default' => true),
                 'questions' => array('type' => 'array', 'default' => array()),
             ),
             'render_callback' => array(__CLASS__, 'render'),
@@ -299,7 +300,11 @@ final class MD_Learning_Questions {
                             <button type="submit" name="md_intent" value="final">ثبت پاسخ‌ها</button>
                         </div>
                     <?php endif; ?>
-                    <p class="md-learning-question-note">پاسخ‌ها فقط در حساب شما و برای مدیران مجاز سایت قابل دسترسی‌اند؛ عمومی نمایش داده نمی‌شوند.</p>
+                    <p class="md-learning-question-note">
+                        <?php echo isset($attrs['managerVisible']) && !$attrs['managerVisible']
+                            ? 'پاسخ‌ها در پنل گزارش مدیریت نمایش داده نمی‌شوند؛ اما مالک دیتابیس سایت همچنان از نظر فنی به آن‌ها دسترسی دارد.'
+                            : 'پاسخ‌ها در حساب شما و پنل گزارش مدیران مجاز قابل مشاهده‌اند؛ عمومی نمایش داده نمی‌شوند.'; ?>
+                    </p>
                 </form>
             <?php endif; ?>
         </section>
@@ -330,6 +335,7 @@ final class MD_Learning_Questions {
         $intent = isset($_POST['md_intent']) && $_POST['md_intent'] === 'final' ? 'final' : 'draft';
         $raw = isset($_POST['md_answers']) && is_array($_POST['md_answers']) ? wp_unslash($_POST['md_answers']) : array();
         $allow_edit = !isset($block['allowEdit']) || (bool) $block['allowEdit'];
+        $manager_visible = !isset($block['managerVisible']) || (bool) $block['managerVisible'];
         global $wpdb;
         $table = MD_Learning_Schema::table('responses');
         $locked_questions = array();
@@ -385,20 +391,21 @@ final class MD_Learning_Questions {
             $record = array(
                 'answer_text' => $item['answer'],
                 'status' => $status,
+                'manager_visible' => $manager_visible ? 1 : 0,
                 'updated_at' => $now,
                 'submitted_at' => $status === 'final' ? $now : null,
             );
             if ($existing) {
                 $ok = $wpdb->update($table, $record,
                     array('id' => (int) $existing->id, 'learner_id' => $learner_id),
-                    array('%s','%s','%s','%s'), array('%d','%d'));
+                    array('%s','%s','%d','%s','%s'), array('%d','%d'));
                 if ($ok === false) { $wpdb->query('ROLLBACK'); wp_die('ذخیره پاسخ انجام نشد.', '', array('response' => 500)); }
             } else {
                 $ok = $wpdb->insert($table, array_merge($record, array(
                     'learner_id' => $learner_id, 'content_id' => $content_id,
                     'block_id' => $block_id, 'question_id' => $q['id'],
                     'question_text' => $q['text'], 'created_at' => $now,
-                )), array('%s','%s','%s','%s','%d','%d','%s','%s','%s','%s'));
+                )), array('%s','%s','%d','%s','%s','%d','%d','%s','%s','%s','%s'));
                 if (!$ok) { $wpdb->query('ROLLBACK'); wp_die('ذخیره پاسخ انجام نشد.', '', array('response' => 500)); }
             }
         }
