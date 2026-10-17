@@ -43,21 +43,30 @@ $md_comment_count = (int) get_comments_number();
     <?php endif; ?>
 
     <?php
+    if (!function_exists('md_comment_authenticated') || md_comment_authenticated()) {
     comment_form(
         array(
             'title_reply'          => 'دیدگاه خود را بنویسید',
             'title_reply_to'       => 'پاسخ به %s',
             'cancel_reply_link'    => 'لغو پاسخ',
             'label_submit'         => 'ارسال دیدگاه',
-            'comment_notes_before' => '<p class="md-comment-notes">نشانی ایمیل شما منتشر نخواهد شد. بخش‌های موردنیاز علامت‌گذاری شده‌اند.</p>',
+            'comment_notes_before' => '<p class="md-comment-notes">دیدگاه‌ها پس از تأیید مدیر منتشر می‌شوند. نیازی به ارائه ایمیل نیست.</p>',
             'comment_field'        => '<p class="comment-form-comment"><label for="comment">دیدگاه شما</label><textarea id="comment" name="comment" cols="45" rows="6" required></textarea></p>',
             'fields'               => array(
                 'author'  => '<p class="comment-form-author"><label for="author">نام <span class="required">*</span></label><input id="author" name="author" type="text" required autocomplete="name" /></p>',
-                'email'   => '<p class="comment-form-email"><label for="email">ایمیل <span class="required">*</span></label><input id="email" name="email" type="email" required autocomplete="email" /></p>',
                 'url'     => '<p class="comment-form-url"><label for="url">وب‌سایت</label><input id="url" name="url" type="url" autocomplete="url" /></p>',
-                'cookies' => '<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" /> <label for="wp-comment-cookies-consent">نام، ایمیل و وب‌سایت من را برای دیدگاه‌های بعدی ذخیره کن.</label></p>',
+
             ),
         )
     );
+    } else {
+        echo '<div class="md-comment-login-message"><p>برای ثبت دیدگاه، وارد پروفایل یادگیری خود شوید یا حساب جدید بسازید. ایمیل لازم نیست.</p>';
+        if (class_exists('MD_Learning_Schema')) {
+            $go = get_permalink();
+            echo '<a class="btn btn-primary" href="' . esc_url(add_query_arg('redirect_to', $go, MD_Learning_Schema::url('login'))) . '">ورود به حساب</a> ';
+            echo '<a class="btn btn-light" href="' . esc_url(MD_Learning_Schema::url('register')) . '">ساخت حساب</a>';
+        }
+        echo '</div>';
+    }
     ?>
 </section>
