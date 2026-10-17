@@ -355,7 +355,7 @@ final class MD_Learning_Dashboard {
                     </aside>
                 </div>
             </div>
-        </main>
+        </section>
         <?php
         return ob_get_clean();
     }
