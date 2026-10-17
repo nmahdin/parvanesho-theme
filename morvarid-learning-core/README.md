@@ -1,7 +1,7 @@
-# Morvarid Learning Core — Phases A + B + C
+# Morvarid Learning Core — Phases A + B + C + D
 
 Standalone WordPress plugin for an **email-free, unified learner identity**.
-Version: **0.3.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
+Version: **0.4.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
 website **must use HTTPS**. WordPress administrator login stays separate.
 
 ## Installation
@@ -14,12 +14,13 @@ then upload it via Plugins > Add New > Upload Plugin.
 
 Do not upload this folder as a theme and do not edit `functions.php`.
 
-Activation and upgrades create four tables (with the site's configured prefix):
+Activation and upgrades create five tables (with the site's configured prefix):
 
 - `<prefix>md_learning_learners`: profile, one globally unique hashed 8-digit code.
 - `<prefix>md_learning_links`: long random access-link secrets, stored only as keyed hashes.
 - `<prefix>md_learning_sessions`: independently managed, hashed browser sessions.
 - `<prefix>md_learning_challenges`: one challenge membership per learner per challenge, with database uniqueness constraints.
+- `<prefix>md_learning_responses`: private question answers (draft/final) keyed by learner, educational content and stable question UUID.
 
 And three published pages (unless an unrelated page already occupies the slug):
 
@@ -66,6 +67,88 @@ invalidates prior code, links and sessions without deleting the learner record.
 - This identity is **not** a WordPress user account. Never authorize access
   to answers using a user-supplied learner ID. Always resolve it from the
   validated server-side session.
+
+## Phase D: editable educational questions and private answers (v0.4.0)
+
+Use the existing Gutenberg editor on **resource/exercise** (`md_resource`),
+**podcast** (`md_podcast`) or **lesson** (`md_lesson`) posts. Insert the
+**پرسش‌های آموزشی مروارید** block directly between any text, image, audio,
+video or download blocks. It can be moved, duplicated or removed using the
+regular Gutenberg controls.
+
+Each question block provides:
+- Editable title and short introductory text;
+- Two independent modes: **reflection** (questions only; never saves answers)
+  and **save** (private per-learner answers);
+- Any number of independently reorderable questions, with hint/explanation;
+- In save mode, short/long answer types and per-question final-only required
+  validation; optional manager-controlled editing after final submission;
+- **Save draft** and **Submit final** actions, with success confirmation and
+  persisted values when reopening the page;
+- A personal **پاسخ‌های آموزشی من** dashboard tab with private answer history,
+  draft/final badges, edit timestamps and links back to the training content;
+- Real saved-answer count on the personal dashboard's home tab.
+
+**Security and storage**
+
+- The question definitions are Gutenberg block attributes stored in the
+  educational post content; learner answers are stored ONLY in the new
+  `md_learning_responses` database table.
+- Stable 128-bit non-secret block/question identifiers are assigned on insert.
+  Cloned blocks and duplicate IDs are repaired both in the editor and after
+  saving the post. Moving a question or editing its wording does not change
+  its ID, so the old answer remains linked; the original question prompt
+  is also snapshotted in the private response row.
+- On POST, the server reparses the **published** post's current block
+  definition and validates the authenticated central learner, the published
+  educational content, matching block UUID, nonce and required questions.
+  Client-supplied titles, IDs or another learner's ID never authorize access.
+- Profile/challenge/question nonces are tied to the learner's independent
+  session rather than shared WordPress logged-out nonces.
+- Final answers with editing disabled are immutable; if a teacher adds new
+  questions to the block, previously final answers stay intact.
+- Response pages set no-store/private headers, because they render
+  learner-specific answers and session-specific anti-CSRF fields.
+- Only the learner who owns an answer may read it from the dashboard or edit
+  it on the educational page. Administrators' reporting UI is planned for
+  Phase E. Server administrators with direct DB access necessarily still
+  have access to the database.
+- No email or course enrollment is required. Guests can read reflective
+  questions and are invited to sign in for interactive answers.
+
+**Scope:** This is the interactive question block integrated into the
+*existing* resource/podcast/lesson Gutenberg editors. The larger academy
+redesign (unified content type, independent academy editor/dashboard and
+sidebars) is a separate project. Phase D does not replace those editors.
+
+### Phase D staging acceptance checks
+
+1. Install plugin v0.4.0 and load the WP admin once, verifying that
+   `<prefix>md_learning_responses` was created by the schema upgrade.
+2. Add a question block to a published `md_resource`; alternate reflection
+   and save modes, add/reorder/duplicate multiple questions and preview.
+3. While signed out, ensure reflection mode displays questions without
+   save controls, while save mode prompts central registration/login.
+4. Sign in as learner A; save optional or incomplete answers as a draft.
+   Refresh, revisit, then submit a final answer. Check required validation
+   applies only to final submission.
+5. Sign in as learner B in another browser. Confirm B sees no answers from A.
+   Change the hidden question UUID or page ID on a POST and verify rejection.
+6. Reorder questions and a complete block in Gutenberg. Verify the existing
+   answers remain attached to their question UUIDs.
+7. Duplicate a block in Gutenberg, save, then verify its new block/question
+   UUIDs are distinct, and answers do not cross to the cloned block.
+8. Finalize a question with editing disabled. Add a new question to the same
+   block and verify the existing finalized answer cannot be changed, but
+   the newly added question can be completed.
+9. Visit `/learning-dashboard/?md_tab=answers`; check owned responses,
+   statuses, timestamps and return-to-content links.
+10. Confirm all personalized educational pages have `no-store` headers
+    and that URLs contain no answer values or private authentication token.
+
+Automated CI PHP syntax, JS parse and pure-PHP question identity/privacy
+smoke tests have been added. Real WordPress, database and browser acceptance
+tests still need to be carried out before deployment.
 
 ## Phase C: personal workspace (v0.3.0)
 
