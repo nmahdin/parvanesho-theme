@@ -40,12 +40,16 @@ final class MD_Learning_Dashboard {
         <section class="md-learning-receipt" aria-labelledby="md-learning-receipt-heading">
             <h2 id="md-learning-receipt-heading">کد و لینک جدید شما آماده است</h2>
             <p><strong>این اطلاعات فقط یک‌بار نمایش داده می‌شوند.</strong> اکنون آن‌ها را در محل امن ذخیره کنید.</p>
-            <label>کد ورود اصلی ۸ رقمی
-                <input type="text" readonly dir="ltr" onclick="this.select()" value="<?php echo esc_attr($data['code']); ?>">
-            </label>
-            <label>لینک ورود اختصاصی
-                <input type="text" readonly dir="ltr" onclick="this.select()" value="<?php echo esc_attr($data['link']); ?>">
-            </label>
+            <label>کد ورود اصلی ۸ رقمی</label>
+            <div class="md-learning-copy-row">
+                <input type="text" readonly dir="ltr" aria-label="کد ورود" value="<?php echo esc_attr($data['code']); ?>">
+                <button class="md-learning-copy-button" type="button" data-md-copy>کپی کد</button>
+            </div>
+            <label>لینک ورود اختصاصی</label>
+            <div class="md-learning-copy-row">
+                <input type="text" readonly dir="ltr" aria-label="لینک اختصاصی" value="<?php echo esc_attr($data['link']); ?>">
+                <button class="md-learning-copy-button" type="button" data-md-copy>کپی لینک</button>
+            </div>
             <p>هر فردی که این کد یا لینک را داشته باشد می‌تواند وارد حساب شما شود. آن‌ها را عمومی نکنید.</p>
         </section>
         <?php
@@ -333,7 +337,7 @@ final class MD_Learning_Dashboard {
                 <button type="submit" class="md-learning-button md-learning-logout">خروج از تمام دستگاه‌های دیگر</button>
             </form>
         </section>
-        <p class="md-learning-muted">ورود با کد ۸ رقمی همچنان بدون محدودیت تعداد تلاش انجام می‌شود. لینک خصوصی طولانی‌تر است و استفاده از آن برای داده‌های حساس ترجیح دارد.</p>
+        <p class="md-learning-muted">ورود با کد ۸ رقمی پس از چند تلاش ناموفق به‌صورت موقت محدود می‌شود. لینک خصوصی طولانی‌تر است و استفاده از آن برای داده‌های حساس ترجیح دارد.</p>
         <?php
     }
 
