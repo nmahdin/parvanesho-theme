@@ -495,3 +495,16 @@ add_filter('wp_nav_menu_objects',function($items){
   return !is_string($path) || !preg_match('~/(?:services)(?:/|$)~i',$path);
  }));
 },20);
+
+// Site-matched styles for the Appearance > Widgets block editor and Customizer.
+// The normal post editor gets the same sheets via add_editor_style().
+add_action('enqueue_block_assets',function(){
+ if (!is_admin()) return;
+ wp_enqueue_style('md-widget-preview-site',MD_THEME_URI.'/assets/css/sidebar.css',array(),MD_THEME_VERSION);
+},20);
+add_action('admin_enqueue_scripts',function($hook){
+ if(!in_array($hook,array('widgets.php','customize.php'),true))return;
+ wp_enqueue_style('md-widget-editor-base',MD_THEME_URI.'/assets/css/main.css',array(),MD_THEME_VERSION);
+ wp_enqueue_style('md-widget-editor-cards',MD_THEME_URI.'/assets/css/sidebar.css',array('md-widget-editor-base'),MD_THEME_VERSION);
+ wp_enqueue_style('md-widget-editor-fonts',MD_THEME_URI.'/assets/css/fonts.css',array(),MD_THEME_VERSION);
+});
