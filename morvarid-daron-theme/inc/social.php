@@ -114,10 +114,11 @@ function md_social_links($args = array()) {
         array(
             'class'       => '',
             'show_labels' => true,
+            'profiles'    => null,
         )
     );
 
-    $profiles = md_social_profiles();
+    $profiles = is_array($args['profiles']) ? $args['profiles'] : md_social_profiles();
     if (!$profiles) {
         return '';
     }
