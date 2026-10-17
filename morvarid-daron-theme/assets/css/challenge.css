@@ -1048,3 +1048,16 @@ margin:13px 0 0;
 .md-challenge-page .md-day-accordion .md-day-chevron::after{font-weight:600;font-size:25px}
 .md-challenge-page .md-day-accordion .md-day-body{border:0!important}
 @media(max-width:650px){.md-challenge-page .md-day.md-day-accordion{border-radius:20px!important}.md-challenge-page .md-day-accordion .md-day-chevron::after{font-size:22px}}
+
+
+/* Calm ivory day cards without the previous green tint. */
+.md-challenge-page .md-day.md-day-accordion{background:#fffcf6!important}
+.md-challenge-page .md-day-accordion>.md-day-header,
+.md-challenge-page .md-day-accordion[open]>.md-day-header,
+.md-challenge-page .md-day-accordion>summary:hover{background:#fffcf6!important}
+.md-challenge-page .md-day-accordion>.md-day-body{background:#fffefb!important}
+.md-challenge-page .md-day.md-day-locked{background:#fdfaf4!important}
+.md-challenge-page .md-challenge-progress+.btn,
+.md-challenge-page .md-challenge-progress+a.btn{display:inline-flex;margin-top:24px!important}
+.md-challenge-page .md-challenge-hero-copy>.btn{margin-top:23px}
+.md-challenge-page .btn,.md-challenge-page button[type=submit]{border-radius:999px!important;box-shadow:none!important;transform:none}
