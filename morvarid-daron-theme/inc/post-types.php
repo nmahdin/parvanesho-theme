@@ -75,9 +75,14 @@ function md_register_content_types() {
         register_post_type('md_service', array_merge($common, array(
             'labels'       => md_post_type_labels('خدمت', 'خدمات', 'کوچینگ'),
             'menu_icon'    => 'dashicons-heart',
-            'menu_position'=> 26,
-            'has_archive'  => 'services',
-            'rewrite'      => array('slug' => 'services', 'with_front' => false),
+            'public'       => false,
+            'publicly_queryable' => false,
+            'exclude_from_search' => true,
+            'show_ui'      => false,
+            'show_in_rest' => false,
+            'show_in_menu'=> false,
+            'has_archive'  => false,
+            'rewrite'      => false,
             'taxonomies'   => array('md_service_cat'),
         )));
     }
@@ -113,7 +118,7 @@ function md_register_content_types() {
             'publicly_queryable' => false,
             'exclude_from_search'=> true,
             'show_ui'            => true,
-            'show_in_menu'       => 'edit.php?post_type=md_service',
+            'show_in_menu'       => true,
             'show_in_rest'       => false,
             'menu_icon'          => 'dashicons-email-alt',
             'capability_type'    => 'post',
@@ -184,7 +189,7 @@ function md_register_content_taxonomies() {
         register_taxonomy('md_service_cat', array('md_service'), array_merge($common, array(
             'labels'       => md_taxonomy_labels('دسته خدمت', 'دسته‌های خدمات'),
             'rewrite'      => array('slug' => 'services/category', 'with_front' => false),
-            'show_in_menu' => 'edit.php?post_type=md_service',
+            'show_in_menu' => false,
         )));
     }
 
