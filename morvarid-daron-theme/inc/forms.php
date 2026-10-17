@@ -467,6 +467,7 @@ function md_request_handle_submit() {
         md_request_redirect($redirect, 'error');
     }
 
+    update_post_meta($request_id, '_md_request_status', 'pending');
     update_post_meta($request_id, '_md_request_entries', $entries);
     update_post_meta($request_id, '_md_request_page', $page_id);
     if ($service_id) {
@@ -558,6 +559,7 @@ function md_request_columns($columns) {
     return array(
         'cb'         => isset($columns['cb']) ? $columns['cb'] : '',
         'title'      => 'درخواست‌دهنده',
+        'md_status'  => 'وضعیت',
         'md_service' => 'خدمت',
         'md_contact' => 'تماس',
         'md_email'   => 'ایمیل',
@@ -573,7 +575,9 @@ add_filter('manage_md_request_posts_columns', 'md_request_columns');
  * @param int    $post_id Post ID.
  */
 function md_request_column_content($column, $post_id) {
-    if ('md_service' === $column) {
+    if ('md_status' === $column) {
+        echo md_request_status_badge($post_id);
+    } elseif ('md_service' === $column) {
         $service = absint(get_post_meta($post_id, '_md_request_service', true));
         echo $service ? esc_html(get_the_title($service)) : '—';
     } elseif ('md_contact' === $column) {
@@ -690,3 +694,103 @@ function md_maybe_create_request_page() {
     md_create_request_page();
 }
 add_action('admin_init', 'md_maybe_create_request_page');
+
+
+/**
+ * Coaching request inbox. Requests stay private; no service catalogue or
+ * separate manual request creation is needed.
+ */
+function md_request_is_reviewed($id) {
+    return get_post_meta(absint($id), '_md_request_status', true) === 'reviewed';
+}
+function md_request_pending_count() {
+    $q = new WP_Query(array(
+        'post_type' => 'md_request', 'post_status' => 'private',
+        'posts_per_page' => 1, 'fields' => 'ids', 'no_found_rows' => false,
+        'meta_query' => array('relation' => 'OR',
+            array('key' => '_md_request_status', 'compare' => 'NOT EXISTS'),
+            array('key' => '_md_request_status', 'value' => 'reviewed', 'compare' => '!='),
+        ),
+    ));
+    return (int) $q->found_posts;
+}
+function md_request_status_badge($id) {
+    $reviewed = md_request_is_reviewed($id);
+    return '<span class="md-request-status md-request-status-' . ($reviewed ? 'reviewed' : 'pending') . '">'
+        . ($reviewed ? 'بررسی‌شده' : 'در انتظار بررسی') . '</span>';
+}
+function md_request_review_button($id) {
+    if (!current_user_can('edit_post', $id)) return '';
+    $reviewed = md_request_is_reviewed($id);
+    $url = wp_nonce_url(add_query_arg(array(
+        'action' => 'md_request_update_status',
+        'request_id' => absint($id),
+        'md_status' => $reviewed ? 'pending' : 'reviewed',
+    ), admin_url('admin-post.php')), 'md_request_update_status_' . absint($id));
+    return '<a class="button button-secondary" href="' . esc_url($url) . '">'
+        . ($reviewed ? 'بازگرداندن به بررسی‌نشده' : 'علامت‌گذاری بررسی‌شده') . '</a>';
+}
+add_action('add_meta_boxes_md_request', function () {
+    add_meta_box('md_request_status_box', 'وضعیت رسیدگی', function ($post) {
+        echo '<p>' . md_request_status_badge($post->ID) . '</p><p>' . md_request_review_button($post->ID) . '</p>';
+    }, 'md_request', 'side', 'high');
+});
+add_filter('post_row_actions', function ($actions, $post) {
+    if ($post->post_type === 'md_request') {
+        $actions['md_request_review'] = md_request_review_button($post->ID);
+    }
+    return $actions;
+}, 10, 2);
+add_action('admin_post_md_request_update_status', function () {
+    $id = isset($_GET['request_id']) ? absint($_GET['request_id']) : 0;
+    if (!$id || get_post_type($id) !== 'md_request' || !current_user_can('edit_post', $id)) {
+        wp_die('اجازه تغییر وضعیت درخواست را ندارید.', '', array('response' => 403));
+    }
+    check_admin_referer('md_request_update_status_' . $id);
+    $status = isset($_GET['md_status']) ? sanitize_key(wp_unslash($_GET['md_status'])) : '';
+    if (!in_array($status, array('pending', 'reviewed'), true)) {
+        wp_die('وضعیت درخواست نامعتبر است.', '', array('response' => 400));
+    }
+    update_post_meta($id, '_md_request_status', $status);
+    wp_safe_redirect(admin_url('edit.php?post_type=md_request&md_updated=1'));
+    exit;
+});
+add_action('admin_menu', function () {
+    global $menu, $submenu;
+    $count = md_request_pending_count();
+    $badge = $count ? ' <span class="awaiting-mod count-' . absint($count) . '"><span class="pending-count">' . absint($count) . '</span></span>' : '';
+    foreach ($menu as &$item) {
+        if (isset($item[2]) && $item[2] === 'edit.php?post_type=md_request') {
+            $item[0] = 'کوچینگ' . $badge;
+            break;
+        }
+    }
+    unset($item);
+    if (isset($submenu['edit.php?post_type=md_request'])) {
+        foreach ($submenu['edit.php?post_type=md_request'] as &$sub) {
+            if (($sub[2] ?? '') === 'edit.php?post_type=md_request') $sub[0] = 'درخواست‌ها' . $badge;
+        }
+        unset($sub);
+    }
+}, 999);
+add_filter('views_edit-md_request', function ($views) {
+    $count = md_request_pending_count();
+    $url = add_query_arg(array('post_type' => 'md_request', 'md_request_filter' => 'pending'), admin_url('edit.php'));
+    $views['md_request_pending'] = '<a href="' . esc_url($url) . '">' . 'در انتظار بررسی (' . absint($count) . ')' . '</a>';
+    return $views;
+});
+add_action('pre_get_posts', function ($query) {
+    if (!is_admin() || !$query->is_main_query() || $query->get('post_type') !== 'md_request'
+        || !isset($_GET['md_request_filter']) || $_GET['md_request_filter'] !== 'pending') return;
+    $query->set('post_status', 'private');
+    $query->set('meta_query', array('relation' => 'OR',
+        array('key' => '_md_request_status', 'compare' => 'NOT EXISTS'),
+        array('key' => '_md_request_status', 'value' => 'reviewed', 'compare' => '!='),
+    ));
+});
+add_action('admin_enqueue_scripts', function ($hook) {
+    if (!in_array($hook, array('edit.php','post.php'), true)) return;
+    $screen = get_current_screen();
+    if (!$screen || $screen->post_type !== 'md_request') return;
+    wp_add_inline_style('wp-admin', '.md-request-status{display:inline-block;border-radius:999px;padding:5px 11px;font-weight:700}.md-request-status-pending{background:#fff2da;color:#875210}.md-request-status-reviewed{background:#e4f3e9;color:#245f42}');
+});
