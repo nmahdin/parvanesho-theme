@@ -52,8 +52,9 @@ final class MD_Learning_Pages {
 
     public static function register_shortcode() {
         $challenge_id = MD_Learning_Auth::requested_challenge();
+        $resource_id = MD_Learning_Auth::requested_resource();
         if (MD_Learning_Auth::current_learner_id()) {
-            $dest = $challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard');
+            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : MD_Learning_Schema::url('dashboard'));
             return self::shell_start('پروفایل شما آماده است')
                 . '<p>پیش‌تر وارد حساب یادگیری خود شده‌اید.</p>'
                 . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
@@ -65,6 +66,7 @@ final class MD_Learning_Pages {
         <form class="md-learning-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="md_learning_register">
             <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
+            <?php if ($resource_id) : ?><input type="hidden" name="md_resource" value="<?php echo esc_attr($resource_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_register'); ?>
             <label>نام و نام خانوادگی
                 <input type="text" name="md_name" maxlength="120" autocomplete="name" required placeholder="نام شما">
@@ -87,8 +89,9 @@ final class MD_Learning_Pages {
 
     public static function login_shortcode() {
         $challenge_id = MD_Learning_Auth::requested_challenge();
+        $resource_id = MD_Learning_Auth::requested_resource();
         if (MD_Learning_Auth::current_learner_id()) {
-            $dest = $challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard');
+            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : MD_Learning_Schema::url('dashboard'));
             return self::shell_start('شما وارد شده‌اید')
                 . '<p>می‌توانید مسیر یادگیری خود را ادامه دهید.</p>'
                 . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
@@ -107,6 +110,7 @@ final class MD_Learning_Pages {
         <form class="md-learning-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="md_learning_login">
             <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
+            <?php if ($resource_id) : ?><input type="hidden" name="md_resource" value="<?php echo esc_attr($resource_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_login'); ?>
             <label>کد ورود ۸ رقمی
                 <input type="text" name="md_code" inputmode="numeric" autocomplete="off" minlength="8" maxlength="8"
