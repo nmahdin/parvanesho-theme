@@ -417,7 +417,7 @@ final class MD_Learning_Auth {
             set_transient($attempt_key, $attempts + 1, 15 * MINUTE_IN_SECONDS);
             $dest = add_query_arg('md_learning_error', 'invalid', MD_Learning_Schema::url('login'));
             if ($challenge_id) {
-                $dest = add_query_arg('md_challenge', $challenge_id, $dest);
+                $dest = add_query_arg(array('md_account_mode' => 'login', 'md_challenge' => $challenge_id, 'md_learning_error' => 'invalid'), get_permalink($challenge_id));
             } elseif ($resource_id) {
                 $dest = add_query_arg('md_resource', $resource_id, $dest);
             } elseif ($course_id) {
