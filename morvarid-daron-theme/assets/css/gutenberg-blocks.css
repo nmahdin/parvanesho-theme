@@ -209,3 +209,9 @@
 .md-gb-download .md-download-icon{width:42px;height:42px;border-radius:12px;font-size:22px}
 .md-gb-download .md-gb-button{padding:8px 14px;min-height:38px}
 @media(max-width:600px){.md-gb-download{padding:12px;gap:10px}}
+
+/* Softer worksheet download card without adding back excessive padding. */
+.md-gb-download{border-radius:26px!important}
+.md-gb-download .md-download-icon{border-radius:16px}
+.md-gb-download .md-gb-button{border-radius:999px}
+@media(max-width:600px){.md-gb-download{border-radius:22px!important}}
