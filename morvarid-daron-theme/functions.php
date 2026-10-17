@@ -129,7 +129,52 @@ add_action('admin_init',function(){
  add_settings_field($key,$label,function($args){$o=get_option('md_theme_options',[]);$k=$args['key'];$v=$o[$k]??'';echo '<input class="regular-text" type="url" dir="ltr" placeholder="https://" name="md_theme_options['.esc_attr($k).']" value="'.esc_attr($v).'"/>';},'md-theme-options','md_social',['key'=>$key]);
  }
 });
-function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));foreach(['telegram_url','bale_url','eitaa_url','instagram_url'] as $k)$out[$k]=esc_url_raw($input[$k]??'');return $out;}
+function md_sanitize_theme_options($input){
+ $input=is_array($input)?$input:[];
+ $out=[];
+ foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro','header_title','header_tagline','header_booking_label'] as $k){
+   $out[$k]=sanitize_text_field($input[$k]??'');
+ }
+ $out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';
+ $out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));
+ foreach(['telegram_url','bale_url','eitaa_url','instagram_url','header_booking_url'] as $k){
+   $out[$k]=esc_url_raw($input[$k]??'');
+ }
+ foreach(['header_booking_show','header_profile_show'] as $k){
+   $out[$k]=isset($input[$k])&&$input[$k]==='0'?'0':'1';
+ }
+ $out['header_logo_id']=absint($input['header_logo_id']??0);
+ return $out;
+}
+// All visible header controls live inside Appearance > Theme Settings.
+add_action('admin_init',function(){
+ add_settings_section('md_header_options','تنظیمات هدر و دسترسی سریع','__return_false','md-theme-options');
+ $fields=[
+  'header_title'=>['عنوان برند','text','مروارید درون'],
+  'header_tagline'=>['زیرعنوان برند','text','رشد آگاهانه، رابطه‌ای عمیق‌تر'],
+  'header_booking_label'=>['متن دکمه رزرو','text','رزرو جلسه'],
+  'header_booking_url'=>['آدرس دکمه رزرو','url',md_booking_url()],
+  'header_booking_show'=>['نمایش دکمه رزرو','select','1'],
+  'header_profile_show'=>['نمایش دکمه پروفایل (موبایل و دسکتاپ)','select','1'],
+  'header_logo_id'=>['لوگوی هدر (شناسه تصویر کتابخانه رسانه)','number','0'],
+ ];
+ foreach($fields as $key=>$field){
+   add_settings_field($key,$field[0],function($args){
+     $o=get_option('md_theme_options',[]);
+     $key=$args['key'];$type=$args['type'];
+     $value=isset($o[$key])?$o[$key]:$args['default'];
+     if($type==='select'){
+       echo '<select name="md_theme_options['.esc_attr($key).']">';
+       echo '<option value="1" '.selected($value,'1',false).'>نمایش داده شود</option>';
+       echo '<option value="0" '.selected($value,'0',false).'>پنهان شود</option>';
+       echo '</select>';
+     }else{
+       echo '<input class="regular-text" type="'.esc_attr($type).'" name="md_theme_options['.esc_attr($key).']" value="'.esc_attr($value).'"'.($type==='number'?' min="0" step="1"':'').' />';
+       if($key==='header_logo_id')echo '<p class="description">شناسه تصویر از رسانه‌ها؛ اگر خالی باشد لوگوی پیش‌فرض قالب استفاده می‌شود.</p>';
+     }
+   },'md-theme-options','md_header_options',['key'=>$key,'type'=>$field[1],'default'=>$field[2]]);
+ }
+});
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
 function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';$needs_home=!md_home_page_id()||!md_home_page_has_blocks(md_home_page_id());$build_link=$needs_home?' <a class="button" href="'.esc_url(wp_nonce_url(admin_url('admin-post.php?action=md_build_home'),'md_build_home')).'">ساخت صفحه اصلی بلوکی</a>':'';$registered=class_exists('WP_Block_Type_Registry')?WP_Block_Type_Registry::get_instance()->get_all_registered():[];$theme_blocks=0;foreach($registered as $block_name=>$block_type){if(0===strpos($block_name,'morvarid/'))$theme_blocks++;}$script_ok=file_exists(MD_THEME_DIR.'/assets/js/blocks.js');$status='<p class="description">وضعیت سمت سرور: بلوک‌های ثبت‌شدهٔ قالب: <strong>'.absint($theme_blocks).'</strong> — وردپرس: '.esc_html(get_bloginfo('version')).' — فایل اسکریپت ویرایشگر: '.($script_ok?'موجود':'<strong>یافت نشد</strong>').' — نسخهٔ قالب: '.esc_html(MD_THEME_VERSION).'</p>';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، ایتا، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود. '.$home_link.$build_link.'</p>'.$status.'<form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
 add_action('wp_enqueue_scripts',function(){ $c=md_theme_option('primary_color','#326d62');wp_add_inline_style('md-main',':root{--md-accent:'.esc_attr($c).';} .md-search-button,.md-academy-pill.is-active{background:var(--md-accent)}');},20);
