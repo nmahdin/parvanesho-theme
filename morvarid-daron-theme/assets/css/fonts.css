@@ -1,0 +1,14 @@
+/*
+ * فونت وزیرمتن (Vazirmatn) — نسخهٔ متغیر، میزبانی‌شده در خود قالب.
+ * مجوز: SIL Open Font License 1.1 — متن کامل در assets/fonts/OFL.txt
+ * هیچ درخواستی به سرورهای گوگل یا سایر CDNها ارسال نمی‌شود.
+ */
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/Vazirmatn-Variable.woff2') format('woff2 supports variations'),
+         url('../fonts/Vazirmatn-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+2010-2027;
+}

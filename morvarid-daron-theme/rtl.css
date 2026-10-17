@@ -1,0 +1,50 @@
+/*
+ * Morvarid Daron — RTL stylesheet.
+ *
+ * این قالب از ابتدا راست‌چین طراحی شده و چیدمان اصلی در assets/css/main.css
+ * با ویژگی‌های منطقی (margin-inline, padding-inline, inset-inline) نوشته شده است.
+ * وردپرس این فایل را فقط در نصب‌های راست‌چین بارگذاری می‌کند؛ بنابراین تنها
+ * اصلاح‌های لازم برای هسته و بلوک‌های وردپرس در آن قرار می‌گیرد.
+ */
+
+body {
+    direction: rtl;
+    unicode-bidi: plaintext;
+}
+
+/* Core list and blockquote markers follow the reading direction. */
+ul,
+ol {
+    padding-inline-start: 1.4em;
+    padding-inline-end: 0;
+}
+
+blockquote {
+    border-inline-start: 0;
+    border-inline-end: 4px solid var(--sage, #dce8dd);
+    padding-inline-start: 0;
+    padding-inline-end: 1.2em;
+}
+
+/* Admin bar and screen-reader helpers keep their physical anchoring. */
+.screen-reader-text:focus {
+    left: auto;
+    right: 6px;
+}
+
+/* Align wide and full blocks correctly inside RTL containers. */
+.alignwide {
+    margin-inline: auto;
+}
+
+.alignleft {
+    float: right;
+    margin-inline-start: 0;
+    margin-inline-end: 1.5em;
+}
+
+.alignright {
+    float: left;
+    margin-inline-end: 0;
+    margin-inline-start: 1.5em;
+}

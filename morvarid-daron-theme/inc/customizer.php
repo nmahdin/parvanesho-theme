@@ -13,9 +13,11 @@ add_action('customize_register',function($wp_customize){
  'contact_phone'=>['شماره تماس',''],
  'instagram_url'=>['لینک اینستاگرام',''],
  'telegram_url'=>['لینک تلگرام',''],
+ 'bale_url'=>['لینک کانال بله',''],
+ 'eitaa_url'=>['لینک کانال ایتا',''],
  ];
  foreach($fields as $id=>$args){
-  $url=in_array($id,['parent_url','teen_url','booking_url','newsletter_url','instagram_url','telegram_url'],true);
+  $url=in_array($id,['parent_url','teen_url','booking_url','newsletter_url','instagram_url','telegram_url','bale_url','eitaa_url'],true);
   $wp_customize->add_setting('md_'.$id,['default'=>$args[1],'sanitize_callback'=>$url?'esc_url_raw':'sanitize_text_field','transport'=>'refresh']);
   $wp_customize->add_control('md_'.$id,['label'=>$args[0],'section'=>'md_home','type'=>$id==='hero_text'?'textarea':'text']);
  }

@@ -1,0 +1,76 @@
+name: WordPress theme and learning plugin checks
+on:
+  push:
+    paths:
+      - "morvarid-daron-theme/**"
+      - "morvarid-learning-core/**"
+      - ".github/workflows/theme-syntax.yml"
+  pull_request:
+    paths:
+      - "morvarid-daron-theme/**"
+      - "morvarid-learning-core/**"
+      - ".github/workflows/theme-syntax.yml"
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint theme PHP
+        run: find morvarid-daron-theme -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Test fully editable sidebar widgets and search icon centering
+        run: php morvarid-daron-theme/tests/sidebar-widgets-smoke.php
+      - name: Test account-based comments without email and impersonation
+        run: php morvarid-daron-theme/tests/learning-comments-smoke.php
+      - name: Lint learner plugin PHP
+        run: find morvarid-learning-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Parse theme JavaScript
+        run: find morvarid-daron-theme -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Smoke-test central challenge identity and membership
+        run: php morvarid-learning-core/tests/phase-b-smoke.php
+      - name: Smoke-test redesigned challenge joining, consent and errors
+        run: php morvarid-learning-core/tests/phase-ux-join-smoke.php
+      - name: Smoke-test short private links and entropy
+        run: php morvarid-learning-core/tests/ux-short-links-smoke.php
+      - name: Parse header media-picker JavaScript
+        run: node --check morvarid-daron-theme/assets/js/header-settings.js
+      - name: Smoke-test personal workspace privacy and progression
+        run: php morvarid-learning-core/tests/phase-c-smoke.php
+      - name: Smoke-test authenticated guest nonce isolation
+        run: php morvarid-learning-core/tests/phase-c-auth-smoke.php
+      - name: Smoke-test Gutenberg question identity and private access
+        run: php morvarid-learning-core/tests/phase-d-smoke.php
+      - name: Smoke-test draft and final response lifecycle
+        run: php morvarid-learning-core/tests/phase-d-save-smoke.php
+      - name: Smoke-test private administrator response reporting
+        run: php morvarid-learning-core/tests/phase-e-smoke.php
+      - name: Smoke-test per-block manager visibility changes
+        run: php morvarid-learning-core/tests/phase-e-visibility-smoke.php
+      - name: Smoke-test course enrollment and lesson ownership
+        run: php morvarid-learning-core/tests/phase-f-smoke.php
+      - name: Parse standalone academy question block script
+        run: node --check morvarid-learning-core/assets/questions-editor.js
+      - name: Check plugin source contracts
+        shell: bash
+        run: |
+          test -f morvarid-learning-core/morvarid-learning-core.php
+          grep -q 'function md_learning_current_learner_id' morvarid-learning-core/morvarid-learning-core.php
+          grep -q "UNIQUE KEY code_hash" morvarid-learning-core/includes/class-md-learning-schema.php
+          grep -q "add_action('template_redirect'.*exchange_link" morvarid-learning-core/includes/class-md-learning-auth.php
+          grep -q "admin_post_nopriv_md_learning_login" morvarid-learning-core/includes/class-md-learning-auth.php
+      - name: Build installable learner plugin ZIP
+        run: zip -q -r morvarid-learning-core.zip morvarid-learning-core
+      - name: Publish installable plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morvarid-learning-core-plugin
+          path: morvarid-learning-core.zip
+          retention-days: 30
+      - name: Build installable theme ZIP
+        run: zip -q -r morvarid-daron-theme.zip morvarid-daron-theme
+      - name: Publish installable theme artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morvarid-daron-theme
+          path: morvarid-daron-theme.zip
+          retention-days: 30
