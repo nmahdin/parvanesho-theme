@@ -15,7 +15,7 @@ while (have_posts()) :
     $price     = get_post_meta($course_id, '_md_course_price', true);
     $cta       = esc_url_raw(get_post_meta($course_id, '_md_course_cta_url', true));
     if (!$cta) {
-        $cta = get_theme_mod('md_booking_url', home_url('/contact/'));
+        $cta = md_booking_url();
     }
     $lessons   = md_get_course_lessons($course_id, current_user_can('edit_post', $course_id));
     ?>

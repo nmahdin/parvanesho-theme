@@ -629,6 +629,22 @@ function md_request_page_url() {
 }
 
 /**
+ * Default "book a session" URL used by the header, the homepage and courses.
+ *
+ * The customizer value still wins, so existing sites keep their custom link.
+ *
+ * @return string
+ */
+function md_booking_url() {
+    $custom = get_theme_mod('md_booking_url', '');
+    if ($custom) {
+        return $custom;
+    }
+
+    return md_request_page_url();
+}
+
+/**
  * Create the request page once so the service buttons always have a target.
  */
 function md_create_request_page() {

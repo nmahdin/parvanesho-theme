@@ -4,4 +4,4 @@
 <?php if(has_custom_logo()){ $logo_id=get_theme_mod('custom_logo');echo wp_get_attachment_image($logo_id,'medium',false,['class'=>'brand-logo']); }else{echo '<span class="brand-icon" aria-hidden="true">◈</span><span><strong>مروارید درون</strong><small>رشد آگاهانه، رابطه‌ای عمیق‌تر</small></span>';} ?></a>
 <button class="menu-toggle" aria-expanded="false" aria-controls="site-navigation" aria-label="باز کردن فهرست">☰</button>
 <nav id="site-navigation" class="site-navigation" aria-label="فهرست اصلی"><?php wp_nav_menu(['theme_location'=>'primary','menu_class'=>'nav-list','container'=>false,'fallback_cb'=>'md_fallback_menu']); ?></nav>
-<a class="btn btn-primary header-cta" href="<?php echo esc_url(get_theme_mod('md_booking_url','/contact/')); ?>">رزرو جلسه ↖</a></div></header>
+<a class="btn btn-primary header-cta" href="<?php echo esc_url(md_booking_url()); ?>">رزرو جلسه ↖</a></div></header>
