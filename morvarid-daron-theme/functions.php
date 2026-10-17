@@ -52,7 +52,7 @@ function md_fallback_menu(){
  $blog = get_option('page_for_posts') ? get_permalink(get_option('page_for_posts')) : home_url('/');
  $academy = get_post_type_archive_link('md_course') ?: home_url('/#academy');
  $challenges = get_post_type_archive_link('md_challenge') ?: home_url('/');
- echo '<ul class="nav-list"><li><a href="'.esc_url(home_url('/')).'">خانه</a></li><li><a href="'.esc_url($blog).'">مجله</a></li><li><a href="'.esc_url($coaching).'">کوچینگ</a></li><li><a href="'.esc_url($academy).'">آکادمی</a></li><li><a href="'.esc_url($challenges).'">چالش‌ها</a></li></ul>';
+ echo '<ul class="nav-list"><li><a href="'.esc_url(home_url('/')).'">خانه</a></li><li><a href="'.esc_url($blog).'">مجله</a></li><li><a href="'.esc_url($academy).'">آکادمی</a></li><li><a href="'.esc_url($challenges).'">چالش‌ها</a></li></ul>';
 }
 function md_card($post_id,$label='') { ?>
 <article class="content-card">
