@@ -571,3 +571,25 @@
 .md-audio-player,.md-audio-player:focus-within{background:transparent!important;box-shadow:none!important;border:0!important;padding:0!important}
 .md-audio-player:before,.md-audio-player:after{display:none!important}
 .md-player:has(.md-audio-player){margin-block:14px}
+
+
+/* Restore the complete branded audio player specifically inside challenge days.
+   Previous global flattening must not strip its surface or hide its controls. */
+.md-day-media-item:has(.md-audio-player){background:transparent!important;border:0!important;box-shadow:none!important;padding:0}
+.md-day-media .md-player:has(.md-audio-player){margin:0!important;background:transparent!important;overflow:visible}
+.md-day-media .md-audio-player,.md-day-media .md-audio-player:focus-within{
+background:linear-gradient(120deg,#fffdfa,#eef6ef)!important;
+border:1px solid #d7e5da!important;
+border-radius:24px!important;
+padding:20px 23px!important;
+box-shadow:0 10px 26px rgba(30,65,50,.07)!important;
+overflow:visible;
+}
+.md-day-media .md-audio-player:after{display:none!important}
+.md-day-media .md-audio-inner{display:flex!important;align-items:center;gap:18px}
+.md-day-media .md-audio-body,.md-day-media .md-audio-footer,.md-day-media .md-audio-head,.md-day-media .md-player-actions{display:flex!important;visibility:visible!important;opacity:1!important}
+.md-day-media .md-audio-body{flex-direction:column;align-items:stretch}
+.md-day-media .md-audio-head{flex-direction:column}
+.md-day-media .md-audio-toggle{display:grid!important;visibility:visible!important;flex-shrink:0}
+.md-day-media .md-audio-title{white-space:normal;overflow:visible;text-overflow:clip}
+@media(max-width:620px){.md-day-media .md-audio-player{padding:15px!important;border-radius:20px!important}.md-day-media .md-audio-inner{gap:12px}}
