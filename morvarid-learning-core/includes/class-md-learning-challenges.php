@@ -225,8 +225,8 @@ final class MD_Learning_Challenges {
             $redirect_login = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('login'));
             $redirect_register = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('register'));
             echo '<p>با یک کد ۸ رقمی اصلی وارد تمام چالش‌های خود شوید. نیازی به ثبت‌نام جداگانه در هر چالش نیست.</p>';
-            echo '<p><a class="btn btn-primary" href="' . esc_url($redirect_login) . '">ورود با کد اصلی</a> ';
-            echo '<a class="btn btn-light" href="' . esc_url($redirect_register) . '">ساخت پروفایل یادگیری</a></p>';
+            echo '<div class="md-challenge-join-options"><a class="btn btn-primary md-challenge-join-button" href="' . esc_url($redirect_login) . '">ورود و عضویت</a> ';
+            echo '<a class="btn btn-light md-challenge-join-button" href="' . esc_url($redirect_register) . '">ساخت حساب و عضویت در چالش</a></div>';
         } else {
             echo '<p>شما وارد پروفایل یکپارچه هستید؛ با تأیید، این چالش به داشبوردتان اضافه می‌شود.</p>';
             echo '<form class="md-learning-challenge-join-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
@@ -234,7 +234,7 @@ final class MD_Learning_Challenges {
             echo '<input type="hidden" name="challenge_id" value="' . esc_attr($challenge_id) . '">';
             wp_nonce_field('md_learning_challenge_join_' . $challenge_id);
             echo '<label class="md-enroll-consent"><input type="checkbox" name="md_join_consent" value="1" required> <span>با ذخیرهٔ پیشرفت و پاسخ‌های این چالش در پروفایل خودم موافقم.</span></label>';
-            echo '<button type="submit" class="btn btn-primary">پیوستن به چالش</button></form>';
+            echo '<button type="submit" class="btn btn-primary md-challenge-join-button">عضویت در چالش</button></form>';
         }
         echo '</section>';
     }
