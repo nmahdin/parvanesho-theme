@@ -16,6 +16,7 @@ require_once MD_THEME_DIR . '/inc/sidebars.php';
 require_once MD_THEME_DIR . '/inc/social.php';
 require_once MD_THEME_DIR . '/inc/post-types.php';
 require_once MD_THEME_DIR . '/inc/academy.php';
+require_once MD_THEME_DIR . '/inc/unified-academy.php';
 require_once MD_THEME_DIR . '/inc/course-builder.php';
 require_once MD_THEME_DIR . '/inc/homepage.php';
 require_once MD_THEME_DIR . '/inc/challenges/helpers.php';
