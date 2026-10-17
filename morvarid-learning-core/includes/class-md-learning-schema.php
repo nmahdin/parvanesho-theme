@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MD_Learning_Schema {
-    const VERSION = '0.6.0';
+    const VERSION = '0.6.1';
     const VERSION_OPTION = 'md_learning_core_schema_version';
     const PAGE_OPTION = 'md_learning_core_pages';
 
@@ -21,6 +21,8 @@ final class MD_Learning_Schema {
         self::install_tables();
         self::create_pages();
         self::grant_admin_capability();
+        MD_Learning_Auth::register_link_route();
+        flush_rewrite_rules(false);
         update_option(self::VERSION_OPTION, self::VERSION, false);
     }
 
