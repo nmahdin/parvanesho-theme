@@ -64,9 +64,8 @@ add_action('admin_menu',function(){
     remove_submenu_page('edit.php?post_type=md_course','edit.php?post_type=md_lesson');
     remove_submenu_page('edit.php?post_type=md_course','edit.php?post_type=md_podcast');
     remove_submenu_page('edit.php?post_type=md_course','edit.php?post_type=md_resource');
-    remove_submenu_page('edit.php?post_type=md_course','edit-tags.php?taxonomy=md_resource_cat&amp;post_type=md_resource');
+    remove_submenu_page('edit.php?post_type=md_course','edit-tags.php?taxonomy=md_resource_cat&post_type=md_resource');
     add_submenu_page('edit.php?post_type=md_academy_item','دسته‌بندی‌ها','دسته‌بندی‌ها','manage_categories','edit-tags.php?taxonomy=md_academy_cat&post_type=md_academy_item');
-    add_submenu_page('edit.php?post_type=md_academy_item','دوره‌ها','دوره‌ها','edit_posts','edit.php?post_type=md_course');
 },100);
 
 add_filter('manage_md_academy_item_posts_columns',function($cols){
