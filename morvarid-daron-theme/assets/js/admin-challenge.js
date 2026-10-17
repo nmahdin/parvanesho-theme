@@ -192,6 +192,8 @@
         if ($.fn.sortable && $('#md-days-list').data('ui-sortable')) {
             $('#md-days-list').sortable('option', 'disabled', filtered);
         }
+        // Reordering while rows are hidden would change unseen day numbers.
+        $('#md-days-list .md-move-up, #md-days-list .md-move-down').prop('disabled', filtered);
     }
 
     function updateDayOverview() {
