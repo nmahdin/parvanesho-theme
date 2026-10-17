@@ -4,13 +4,13 @@ if (!defined('ABSPATH')) {
 }
 
 final class MD_Learning_Schema {
-    const VERSION = '0.2.0';
+    const VERSION = '0.4.0';
     const VERSION_OPTION = 'md_learning_core_schema_version';
     const PAGE_OPTION = 'md_learning_core_pages';
 
     public static function table($name) {
         global $wpdb;
-        $allowed = array('learners', 'links', 'sessions', 'challenges');
+        $allowed = array('learners', 'links', 'sessions', 'challenges', 'responses');
         if (!in_array($name, $allowed, true)) {
             return '';
         }
@@ -39,6 +39,7 @@ final class MD_Learning_Schema {
         $links = self::table('links');
         $sessions = self::table('sessions');
         $challenges = self::table('challenges');
+        $responses = self::table('responses');
 
         dbDelta("CREATE TABLE {$learners} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -88,6 +89,27 @@ final class MD_Learning_Schema {
             UNIQUE KEY learner_challenge (learner_id,challenge_id),
             UNIQUE KEY member_id (member_id),
             KEY challenge_id (challenge_id)
+        ) {$charset};");
+
+        // One independently versioned answer per learner and stable question ID.
+        // Do not store private learner answers in public post_content/meta.
+        dbDelta("CREATE TABLE {$responses} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            learner_id bigint(20) unsigned NOT NULL,
+            content_id bigint(20) unsigned NOT NULL,
+            block_id varchar(64) NOT NULL,
+            question_id varchar(64) NOT NULL,
+            question_text text NOT NULL,
+            answer_text longtext NOT NULL,
+            status varchar(12) NOT NULL DEFAULT 'draft',
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            submitted_at datetime DEFAULT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY learner_content_question (learner_id,content_id,question_id),
+            KEY learner_content (learner_id,content_id),
+            KEY content_block (content_id,block_id),
+            KEY status (status)
         ) {$charset};");
     }
 
