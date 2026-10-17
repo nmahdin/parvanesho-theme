@@ -193,6 +193,29 @@ final class MD_Learning_Questions {
         return $map;
     }
 
+    /** Private personal answer history; only the current learner may query. */
+    public static function personal_answers($learner_id, $limit = 100) {
+        if (!$learner_id || absint($learner_id) !== MD_Learning_Auth::current_learner_id()) {
+            return array();
+        }
+        global $wpdb;
+        $table = MD_Learning_Schema::table('responses');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT content_id, block_id, question_id, question_text, answer_text,
+                    status, updated_at, submitted_at
+             FROM {$table} WHERE learner_id = %d
+             ORDER BY updated_at DESC, id DESC LIMIT %d",
+            $learner_id, max(1, min(200, absint($limit)))
+        ));
+        $out = array();
+        foreach ((array) $rows as $row) {
+            if (self::is_supported(absint($row->content_id), true)) {
+                $out[] = $row;
+            }
+        }
+        return $out;
+    }
+
     public static function render($attributes, $content = '', $block = null) {
         $attrs = is_array($attributes) ? $attributes : array();
         $title = isset($attrs['title']) ? sanitize_text_field($attrs['title']) : '';
