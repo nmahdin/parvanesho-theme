@@ -184,22 +184,38 @@ final class MD_Learning_Schema {
 
         foreach ($definitions as $key => $data) {
             $id = isset($stored[$key]) ? absint($stored[$key]) : 0;
-            if ($id && get_post_status($id) && get_post_type($id) === 'page') {
+            if ($id && get_post_status($id) === 'publish' && get_post_type($id) === 'page'
+                && strpos((string)get_post_field('post_content', $id), $data[2]) !== false) {
                 continue;
             }
-            $existing = get_page_by_path($data[1], OBJECT, 'page');
-            if ($existing) {
-                // Never overwrite an unrelated page just to install shortcodes.
-                if (strpos($existing->post_content, $data[2]) !== false) {
-                    $stored[$key] = (int) $existing->ID;
-                }
+            // Reuse only a live page with the correct account shortcode.
+            // If the default slug belongs to unrelated content, create a
+            // dedicated fallback instead of silently linking to the wrong form.
+            $slug = $data[1];
+            $existing = get_page_by_path($slug, OBJECT, 'page');
+            if ($existing && $existing->post_status === 'publish'
+                && strpos((string)$existing->post_content, $data[2]) !== false) {
+                $stored[$key] = (int)$existing->ID;
                 continue;
+            }
+            if ($existing) {
+                $slug = $data[1] . '-account';
+                $alternate = get_page_by_path($slug, OBJECT, 'page');
+                if ($alternate && $alternate->post_status === 'publish'
+                    && strpos((string)$alternate->post_content, $data[2]) !== false) {
+                    $stored[$key] = (int)$alternate->ID;
+                    continue;
+                }
+                if ($alternate) {
+                    // Avoid overwriting even an unrelated alternate slug.
+                    continue;
+                }
             }
             $id = wp_insert_post(array(
                 'post_type' => 'page',
                 'post_status' => 'publish',
                 'post_title' => $data[0],
-                'post_name' => $data[1],
+                'post_name' => $slug,
                 'post_content' => $data[2],
                 'comment_status' => 'closed',
             ), true);
@@ -231,6 +247,11 @@ final class MD_Learning_Schema {
         if ($correct && $correct->post_status === 'publish'
             && strpos((string) $correct->post_content, $shortcodes[$key]) !== false) {
             return get_permalink($correct->ID);
+        }
+        $alternative = get_page_by_path($slugs[$key] . '-account', OBJECT, 'page');
+        if ($alternative && $alternative->post_status === 'publish'
+            && strpos((string)$alternative->post_content, $shortcodes[$key]) !== false) {
+            return get_permalink($alternative->ID);
         }
         return home_url('/' . $slugs[$key] . '/');
     }
