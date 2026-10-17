@@ -91,6 +91,9 @@ function md_render_sidebar($context = '', $layout = 'right') {
     }
 
     $context = $context ? $context : md_sidebar_context();
+    if (!in_array($context, array('magazine', 'academy', 'challenge'), true)) {
+        $context = 'magazine';
+    }
     $labels  = array(
         'magazine'  => 'سایدبار مجله',
         'academy'   => 'سایدبار آکادمی',
@@ -115,37 +118,6 @@ function md_render_sidebar($context = '', $layout = 'right') {
  */
 function md_magazine_sidebar($layout = 'right') {
     md_render_sidebar('magazine', $layout);
-}
-
-/**
- * Curated widgets shown when the area has no widgets.
- *
- * @param string $context Sidebar context.
- */
-function md_sidebar_fallback($context) {
-    if ('challenge' === $context) {
-        md_sidebar_challenge_progress();
-        md_sidebar_search('md_challenge', 'جستجو در چالش‌ها');
-        md_sidebar_challenge_promo();
-        md_sidebar_challenge_categories();
-        return;
-    }
-
-    if ('academy' === $context) {
-        md_sidebar_search('md_course', 'جستجو در آکادمی');
-        md_sidebar_academy_promo();
-        md_sidebar_lesson_promo();
-        md_sidebar_academy_categories();
-        return;
-    }
-
-    if (is_singular('post')) {
-        md_sidebar_author();
-    }
-    md_sidebar_search('post', 'جستجو در مجله');
-    md_sidebar_popular();
-    md_sidebar_categories('category', 'موضوعات مجله');
-    md_sidebar_challenge_promo();
 }
 
 /**
@@ -176,7 +148,7 @@ function md_sidebar_search($post_type = '', $title = 'جستجو') {
 /**
  * Author card for single posts.
  */
-function md_sidebar_author() {
+function md_sidebar_author($title = 'نویسنده') {
     $author_id = (int) get_the_author_meta('ID');
     if (!$author_id) {
         return;
@@ -187,7 +159,7 @@ function md_sidebar_author() {
     <section class="md-widget md-widget-author">
         <div class="md-author-card">
             <?php echo get_avatar($author_id, 76); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            <span class="md-author-eyebrow">نویسنده</span>
+            <span class="md-author-eyebrow"><?php echo esc_html($title); ?></span>
             <h2 class="md-author-name"><?php echo esc_html(get_the_author_meta('display_name', $author_id)); ?></h2>
             <?php if ($description) : ?>
                 <p class="md-author-bio"><?php echo esc_html(md_trim_text($description, 26)); ?></p>
@@ -502,3 +474,6 @@ function md_sidebar_newsletter($settings = array()) {
     </section>
     <?php
 }
+
+// Editable widget cards replace the previous unchangeable fallback cards.
+require_once __DIR__ . '/sidebar-widgets.php';
