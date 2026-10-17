@@ -1,19 +1,40 @@
-name: Theme syntax checks
+name: WordPress theme and learning plugin checks
 on:
   push:
     paths:
       - "morvarid-daron-theme/**"
+      - "morvarid-learning-core/**"
       - ".github/workflows/theme-syntax.yml"
   pull_request:
     paths:
       - "morvarid-daron-theme/**"
+      - "morvarid-learning-core/**"
       - ".github/workflows/theme-syntax.yml"
+
 jobs:
   syntax:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lint PHP sources
+      - name: Lint theme PHP
         run: find morvarid-daron-theme -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: Parse JavaScript sources
+      - name: Lint learner plugin PHP
+        run: find morvarid-learning-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Parse theme JavaScript
         run: find morvarid-daron-theme -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Check plugin source contracts
+        shell: bash
+        run: |
+          test -f morvarid-learning-core/morvarid-learning-core.php
+          grep -q 'function md_learning_current_learner_id' morvarid-learning-core/morvarid-learning-core.php
+          grep -q "UNIQUE KEY code_hash" morvarid-learning-core/includes/class-md-learning-schema.php
+          grep -q "add_action('template_redirect'.*exchange_link" morvarid-learning-core/includes/class-md-learning-auth.php
+          grep -q "admin_post_nopriv_md_learning_login" morvarid-learning-core/includes/class-md-learning-auth.php
+      - name: Build installable learner plugin ZIP
+        run: zip -q -r morvarid-learning-core.zip morvarid-learning-core
+      - name: Publish installable plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morvarid-learning-core-plugin
+          path: morvarid-learning-core.zip
+          retention-days: 30
