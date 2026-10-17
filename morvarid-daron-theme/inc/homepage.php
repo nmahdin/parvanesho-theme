@@ -200,6 +200,59 @@ function md_home_default_content() {
 }
 
 /**
+ * Give the blog a home when the front page becomes static.
+ *
+ * Without a posts page, «همه مطالب» would point back at the static homepage.
+ * The page is only created when the site already has published posts and no
+ * page named «مجله» or «بلاگ» exists, so nothing is ever overwritten.
+ *
+ * @return int Page ID, or 0 when not needed.
+ */
+function md_ensure_posts_page() {
+    if (absint(get_option('page_for_posts'))) {
+        return 0;
+    }
+
+    foreach (array('magazine', 'blog') as $slug) {
+        if (get_page_by_path($slug) instanceof WP_Post) {
+            return 0;
+        }
+    }
+
+    $same_title = get_posts(
+        array(
+            'post_type'      => 'page',
+            'post_status'    => 'any',
+            'title'          => 'مجله',
+            'posts_per_page' => 1,
+            'fields'         => 'ids',
+        )
+    );
+    if ($same_title) {
+        return 0;
+    }
+
+    $page_id = wp_insert_post(
+        array(
+            'post_type'    => 'page',
+            'post_status'  => 'publish',
+            'post_title'   => 'مجله',
+            'post_name'    => 'magazine',
+            'post_content' => '',
+        ),
+        true
+    );
+
+    if (is_wp_error($page_id) || !$page_id) {
+        return 0;
+    }
+
+    update_option('page_for_posts', (int) $page_id);
+
+    return (int) $page_id;
+}
+
+/**
  * Create the «خانه» page and make it the static front page.
  *
  * An existing static front page is never replaced: the editor's setup always
@@ -208,6 +261,11 @@ function md_home_default_content() {
  * @return int Page ID, or 0 on failure.
  */
 function md_create_home_page() {
+    // A static front page needs a separate posts page to keep the magazine alive.
+    if ('page' !== get_option('show_on_front')) {
+        md_ensure_posts_page();
+    }
+
     $existing = md_home_page_id();
     if ($existing) {
         // A front page that is still empty gets the default layout once.
@@ -255,10 +313,18 @@ function md_create_home_page() {
     update_option('show_on_front', 'page');
     update_option('page_on_front', (int) $page_id);
     update_option('md_home_page_created', 1);
+    set_transient('md_home_page_notice', 1, 60);
 
     return (int) $page_id;
 }
-add_action('after_switch_theme', 'md_create_home_page');
+add_action(
+    'after_switch_theme',
+    function () {
+        // Post types and taxonomies are registered on init; wait for their
+        // archive links before building the default page.
+        add_action('init', 'md_create_home_page', 99);
+    }
+);
 
 /**
  * One-time setup for sites that already had the theme active.
@@ -277,3 +343,23 @@ function md_maybe_create_home_page() {
     md_create_home_page();
 }
 add_action('admin_init', 'md_maybe_create_home_page');
+
+/**
+ * Point the owner at the freshly created homepage once.
+ */
+function md_home_page_notice() {
+    if (!get_transient('md_home_page_notice') || !current_user_can('edit_pages')) {
+        return;
+    }
+
+    delete_transient('md_home_page_notice');
+
+    $page_id = md_home_page_id();
+    if (!$page_id) {
+        return;
+    }
+
+    echo '<div class="notice notice-success is-dismissible"><p><strong>صفحه اصلی آماده است.</strong> همهٔ بخش‌های آن بلوک گوتنبرگ‌اند. <a href="'
+        . esc_url((string) get_edit_post_link($page_id)) . '">ویرایش صفحه اصلی</a> — عنوان، متن، پیوند، تعداد و پس‌زمینهٔ هر بخش را از همان برگه تغییر دهید.</p></div>';
+}
+add_action('admin_notices', 'md_home_page_notice');

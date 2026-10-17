@@ -186,7 +186,7 @@ function md_design_block_render($attributes, $content, $block) {
    }
   }
   $bg=in_array(($attributes['background'] ?? ''),['cream','warm','mint'],true)?' md-gb-bg-'.$attributes['background']:'';
-  $head='<div class="md-gb-section-head"><div class="md-gb-section-copy"><h2>'.$title.'</h2>'.($subtitle?'<p class="md-gb-section-lead">'.$subtitle.'</p>':'').'</div>';
+  $head='<div class="md-gb-section-head"><div class="md-gb-section-copy">'.($title?'<h2>'.$title.'</h2>':'').($subtitle?'<p class="md-gb-section-lead">'.$subtitle.'</p>':'').'</div>';
   if ($link_label && $link_url) {
    $head.='<a class="text-link md-gb-section-link" href="'.$link_url.'">'.esc_html($link_label).' ←</a>';
   }
