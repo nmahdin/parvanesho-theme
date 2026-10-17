@@ -461,3 +461,102 @@ function md_challenge_publish_label($challenge_id) {
     $object = get_post_status_object($status);
     return $object ? $object->label : $status;
 }
+
+
+/**
+ * Multiple tip, practical-task and attachment records per challenge day.
+ *
+ * Legacy one-item meta fields are read without writing/mutating them until the
+ * day is explicitly saved in the advanced editor. Empty saved arrays are
+ * deliberately authoritative so an editor can remove the final legacy item.
+ */
+function md_challenge_day_items($day_id, $kind) {
+    $keys = array(
+        'tips' => '_md_day_tips',
+        'tasks' => '_md_day_tasks',
+        'files' => '_md_day_files',
+    );
+    if (!isset($keys[$kind])) {
+        return array();
+    }
+    if (metadata_exists('post', $day_id, $keys[$kind])) {
+        $saved = get_post_meta($day_id, $keys[$kind], true);
+        return is_array($saved) ? $saved : array();
+    }
+
+    if ('tips' === $kind) {
+        $title = (string) get_post_meta($day_id, '_md_day_tip_title', true);
+        $text = (string) get_post_meta($day_id, '_md_day_tip', true);
+        return trim($title . $text) === '' ? array() : array(array('title' => $title, 'text' => $text));
+    }
+    if ('tasks' === $kind) {
+        $title = (string) get_post_meta($day_id, '_md_day_exercise_title', true);
+        $description = (string) get_post_meta($day_id, '_md_day_exercise_desc', true);
+        $steps = (string) get_post_meta($day_id, '_md_day_exercise_steps', true);
+        return trim($title . $description . $steps) === '' ? array() : array(array(
+            'title' => $title, 'description' => $description, 'steps' => $steps,
+        ));
+    }
+    $id = absint(get_post_meta($day_id, '_md_day_file_id', true));
+    $url = (string) get_post_meta($day_id, '_md_day_file_url', true);
+    $title = (string) get_post_meta($day_id, '_md_day_file_title', true);
+    return !$id && !$url ? array() : array(array('id' => $id, 'url' => $url, 'title' => $title));
+}
+
+/** Strict boundaries for user-entered repeatable editor collections. */
+function md_challenge_clean_day_items($kind, $items) {
+    if (!in_array($kind, array('tips', 'tasks', 'files'), true) || !is_array($items)) {
+        return array();
+    }
+    $output = array();
+    foreach (array_slice($items, 0, 30) as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        if ($kind === 'tips') {
+            $title = sanitize_text_field(substr((string) ($row['title'] ?? ''), 0, 350));
+            $text = sanitize_textarea_field(substr((string) ($row['text'] ?? ''), 0, 12000));
+            if ($title === '' && $text === '') {
+                continue;
+            }
+            $output[] = array('title' => $title, 'text' => $text);
+        } elseif ($kind === 'tasks') {
+            $title = sanitize_text_field(substr((string) ($row['title'] ?? ''), 0, 350));
+            $description = sanitize_textarea_field(substr((string) ($row['description'] ?? ''), 0, 12000));
+            $steps = sanitize_textarea_field(substr((string) ($row['steps'] ?? ''), 0, 12000));
+            if ($title === '' && $description === '' && $steps === '') {
+                continue;
+            }
+            $output[] = array('title' => $title, 'description' => $description, 'steps' => $steps);
+        } else {
+            $id = absint($row['id'] ?? 0);
+            // Don't trust browser-submitted attachment IDs. Restrict to media.
+            if ($id && get_post_type($id) !== 'attachment') {
+                $id = 0;
+            }
+            $url = esc_url_raw((string) ($row['url'] ?? ''), array('https', 'http'));
+            $title = sanitize_text_field(substr((string) ($row['title'] ?? ''), 0, 350));
+            if (!$id && !$url) {
+                continue;
+            }
+            $output[] = array('id' => $id, 'url' => $url, 'title' => $title);
+        }
+    }
+    return $output;
+}
+
+/** Decode JSON collections; reject malformed or oversized payloads. */
+function md_challenge_posted_items($kind) {
+    if (!isset($_POST[$kind]) || !is_string($_POST[$kind])) {
+        return new WP_Error('invalid_collection', 'فهرست ' . $kind . ' ارسال نشده است.');
+    }
+    $raw = wp_unslash($_POST[$kind]);
+    if (strlen($raw) > 300000) {
+        return new WP_Error('large_collection', 'حجم داده‌های روز بیش از حد مجاز است.');
+    }
+    $items = json_decode($raw, true);
+    if (!is_array($items) || count($items) > 30) {
+        return new WP_Error('invalid_collection', 'فهرست اطلاعات روز معتبر نیست یا بیش از ۳۰ مورد دارد.');
+    }
+    return md_challenge_clean_day_items($kind, $items);
+}
