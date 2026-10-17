@@ -159,3 +159,15 @@
 .md-learning-answer-card > p { line-height: 2; font-size: 13px; color: #516d59; margin: 9px 0 12px; white-space: normal; overflow-wrap: anywhere; }
 .md-learning-answer-card > small { color: #748676; font-size: 11px; }
 @media (max-width:640px) { .md-learning-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+/* Phase F: course progress alongside challenge and answer KPIs. */
+.md-learning-workspace .md-learning-kpis { grid-template-columns: repeat(5,minmax(0,1fr)); }
+.md-learning-courses-grid .md-learning-challenge-card { display: grid; align-content: start; }
+.md-learning-courses-grid .md-learning-challenge-progress { margin: 7px 0 2px; }
+.md-learning-courses-grid .md-learning-challenge-card > a:last-child { align-self: end; margin-top: 18px; }
+@media(max-width:850px) {
+  .md-learning-workspace .md-learning-kpis { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:540px) {
+  .md-learning-workspace .md-learning-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
