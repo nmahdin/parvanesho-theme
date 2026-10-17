@@ -120,7 +120,7 @@ final class MD_Learning_Pages {
             <button class="md-learning-button" type="submit">ورود به داشبورد من</button>
         </form>
         <p class="md-learning-note">لینک اختصاصی خود را دارید؟ کافی است آن را باز کنید؛ نیازی به واردکردن کد نیست.</p>
-        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url(MD_Learning_Schema::url('register')); ?>">ایجاد پروفایل جدید</a>.</p>
+        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('register')) : MD_Learning_Schema::url('register'))); ?>">ایجاد پروفایل جدید</a>.</p>
         <?php echo self::shell_end(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php
         return ob_get_clean();
