@@ -307,8 +307,22 @@ final class MD_Learning_Questions {
         $intent = isset($_POST['md_intent']) && $_POST['md_intent'] === 'final' ? 'final' : 'draft';
         $raw = isset($_POST['md_answers']) && is_array($_POST['md_answers']) ? wp_unslash($_POST['md_answers']) : array();
         $allow_edit = !isset($block['allowEdit']) || (bool) $block['allowEdit'];
+        global $wpdb;
+        $table = MD_Learning_Schema::table('responses');
+        $locked_questions = array();
+        if (!$allow_edit) {
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT question_id FROM {$table}
+                 WHERE learner_id = %d AND content_id = %d AND block_id = %s AND status = 'final'",
+                $learner_id, $content_id, $block_id
+            ));
+            foreach ((array) $rows as $row) {
+                $locked_questions[$row->question_id] = true;
+            }
+        }
 
-        // Validate all fields before any writes, to avoid half-saved answers.
+        // Validate all editable fields before writes; already-final answers
+        // remain immutable even when the teacher adds another question later.
         $validated = array();
         $ids = array();
         foreach ($questions as $q) {
@@ -316,7 +330,10 @@ final class MD_Learning_Questions {
                 wp_die('شناسه‌های پرسش تکراری‌اند. آموزش را دوباره ذخیره کنید.', '', array('response' => 409));
             }
             $ids[$q['id']] = true;
-            $value = isset($raw[$q['id']]) && is_string($raw[$q['id']])
+            if (isset($locked_questions[$q['id']])) {
+                continue;
+            }
+            $value = isset($raw[$q['id']] && is_string($raw[$q['id']])
                 ? sanitize_textarea_field($raw[$q['id']]) : '';
             $max = $q['type'] === 'short' ? 500 : 10000;
             if ((function_exists('mb_strlen') ? mb_strlen($value) : strlen($value)) > $max) {
@@ -328,8 +345,6 @@ final class MD_Learning_Questions {
             $validated[] = array('question' => $q, 'answer' => $value);
         }
 
-        global $wpdb;
-        $table = MD_Learning_Schema::table('responses');
         $now = gmdate('Y-m-d H:i:s');
         $wpdb->query('START TRANSACTION');
         foreach ($validated as $item) {
