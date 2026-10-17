@@ -51,7 +51,6 @@ add_filter('excerpt_length','md_excerpt',99);
 function md_fallback_menu(){
  $blog = get_option('page_for_posts') ? get_permalink(get_option('page_for_posts')) : home_url('/');
  $academy = get_post_type_archive_link('md_course') ?: home_url('/#academy');
- $coaching = get_post_type_archive_link('md_service') ?: home_url('/#coaching');
  $challenges = get_post_type_archive_link('md_challenge') ?: home_url('/');
  echo '<ul class="nav-list"><li><a href="'.esc_url(home_url('/')).'">خانه</a></li><li><a href="'.esc_url($blog).'">مجله</a></li><li><a href="'.esc_url($coaching).'">کوچینگ</a></li><li><a href="'.esc_url($academy).'">آکادمی</a></li><li><a href="'.esc_url($challenges).'">چالش‌ها</a></li></ul>';
 }
@@ -88,7 +87,7 @@ add_action('customize_register', function ($wp_customize) {
 // Dynamic posts display, inserted through the standard WordPress Shortcode block.
 add_shortcode('morvarid_grid',function($atts){
  $a=shortcode_atts(['type'=>'post','count'=>'3','title'=>'','subtitle'=>'','category'=>''], $atts,'morvarid_grid');
- $allowed=['post','md_service','md_course','md_resource','md_lesson','md_podcast'];
+ $allowed=['post','md_course','md_resource','md_lesson','md_podcast'];
  $type=in_array($a['type'],$allowed,true)?$a['type']:'post';
  $count=max(1,min(12,absint($a['count'])));
  $args=['post_type'=>$type,'posts_per_page'=>$count,'post_status'=>'publish','ignore_sticky_posts'=>true];
@@ -107,14 +106,14 @@ add_action('init',function(){
  register_block_pattern_category('morvarid',['label'=>'مروارید درون']);
  $hero='<!-- wp:group {"align":"full","className":"md-block-hero","layout":{"type":"constrained"}} --><div class="wp-block-group alignfull md-block-hero"><!-- wp:paragraph {"className":"eyebrow"} --><p class="eyebrow">رشد، آگاهی، ارتباط</p><!-- /wp:paragraph --><!-- wp:heading {"level":1} --><h1 class="wp-block-heading">جایی برای کشف خود، فهم نوجوان و ساختن رابطه‌ای عمیق‌تر</h1><!-- /wp:heading --><!-- wp:paragraph --><p>فضایی برای آگاهی، رشد و همراهی والدین و نوجوانان.</p><!-- /wp:paragraph --><!-- wp:buttons --><div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/category/parents/">من والد هستم</a></div><!-- /wp:button --><!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/category/teens/">من نوجوان هستم</a></div><!-- /wp:button --></div><!-- /wp:buttons --></div><!-- /wp:group -->';
  register_block_pattern('morvarid/hero',['title'=>'مروارید | سربرگ قابل ویرایش','categories'=>['morvarid'],'content'=>$hero]);
- foreach(['post'=>['مجله مروارید درون','مقاله‌های تازه'], 'md_service'=>['خدمات کوچینگ','همراهی برای رشد'], 'md_course'=>['آکادمی مروارید درون','دوره‌ها و کارگاه‌ها'], 'md_resource'=>['منابع رایگان','تمرین‌ها و فایل‌های آموزشی'], 'md_podcast'=>['پادکست‌ها','شنیدنی‌های تازه']] as $type=>$labels){
+ foreach(['post'=>['مجله مروارید درون','مقاله‌های تازه'], 'md_course'=>['آکادمی مروارید درون','دوره‌ها و کارگاه‌ها'], 'md_resource'=>['منابع رایگان','تمرین‌ها و فایل‌های آموزشی'], 'md_podcast'=>['پادکست‌ها','شنیدنی‌های تازه']] as $type=>$labels){
   $short='[morvarid_grid type="'.$type.'" count="3" title="'.$labels[0].'" subtitle="'.$labels[1].'"]';
   register_block_pattern('morvarid/grid-'.$type,['title'=>'مروارید | '.$labels[0],'categories'=>['morvarid'],'content'=>'<!-- wp:shortcode -->'.$short.'<!-- /wp:shortcode -->']);
  }
- $sections=['post','md_service','md_course','md_resource','md_podcast'];
+ $sections=['post','md_course','md_resource','md_podcast'];
  $content=$hero;
- foreach($sections as $type){$titles=['post'=>'مجله مروارید درون','md_service'=>'کوچینگ','md_course'=>'آکادمی آموزشی','md_resource'=>'تمرین‌ها و منابع رایگان','md_podcast'=>'پادکست‌ها'];$content.='<!-- wp:shortcode -->[morvarid_grid type="'.$type.'" count="3" title="'.$titles[$type].'"]<!-- /wp:shortcode -->';}
- register_block_pattern('morvarid/full-home',['title'=>'مروارید | صفحه اصلی کامل و قابل تنظیم','description'=>'سربرگ و فهرست‌های پویای مجله، کوچینگ، آکادمی، منابع و پادکست‌ها','categories'=>['morvarid'],'content'=>$content]);
+ foreach($sections as $type){$titles=['post'=>'مجله مروارید درون','md_course'=>'آکادمی آموزشی','md_resource'=>'تمرین‌ها و منابع رایگان','md_podcast'=>'پادکست‌ها'];$content.='<!-- wp:shortcode -->[morvarid_grid type="'.$type.'" count="3" title="'.$titles[$type].'"]<!-- /wp:shortcode -->';}
+ register_block_pattern('morvarid/full-home',['title'=>'مروارید | صفحه اصلی کامل و قابل تنظیم','description'=>'سربرگ و فهرست‌های پویای مجله، آکادمی، منابع و پادکست‌ها','categories'=>['morvarid'],'content'=>$content]);
 });
 
 
@@ -290,7 +289,8 @@ function md_design_block_render($attributes, $content, $block) {
   return $out.'</div></div></div></section>';
  }
  if ($name === 'morvarid/content-grid') {
-  $allowed=['post','md_course','md_lesson','md_podcast','md_service','md_resource'];
+  $allowed=['post','md_course','md_lesson','md_podcast','md_resource'];
+  if (($attributes['postType'] ?? '') === 'md_service') return '';
   $type=in_array(($attributes['postType'] ?? 'post'),$allowed,true)?$attributes['postType']:'post';
   $count=max(1,min(12,absint($attributes['count'] ?? 3)));
   $columns=max(1,min(4,absint($attributes['columns'] ?? 3)));
@@ -314,7 +314,7 @@ function md_design_block_render($attributes, $content, $block) {
   $head.='</div>';
   $q=new WP_Query($args);ob_start();
   echo '<section class="md-gb-grid-section'.$bg.'"><div class="container">'.$head.'<div class="md-gb-grid md-gb-cols-'.esc_attr((string)$columns).'">';
-  $labels=['post'=>'مجله','md_course'=>'دوره آموزشی','md_lesson'=>'جلسه','md_podcast'=>'پادکست','md_service'=>'کوچینگ','md_resource'=>'منبع رایگان'];
+  $labels=['post'=>'مجله','md_course'=>'دوره آموزشی','md_lesson'=>'جلسه','md_podcast'=>'پادکست','md_resource'=>'منبع رایگان'];
   $card_label=$labels[$type] ?? 'مروارید درون';
   if ($q->have_posts()) { while ($q->have_posts()) {$q->the_post();md_card(get_the_ID(),$card_label);}wp_reset_postdata(); }
   else echo '<p class="md-gb-empty">هنوز محتوای منتشرشده‌ای وجود ندارد.</p>';
@@ -486,3 +486,12 @@ add_action('admin_notices', function(){
  echo '<div class="notice notice-warning"><p><strong>مروارید درون:</strong> ویرایشگر بلوک برای این نوع محتوا غیرفعال است؛ بنابراین بلوک‌های گوتنبرگ دیده نمی‌شوند. اگر افزونهٔ «Classic Editor» یا مشابه آن را فعال کرده‌اید، غیرفعالش کنید.</p></div>';
 });
 
+
+// Do not expose legacy coaching service menu links; keep stored posts intact.
+add_filter('wp_nav_menu_objects',function($items){
+ return array_values(array_filter($items,function($item){
+  if (($item->object ?? '') === 'md_service' || ($item->object ?? '') === 'md_service_cat') return false;
+  $path=wp_parse_url((string)($item->url ?? ''),PHP_URL_PATH);
+  return !is_string($path) || !preg_match('~/(?:services)(?:/|$)~i',$path);
+ }));
+},20);
