@@ -172,18 +172,21 @@ function md_challenge_day_qa_html($day) {
     }
 
     $html = '<section class="md-day-qa"><h3>پرسش و پاسخ</h3>';
-    $i    = 0;
+    $number = 0;
     foreach ($items as $item) {
         $question = isset($item['q']) ? sanitize_textarea_field($item['q']) : '';
         $answer   = isset($item['a']) ? sanitize_textarea_field($item['a']) : '';
-        if ('' === trim($question) && '' === trim($answer)) {
+        if ('' === trim($question)) {
             continue;
         }
-        $html .= '<details class="md-qa-item"' . (0 === $i ? ' open' : '') . '>';
-        $html .= '<summary>' . esc_html($question ? $question : 'پرسش') . '</summary>';
-        $html .= '<div class="md-qa-answer">' . wpautop(esc_html($answer)) . '</div>';
-        $html .= '</details>';
-        $i++;
+        ++$number;
+        $html .= '<div class="md-qa-item">';
+        $html .= '<div class="md-qa-question"><span class="md-qa-number">پرسش '
+            . esc_html(md_fa_num($number)) . '</span><strong>' . esc_html($question) . '</strong></div>';
+        if ('' !== trim($answer)) {
+            $html .= '<div class="md-qa-answer">' . wpautop(esc_html($answer)) . '</div>';
+        }
+        $html .= '</div>';
     }
     $html .= '</section>';
     return $html;
