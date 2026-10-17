@@ -200,3 +200,12 @@
 .md-gb-hero p{font-size:clamp(13px,1.25vw,16px)}
 @media(max-width:900px){.md-gb-hero-split .container{grid-template-columns:1fr}.md-gb-hero-media.md-home-portrait{order:0;max-width:100%}.md-gb-hero-media.md-home-portrait>img{height:clamp(230px,48vw,340px)}}
 @media(max-width:620px){.md-gb-hero{padding:19px 13px;border-radius:14px}.md-gb-hero-split .container{gap:16px}.md-gb-hero-media.md-home-portrait>img{height:240px;border-radius:13px}.md-gb-hero h1,.md-gb-hero h2{font-size:23px}}
+
+
+/* Compact file download block: retain its visual identity without oversized whitespace. */
+.md-gb-download{padding:13px 16px;gap:12px;margin-block:12px;border-radius:14px;box-shadow:0 3px 14px #204c3a08}
+.md-gb-download h3{margin:0 0 3px}
+.md-gb-download p{margin:0;line-height:1.6}
+.md-gb-download .md-download-icon{width:42px;height:42px;border-radius:12px;font-size:22px}
+.md-gb-download .md-gb-button{padding:8px 14px;min-height:38px}
+@media(max-width:600px){.md-gb-download{padding:12px;gap:10px}}
