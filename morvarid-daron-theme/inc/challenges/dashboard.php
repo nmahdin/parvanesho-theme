@@ -119,7 +119,7 @@ function md_challenge_admin_participants_page() {
                             <td><?php echo esc_html(md_fa_num($done) . ' / ' . md_fa_num($total)); ?></td>
                             <td><?php echo esc_html($last ? $last : '—'); ?></td>
                             <td><?php if ($central) : ?>ورود با پروفایل مرکزی<?php elseif ($link) : ?><input class="md-member-admin-url" type="text" dir="ltr" readonly onclick="this.select()" value="<?php echo esc_attr($link); ?>" aria-label="لینک خصوصی <?php echo esc_attr($member->post_title); ?>"><?php else : ?>غیرفعال<?php endif; ?></td>
-                            <td><a class="button" href="<?php echo esc_url(add_query_arg('member_id', $member->ID, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail'); ?>">پاسخ‌ها</a></td>
+                            <td><a class="button" href="<?php echo esc_url(add_query_arg('member_id', $member->ID, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail'); ?>">داشبورد فردی</a></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -128,9 +128,45 @@ function md_challenge_admin_participants_page() {
             <?php if ($selected) :
                 $entries = md_challenge_member_entries($selected->ID);
                 ?>
-                <section id="md-member-detail" class="md-admin-answer-detail">
-                    <h2>گزارش <?php echo esc_html($selected->post_title); ?></h2>
-                    <p>فقط مدیر مجاز چالش می‌تواند پاسخ‌ها را ببیند. برای جلوگیری از انتشار ناخواسته، پاسخ‌ها در صفحات عمومی نمایش داده نمی‌شوند.</p>
+                <section id="md-member-detail" class="md-admin-answer-detail md-individual-dashboard">
+                    <?php
+                    $individual_done = 0;
+                    $individual_tasks_done = 0;
+                    $individual_tasks_total = 0;
+                    $individual_answers = 0;
+                    foreach ($days as $metric_day) {
+                        $metric_entry = $entries[$metric_day->ID] ?? null;
+                        if ($metric_entry && get_post_meta($metric_entry->ID, '_md_task_done', true)) ++$individual_done;
+                        $day_tasks = array_values(array_filter(md_challenge_day_items($metric_day->ID, 'tasks'), function ($task) {
+                            return trim((string)($task['title'] ?? '') . (string)($task['description'] ?? '') . (string)($task['steps'] ?? '')) !== '';
+                        }));
+                        $individual_tasks_total += count($day_tasks);
+                        if ($metric_entry) {
+                            $saved_tasks = get_post_meta($metric_entry->ID, '_md_tasks_checked', true);
+                            if (is_array($saved_tasks)) {
+                                foreach ($saved_tasks as $key => $checked) {
+                                    if ($checked && is_numeric($key) && (int)$key >= 0 && (int)$key < count($day_tasks)) ++$individual_tasks_done;
+                                }
+                            }
+                            $saved_answers = get_post_meta($metric_entry->ID, '_md_answers', true);
+                            if (is_array($saved_answers)) $individual_answers += count(array_filter($saved_answers, 'strlen'));
+                        }
+                    }
+                    $individual_progress = $total ? (int)round(100 * $individual_done / $total) : 0;
+                    ?>
+                    <div class="md-individual-dashboard-head">
+                        <div><span>داشبورد اختصاصی شرکت‌کننده</span><h2><?php echo esc_html($selected->post_title); ?></h2></div>
+                        <a class="button" href="<?php echo esc_url(md_challenge_admin_dashboard_url($challenge_id)); ?>">← بازگشت به فهرست شرکت‌کنندگان</a>
+                    </div>
+                    <div class="md-individual-kpis">
+                        <div><span>روزهای کامل‌شده</span><strong><?php echo esc_html(md_fa_num($individual_done) . ' / ' . md_fa_num($total)); ?></strong></div>
+                        <div><span>پیشرفت دوره</span><strong><?php echo esc_html(md_fa_num($individual_progress)); ?>٪</strong></div>
+                        <div><span>کارهای تیک‌خورده</span><strong><?php echo esc_html(md_fa_num($individual_tasks_done) . ' / ' . md_fa_num($individual_tasks_total)); ?></strong></div>
+                        <div><span>پاسخ‌های ثبت‌شده</span><strong><?php echo esc_html(md_fa_num($individual_answers)); ?></strong></div>
+                    </div>
+                    <div class="md-individual-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr($individual_progress); ?>"><span style="width:<?php echo esc_attr($individual_progress); ?>%"></span></div>
+                    <p>آخرین فعالیت: <strong><?php echo esc_html(get_post_meta($selected->ID, '_md_member_last_activity', true) ?: 'هنوز فعالیتی ثبت نشده'); ?></strong></p>
+                    <p>فقط مدیر مجاز این چالش می‌تواند پاسخ‌ها و فعالیت‌های خصوصی شرکت‌کننده را مشاهده کند.</p>
                     <?php foreach ($days as $day) :
                         $entry = isset($entries[$day->ID]) ? $entries[$day->ID] : null;
                         $answers = $entry ? get_post_meta($entry->ID, '_md_answers', true) : array();
@@ -145,6 +181,16 @@ function md_challenge_admin_participants_page() {
                                     <p><strong><?php echo esc_html($prompt); ?></strong></p>
                                     <p><?php echo nl2br(esc_html(isset($answers[$i]) ? $answers[$i] : '—')); ?></p>
                                 <?php endforeach; ?>
+                                <?php
+                                $checked = get_post_meta($entry->ID, '_md_tasks_checked', true);
+                                $checked = is_array($checked) ? $checked : array();
+                                $task_index = 0;
+                                foreach (md_challenge_day_items($day->ID, 'tasks') as $task) :
+                                    if (trim((string)($task['title'] ?? '') . (string)($task['description'] ?? '') . (string)($task['steps'] ?? '')) === '') continue;
+                                    $task_status = !empty($checked[$task_index]);
+                                ?>
+                                <p class="md-individual-task <?php echo $task_status ? 'is-checked' : ''; ?>"><span aria-hidden="true"><?php echo $task_status ? '☑' : '☐'; ?></span> <?php echo esc_html(($task['title'] ?? '') ?: 'کار ' . md_fa_num($task_index + 1)); ?> — <?php echo $task_status ? 'انجام شده' : 'انجام نشده'; ?></p>
+                                <?php ++$task_index; endforeach; ?>
                                 <p><strong>گزارش تمرین / یادداشت:</strong></p>
                                 <p><?php echo nl2br(esc_html($notes ? $notes : '—')); ?></p>
                                 <p class="description">آخرین ثبت: <?php echo esc_html(get_post_meta($entry->ID, '_md_answer_updated', true)); ?></p>
