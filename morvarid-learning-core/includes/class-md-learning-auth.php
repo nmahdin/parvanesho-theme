@@ -234,6 +234,8 @@ final class MD_Learning_Auth {
             $wpdb->delete(MD_Learning_Schema::table('sessions'), array('token_hash' => self::hash_secret('session', $token)), array('%s'));
             return new WP_Error('cookie_failed', 'مرورگر نشست را دریافت نکرد.');
         }
+        // Make the new session visible to same-request checks too.
+        $_COOKIE[self::COOKIE] = $token;
         $wpdb->update(MD_Learning_Schema::table('learners'),
             array('last_login_at' => $now), array('id' => $learner_id), array('%s'), array('%d'));
         self::$cached_id = (int) $learner_id;
