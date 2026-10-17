@@ -268,9 +268,8 @@ final class MD_Learning_Dashboard {
     private static function profile($learner) {
         ?>
         <h2>اطلاعات پروفایل من</h2>
-        <p class="md-learning-muted">این نام فقط برای نمایش پروفایل شما استفاده می‌شود. کد ورود و شناسه ثابت می‌مانند.</p>
+        <p class="md-learning-muted">این نام برای نمایش پروفایل شما استفاده می‌شود. ویرایش آن، اطلاعات ورودتان را تغییر نمی‌دهد.</p>
         <div class="md-learning-profile-meta">
-            <span>شناسه یادگیرنده</span><strong dir="ltr"><?php echo esc_html('L-' . $learner->id); ?></strong>
             <span>تاریخ عضویت</span><strong><?php echo self::escaped_date($learner->created_at); ?></strong>
             <span>وضعیت</span><strong>فعال</strong>
         </div>
@@ -359,7 +358,6 @@ final class MD_Learning_Dashboard {
                         <h1>سلام، <?php echo esc_html($learner->display_name); ?> <span aria-hidden="true">✦</span></h1>
                         <p>اینجا مسیرهای یادگیری و فعالیت‌های شما در یک فضای خصوصی کنار هم هستند.</p>
                     </div>
-                    <div class="md-learning-user-id">شناسه من: <strong dir="ltr"><?php echo esc_html('L-' . $id); ?></strong></div>
                 </header>
                 <?php self::receipt($receipt); ?>
                 <?php self::notice(); ?>
@@ -421,27 +419,6 @@ final class MD_Learning_Dashboard {
                         <?php endif; ?>
                         </section>
                     </div>
-                    <aside class="md-learning-workspace-side" aria-label="دسترسی‌های آموزشی">
-                        <h2>مسیرهای یادگیری</h2>
-                        <a href="<?php echo self::link('challenges'); ?>"><span class="dashicons dashicons-flag" aria-hidden="true"></span> چالش‌های من</a>
-                        <a href="<?php echo self::link('courses'); ?>"><span class="dashicons dashicons-welcome-learn-more" aria-hidden="true"></span> دوره‌های من</a>
-                        <a href="<?php echo self::link('answers'); ?>"><span class="dashicons dashicons-edit-page" aria-hidden="true"></span> پاسخ‌های آموزشی من</a>
-                        <?php if (post_type_exists('md_course')) : ?>
-                            <a href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>"><span class="dashicons dashicons-welcome-learn-more" aria-hidden="true"></span> مشاهده دوره‌ها</a>
-                        <?php endif; ?>
-                        <?php if (post_type_exists('md_resource')) : ?>
-                            <a href="<?php echo esc_url(get_post_type_archive_link('md_resource')); ?>"><span class="dashicons dashicons-media-document" aria-hidden="true"></span> منابع آموزشی</a>
-                        <?php endif; ?>
-                        <p>پاسخ‌های آموزشی و پیشرفت درس‌های دوره‌های عضو‌شده در همین حساب ذخیره می‌شوند.</p>
-                        <div class="md-learning-side-divider"></div>
-                        <a href="<?php echo self::link('profile'); ?>"><span class="dashicons dashicons-id" aria-hidden="true"></span> ویرایش پروفایل</a>
-                        <a href="<?php echo self::link('security'); ?>"><span class="dashicons dashicons-shield" aria-hidden="true"></span> امنیت حساب</a>
-                        <form class="md-learning-side-logout" method="post" action="<?php echo self::action_url(); ?>">
-                            <input type="hidden" name="action" value="md_learning_logout">
-                            <?php wp_nonce_field('md_learning_logout'); ?>
-                            <button type="submit">خروج از حساب</button>
-                        </form>
-                    </aside>
                 </div>
             </div>
         </section>
