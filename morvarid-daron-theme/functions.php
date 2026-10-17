@@ -19,9 +19,12 @@ require_once MD_THEME_DIR . '/inc/academy.php';
 require_once MD_THEME_DIR . '/inc/course-builder.php';
 require_once MD_THEME_DIR . '/inc/homepage.php';
 require_once MD_THEME_DIR . '/inc/challenges/helpers.php';
+require_once MD_THEME_DIR . '/inc/challenges/editor.php';
 require_once MD_THEME_DIR . '/inc/challenges/ajax.php';
 require_once MD_THEME_DIR . '/inc/challenges/admin.php';
 require_once MD_THEME_DIR . '/inc/challenges/public.php';
+require_once MD_THEME_DIR . '/inc/challenges/members.php';
+require_once MD_THEME_DIR . '/inc/challenges/dashboard.php';
 require_once MD_THEME_DIR . '/inc/customizer.php';
 function md_setup() {
  add_theme_support('title-tag'); add_theme_support('post-thumbnails'); add_theme_support('html5', ['search-form','comment-form','comment-list','gallery','caption','style','script']); add_theme_support('custom-logo', ['height'=>100,'width'=>260,'flex-height'=>true,'flex-width'=>true]); add_theme_support('responsive-embeds'); add_theme_support('editor-styles'); add_theme_support('align-wide'); add_theme_support('wp-block-styles'); add_theme_support('automatic-feed-links'); add_theme_support('customize-selective-refresh-widgets'); add_theme_support('starter-content');
