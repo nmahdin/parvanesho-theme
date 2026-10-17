@@ -462,6 +462,17 @@ function md_sidebar_newsletter($settings = array()) {
     $body = isset($settings['body']) ? $settings['body'] : 'از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.';
     $label = isset($settings['button_text']) ? $settings['button_text'] : 'عضویت در خبرنامه ←';
     $social = !isset($settings['show_socials']) || !empty($settings['show_socials']);
+    $profiles = null;
+    if (isset($settings['network_urls']) && is_array($settings['network_urls'])) {
+        $profiles = array();
+        foreach (md_social_networks() as $key => $network) {
+            $link = isset($settings['network_urls'][$key])
+                ? esc_url_raw((string) $settings['network_urls'][$key], array('http', 'https')) : '';
+            if ($link) {
+                $profiles[$key] = array('label' => $network['label'], 'url' => $link);
+            }
+        }
+    }
     ?>
     <section class="md-widget md-widget-newsletter">
         <span class="md-newsletter-eyebrow">همراه مسیر رشد</span>
@@ -469,7 +480,7 @@ function md_sidebar_newsletter($settings = array()) {
         <?php if (trim($body) !== '') : ?><p><?php echo esc_html($body); ?></p><?php endif; ?>
         <?php if ($url && $label) : ?><a class="md-newsletter-cta" href="<?php echo esc_url($url); ?>"><?php echo esc_html($label); ?></a><?php endif; ?>
         <?php if ($social && function_exists('md_social_links')) : ?>
-            <?php echo md_social_links(array('class' => 'md-social-stack md-social-family')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            <?php echo md_social_links(array('class' => 'md-social-stack md-social-family', 'profiles' => $profiles)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php endif; ?>
     </section>
     <?php
