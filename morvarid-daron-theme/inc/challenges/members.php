@@ -297,7 +297,8 @@ function md_challenge_save_member_entry() {
         wp_die('لینک خصوصی نامعتبر یا غیرفعال است.', '', array('response' => 403));
     }
     check_admin_referer('md_challenge_entry_' . $member_id . '_' . $day_id);
-    md_challenge_member_rate_limit('entry-' . $member_id);
+    // Saved responses are authenticated by the private key and nonce. Do not
+    // lock out a participant who is actively completing multiple lessons.
     $day = md_challenge_day($day_id);
     $days = md_challenge_days($challenge_id);
     $ids = array_map('intval', wp_list_pluck($days, 'ID'));
