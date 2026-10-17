@@ -3,7 +3,7 @@
  * Plugin Name: Morvarid Learning Core
  * Plugin URI: https://morvarid-daron.ir/
  * Description: Independent, email-free learner identity, eight-digit access codes, private access links and secure sessions for Morvarid Daron Academy.
- * Version: 0.6.8
+ * Version: 0.6.9
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Text Domain: morvarid-learning
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MD_LEARNING_CORE_VERSION', '0.6.8');
+define('MD_LEARNING_CORE_VERSION', '0.6.9');
 define('MD_LEARNING_CORE_FILE', __FILE__);
 define('MD_LEARNING_CORE_DIR', plugin_dir_path(__FILE__));
 define('MD_LEARNING_CORE_URL', plugin_dir_url(__FILE__));
@@ -89,3 +89,10 @@ add_action('template_redirect', function () {
         header('Vary: Cookie', false);
     }
 }, 0);
+
+/* Repair account routes once after upgrade when old page IDs or slugs are stale. */
+add_action('admin_init', function () {
+    if (!current_user_can('manage_options') || get_option('md_learning_account_routes_069')) return;
+    MD_Learning_Schema::create_pages();
+    update_option('md_learning_account_routes_069', 1, false);
+}, 12);
