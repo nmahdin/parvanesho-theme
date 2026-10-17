@@ -30,6 +30,8 @@ jobs:
         run: php morvarid-learning-core/tests/phase-c-auth-smoke.php
       - name: Smoke-test Gutenberg question identity and private access
         run: php morvarid-learning-core/tests/phase-d-smoke.php
+      - name: Smoke-test draft and final response lifecycle
+        run: php morvarid-learning-core/tests/phase-d-save-smoke.php
       - name: Parse standalone academy question block script
         run: node --check morvarid-learning-core/assets/questions-editor.js
       - name: Check plugin source contracts
