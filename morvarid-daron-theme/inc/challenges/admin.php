@@ -226,7 +226,6 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         <p class="md-days-empty" id="md-days-empty" <?php echo $days ? 'hidden' : ''; ?>>هنوز روزی برای این چالش اضافه نشده است. با دکمه «افزودن روز جدید» شروع کنید.</p>
         <p class="md-days-empty" id="md-days-no-match" hidden>روزی با این جست‌وجو یا وضعیت پیدا نشد. فیلترها را تغییر دهید.</p>
         <p class="description">برای تغییر ترتیب، ردیف‌ها را با دستگیره بکشید یا از دکمه‌های ↑ و ↓ استفاده کنید. تغییر ترتیب به‌صورت خودکار ذخیره می‌شود.</p>
-        <?php md_challenge_manual_day_editor($challenge_id); ?>
     </div>
 
     <?php
