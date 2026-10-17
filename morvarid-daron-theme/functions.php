@@ -156,14 +156,21 @@ add_action('admin_init',function(){
   'header_booking_url'=>['آدرس دکمه رزرو','url',md_booking_url()],
   'header_booking_show'=>['نمایش دکمه رزرو','select','1'],
   'header_profile_show'=>['نمایش دکمه پروفایل (موبایل و دسکتاپ)','select','1'],
-  'header_logo_id'=>['لوگوی هدر (شناسه تصویر کتابخانه رسانه)','number','0'],
+  'header_logo_id'=>['لوگوی هدر','number','0'],
  ];
  foreach($fields as $key=>$field){
    add_settings_field($key,$field[0],function($args){
      $o=get_option('md_theme_options',[]);
      $key=$args['key'];$type=$args['type'];
      $value=isset($o[$key])?$o[$key]:$args['default'];
-     if($type==='select'){
+     if($key==='header_logo_id'){
+       $src=absint($value)?wp_get_attachment_image_url(absint($value),'thumbnail'):'';
+       echo '<input type="hidden" id="md-header-logo-id" name="md_theme_options[header_logo_id]" value="'.esc_attr(absint($value)).'">';
+       echo '<img id="md-header-logo-preview" src="'.esc_url($src).'" alt="پیش‌نمایش لوگوی هدر" style="max-width:160px;max-height:75px;object-fit:contain;display:'.($src?'block':'none').';margin:0 0 12px">';
+       echo '<button type="button" class="button" id="md-header-logo-choose">انتخاب از رسانه‌ها</button> ';
+       echo '<button type="button" class="button" id="md-header-logo-clear">حذف لوگوی انتخابی</button>';
+       echo '<p class="description">بدون انتخاب جدید، لوگوی کنونی سایت حفظ می‌شود.</p>';
+     }elseif($type==='select'){
        echo '<select name="md_theme_options['.esc_attr($key).']">';
        echo '<option value="1" '.selected($value,'1',false).'>نمایش داده شود</option>';
        echo '<option value="0" '.selected($value,'0',false).'>پنهان شود</option>';
@@ -174,6 +181,11 @@ add_action('admin_init',function(){
      }
    },'md-theme-options','md_header_options',['key'=>$key,'type'=>$field[1],'default'=>$field[2]]);
  }
+});
+add_action('admin_enqueue_scripts',function($hook){
+ if($hook!=='appearance_page_md-theme-options')return;
+ wp_enqueue_media();
+ wp_enqueue_script('md-header-settings',MD_THEME_URI.'/assets/js/header-settings.js',['jquery','media-views'],MD_THEME_VERSION,true);
 });
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
 function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';$needs_home=!md_home_page_id()||!md_home_page_has_blocks(md_home_page_id());$build_link=$needs_home?' <a class="button" href="'.esc_url(wp_nonce_url(admin_url('admin-post.php?action=md_build_home'),'md_build_home')).'">ساخت صفحه اصلی بلوکی</a>':'';$registered=class_exists('WP_Block_Type_Registry')?WP_Block_Type_Registry::get_instance()->get_all_registered():[];$theme_blocks=0;foreach($registered as $block_name=>$block_type){if(0===strpos($block_name,'morvarid/'))$theme_blocks++;}$script_ok=file_exists(MD_THEME_DIR.'/assets/js/blocks.js');$status='<p class="description">وضعیت سمت سرور: بلوک‌های ثبت‌شدهٔ قالب: <strong>'.absint($theme_blocks).'</strong> — وردپرس: '.esc_html(get_bloginfo('version')).' — فایل اسکریپت ویرایشگر: '.($script_ok?'موجود':'<strong>یافت نشد</strong>').' — نسخهٔ قالب: '.esc_html(MD_THEME_VERSION).'</p>';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، ایتا، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود. '.$home_link.$build_link.'</p>'.$status.'<form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
