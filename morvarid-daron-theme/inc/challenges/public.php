@@ -211,7 +211,7 @@ function md_challenge_render_day($day, $challenge_id, $member_state = null) {
 
     $order       = md_challenge_day_order($day->ID);
     $unlocked    = is_array($member_state) ? !empty($member_state['opened']) : md_challenge_day_is_unlocked($day, $challenge_id);
-    $show_title  = md_challenge_show_locked_title($challenge_id);
+    $show_title  = md_challenge_show_locked_title($challenge_id) && $day->post_status === 'publish';
     $is_editor   = md_challenge_is_editor($challenge_id);
     $title       = $day->post_title ? $day->post_title : 'روز ' . md_fa_num($order);
     $summary     = sanitize_textarea_field($day->post_excerpt);
