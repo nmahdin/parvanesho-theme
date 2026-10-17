@@ -32,13 +32,13 @@ function md_challenge_render_day_row($day, $challenge_id) {
 
     $unlock_date = md_challenge_day_unlock_date($day, $challenge_id);
     $resources   = array();
-    if (absint(get_post_meta($day->ID, '_md_day_audio_id', true))) {
+    if (absint(get_post_meta($day->ID, '_md_day_audio_id', true)) || get_post_meta($day->ID, '_md_day_audio_url', true)) {
         $resources[] = 'صوت';
     }
     if (absint(get_post_meta($day->ID, '_md_day_video_id', true)) || get_post_meta($day->ID, '_md_day_video_url', true)) {
         $resources[] = 'ویدیو';
     }
-    if (absint(get_post_meta($day->ID, '_md_day_file_id', true))) {
+    if (absint(get_post_meta($day->ID, '_md_day_file_id', true)) || get_post_meta($day->ID, '_md_day_file_url', true)) {
         $resources[] = 'فایل';
     }
     if (trim((string) get_post_meta($day->ID, '_md_day_exercise_desc', true)) || trim((string) get_post_meta($day->ID, '_md_day_exercise_steps', true))) {
