@@ -62,7 +62,19 @@ function md_social_networks() { return array(
     'eitaa'=>array('label'=>'ایتا'), 'instagram'=>array('label'=>'اینستاگرام'),
 ); }
 function md_social_url($network) { return 'https://example.test/' . $network; }
-function md_social_links($opts) { return '<nav class="md-social-family">social buttons</nav>'; }
+function md_social_links($opts) {
+    $profiles = array_key_exists('profiles', $opts) && is_array($opts['profiles'])
+        ? $opts['profiles'] : array(
+            'telegram' => array('label'=>'تلگرام','url'=>md_social_url('telegram')),
+            'instagram' => array('label'=>'اینستاگرام','url'=>md_social_url('instagram')),
+        );
+    if (!$profiles) { return ''; }
+    $out = '<nav class="md-social-family">';
+    foreach ($profiles as $key=>$profile) {
+        $out .= '<a data-net="' . esc_attr($key) . '" href="' . esc_url($profile['url']) . '"></a>';
+    }
+    return $out . '</nav>';
+}
 function checkit($ok, $message) { if (!$ok) { throw new RuntimeException($message); } }
 require dirname(__DIR__) . '/inc/sidebars.php';
 md_register_sidebars();
@@ -109,6 +121,46 @@ $updated = $widget->update(array('type'=>'search','title'=>'جست‌وجوی م
     'post_type'=>'md_resource','taxonomy'=>'category','count'=>99,'show_socials'=>0), array());
 checkit($updated['post_type'] === 'md_resource' && $updated['count'] === 12,
     'search content type or list count settings failed');
+// Widget-level links must override global socials without changing the
+// global settings or leaking disabled accounts into a specific family box.
+ob_start();
+$widget->widget(array(
+    'before_widget'=>'<section id="md-custom-family" class="md-widget md-sidebar-card-widget">',
+    'after_widget'=>'</section>',
+), array('type'=>'family', 'title'=>'خانواده قابل ویرایش',
+    'button_url'=>'https://example.test/join', 'show_socials'=>1,
+    'network_urls'=>array(
+        'telegram'=>'https://custom.test/my-channel',
+        'instagram'=>'', 'eitaa'=>'', 'bale'=>'',
+    )));
+$custom_family = ob_get_clean();
+checkit(substr_count($custom_family, '<section') === 1,
+    'native WordPress wrapper generated a second visual card');
+checkit(strpos($custom_family, 'id="md-custom-family"') !== false,
+    'widget wrapper ID not preserved');
+checkit(strpos($custom_family, 'md-widget-newsletter') !== false,
+    'newsletter brand styling lost after widget wrapper rewrite');
+checkit(strpos($custom_family, 'https://custom.test/my-channel') !== false,
+    'custom Telegram URL not rendered');
+checkit(strpos($custom_family, 'data-net="instagram"') === false
+    && strpos($custom_family, 'data-net="bale"') === false,
+    'social links disabled for this card were shown');
+
+$personalized = $widget->update(array(
+    'type'=>'family', 'title'=>'باکس خانوادگی',
+    'network_urls'=>array('telegram'=>'https://custom.test/t', 'instagram'=>''),
+    'show_socials'=>1, 'count'=>3
+), array('type'=>'family'));
+checkit($personalized['network_urls']['telegram'] === 'https://custom.test/t'
+    && $personalized['network_urls']['instagram'] === '',
+    'family widget URLs not saved per network');
+
+ob_start();
+md_render_sidebar('invalid-context');
+$invalid_context = ob_get_clean();
+checkit(strpos($invalid_context, 'md-sidebar-magazine') !== false,
+    'unknown sidebar context was not handled safely');
+
 $css = file_get_contents(dirname(__DIR__) . '/assets/css/sidebar.css');
 checkit((bool)preg_match('/padding:\\s*0\\s*!important/', $css) &&
     (bool)preg_match('/justify-content:\\s*center/', $css),
