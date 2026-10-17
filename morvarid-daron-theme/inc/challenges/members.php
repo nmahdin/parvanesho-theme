@@ -322,8 +322,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                     </div>
                     <?php if (!$opened) : ?>
                         <p>این مرحله هنوز برای شما در دسترس نیست. پس از تکمیل مرحله پیشین یا رسیدن زمان انتشار باز می‌شود.</p>
-                        <?php continue; ?>
-                    <?php endif; ?>
+                    <?php else : ?>
                     <div class="md-member-day-content entry-content"><?php echo apply_filters('the_content', $day->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
                     <?php echo md_challenge_day_tip_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <?php echo md_challenge_day_exercise_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -349,6 +348,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                             <span class="md-member-saved" role="status">پاسخ شما ذخیره شد.</span>
                         <?php endif; ?>
                     </form>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         </section>
