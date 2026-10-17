@@ -204,9 +204,9 @@ function md_challenge_render_day($day, $challenge_id) {
     $summary     = sanitize_textarea_field($day->post_excerpt);
     $unlock_date = md_challenge_day_unlock_date($day, $challenge_id);
 
-    echo '<article id="day-' . esc_attr($order) . '" class="md-day' . ($unlocked ? '' : ' md-day-locked') . '">';
+    echo '<details id="day-' . esc_attr($order) . '" class="md-day md-day-accordion' . ($unlocked ? '' : ' md-day-locked') . '">';
 
-    echo '<header class="md-day-header">';
+    echo '<summary class="md-day-header">';
     echo '<span class="md-day-number">روز ' . esc_html(md_fa_num($order)) . '</span>';
 
     if ($unlocked || $show_title) {
@@ -221,7 +221,7 @@ function md_challenge_render_day($day, $challenge_id) {
     if (!$unlocked) {
         echo '<span class="md-day-lock-badge"><span aria-hidden="true">🔒</span> قفل</span>';
     }
-    echo '</header>';
+    echo '<span class="md-day-chevron" aria-hidden="true"></span></summary><div class="md-day-body">';
 
     if (!$unlocked) {
         echo '<div class="md-day-locked-note">';
@@ -232,7 +232,7 @@ function md_challenge_render_day($day, $challenge_id) {
         } else {
             echo '<p>محتوای این روز هنوز در دسترس نیست.</p>';
         }
-        echo '</div></article>';
+        echo '</div></div></details>';
         return;
     }
 
@@ -264,7 +264,7 @@ function md_challenge_render_day($day, $challenge_id) {
     echo md_challenge_day_media_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo md_challenge_day_qa_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
-    echo '</article>';
+    echo '</div></details>';
 }
 
 /**
