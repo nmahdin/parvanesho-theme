@@ -287,32 +287,18 @@ function md_challenge_render_day_modal() {
                     <textarea id="md-day-extra" rows="3" class="widefat"></textarea>
                 </div>
 
-                <fieldset class="md-fieldset">
-                    <legend>نکته روز</legend>
-                    <div class="md-admin-field">
-                        <label for="md-day-tip-title">عنوان نکته (اختیاری)</label>
-                        <input type="text" id="md-day-tip-title" class="widefat">
-                    </div>
-                    <div class="md-admin-field md-field-full">
-                        <label for="md-day-tip">متن نکته</label>
-                        <textarea id="md-day-tip" rows="3" class="widefat"></textarea>
-                    </div>
+                <fieldset class="md-fieldset md-repeatable-section">
+                    <legend>نکته‌های روز</legend>
+                    <p class="description">برای هر روز چند نکته مستقل با عنوان و توضیح اضافه کنید؛ ترتیب نمایش با ترتیب این فهرست یکسان است.</p>
+                    <div id="md-day-tips-list" class="md-repeatable-list" aria-label="نکته‌های این روز"></div>
+                    <button type="button" class="button md-repeat-add" data-kind="tips">+ افزودن نکته</button>
                 </fieldset>
 
-                <fieldset class="md-fieldset">
-                    <legend>تمرین عملی</legend>
-                    <div class="md-admin-field">
-                        <label for="md-day-exercise-title">عنوان تمرین</label>
-                        <input type="text" id="md-day-exercise-title" class="widefat">
-                    </div>
-                    <div class="md-admin-field md-field-full">
-                        <label for="md-day-exercise-desc">دستورالعمل و توضیحات</label>
-                        <textarea id="md-day-exercise-desc" rows="3" class="widefat"></textarea>
-                    </div>
-                    <div class="md-admin-field md-field-full">
-                        <label for="md-day-exercise-steps">مراحل انجام</label>
-                        <textarea id="md-day-exercise-steps" rows="4" class="widefat" placeholder="هر مرحله را در یک خط بنویسید."></textarea>
-                    </div>
+                <fieldset class="md-fieldset md-repeatable-section">
+                    <legend>کارها و تمرین‌های روز</legend>
+                    <p class="description">هر کار یک عنوان، توضیح و مراحل جداگانه دارد. برای نوشتن مراحل، هر مرحله را در یک خط وارد کنید.</p>
+                    <div id="md-day-tasks-list" class="md-repeatable-list" aria-label="کارهای این روز"></div>
+                    <button type="button" class="button md-repeat-add" data-kind="tasks">+ افزودن کار</button>
                 </fieldset>
 
                 <fieldset class="md-fieldset">
@@ -339,17 +325,14 @@ function md_challenge_render_day_modal() {
                             <input type="url" id="md-day-video-url" class="widefat" placeholder="یا لینک ویدیوی خارجی (آپارات، یوتیوب و…)">
                             <input type="text" id="md-day-video-title" class="widefat" placeholder="عنوان یا توضیح ویدیو (اختیاری)">
                         </div>
-                        <div class="md-media-block">
-                            <label>فایل پیوست</label>
-                            <div class="md-media-field">
-                                <input type="hidden" id="md-day-file-id" value="0">
-                                <button type="button" class="button md-day-media-select" data-media="file" data-type="">انتخاب فایل</button>
-                                <button type="button" class="button md-day-media-remove" data-media="file">حذف</button>
-                                <span class="md-media-name" id="md-day-file-name"></span>
-                            </div>
-                            <input type="text" id="md-day-file-title" class="widefat" placeholder="عنوان یا توضیح فایل (اختیاری)">
-                        </div>
                     </div>
+                </fieldset>
+
+                <fieldset class="md-fieldset md-repeatable-section">
+                    <legend>فایل‌ها و کاربرگ‌های پیوست</legend>
+                    <p class="description">چند فایل از رسانه‌های وردپرس انتخاب کنید یا برای هر فایل یک لینک وارد کنید. عنوان و ترتیب هر فایل قابل ویرایش است.</p>
+                    <div id="md-day-files-list" class="md-repeatable-list" aria-label="فایل‌های این روز"></div>
+                    <button type="button" class="button md-repeat-add" data-kind="files">+ افزودن فایل</button>
                 </fieldset>
 
                 <fieldset class="md-fieldset">
