@@ -27,18 +27,20 @@ function md_challenge_enrollment_url($challenge_id) {
  */
 function md_challenge_day_media_html($day) {
     $audio_id    = absint(get_post_meta($day->ID, '_md_day_audio_id', true));
+    $audio_url   = esc_url_raw(get_post_meta($day->ID, '_md_day_audio_url', true));
     $audio_title = sanitize_text_field(get_post_meta($day->ID, '_md_day_audio_title', true));
     $video_id    = absint(get_post_meta($day->ID, '_md_day_video_id', true));
     $video_url   = esc_url_raw(get_post_meta($day->ID, '_md_day_video_url', true));
     $video_title = sanitize_text_field(get_post_meta($day->ID, '_md_day_video_title', true));
     $file_id     = absint(get_post_meta($day->ID, '_md_day_file_id', true));
+    $file_url    = esc_url_raw(get_post_meta($day->ID, '_md_day_file_url', true));
     $file_title  = sanitize_text_field(get_post_meta($day->ID, '_md_day_file_title', true));
 
     $sections = array();
 
-    if ($audio_id) {
+    if ($audio_id || $audio_url) {
         $player = md_audio_player(array(
-            'src'      => $audio_id,
+            'src'      => $audio_url ? $audio_url : $audio_id,
             'title'    => $audio_title ? $audio_title : get_the_title($day),
             'subtitle' => 'صوت روز',
         ));
@@ -48,7 +50,9 @@ function md_challenge_day_media_html($day) {
     }
 
     if ($video_url) {
-        $player = md_video_embed($video_url, $video_title);
+        $video_path = wp_parse_url($video_url, PHP_URL_PATH);
+        $is_file = $video_path && preg_match('/\.(mp4|webm|ogv|mov)$/i', $video_path);
+        $player = $is_file ? md_video_player(array('src' => $video_url, 'title' => $video_title)) : md_video_embed($video_url, $video_title);
         if ($player) {
             $sections[] = '<div class="md-day-media-item">' . $player . '</div>';
         }
@@ -62,8 +66,8 @@ function md_challenge_day_media_html($day) {
         }
     }
 
-    if ($file_id) {
-        $file = wp_get_attachment_url($file_id);
+    if ($file_id || $file_url) {
+        $file = $file_url ? $file_url : wp_get_attachment_url($file_id);
         if ($file) {
             $sections[] = '<div class="md-day-media-item md-day-file">'
                 . ($file_title ? '<h3>' . esc_html($file_title) . '</h3>' : '')
