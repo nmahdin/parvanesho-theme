@@ -26,6 +26,8 @@ jobs:
         run: php morvarid-learning-core/tests/phase-b-smoke.php
       - name: Smoke-test personal workspace privacy and progression
         run: php morvarid-learning-core/tests/phase-c-smoke.php
+      - name: Smoke-test authenticated guest nonce isolation
+        run: php morvarid-learning-core/tests/phase-c-auth-smoke.php
       - name: Check plugin source contracts
         shell: bash
         run: |
