@@ -88,3 +88,37 @@
 .md-member-day{margin:13px 0;padding:clamp(14px,2vw,22px);border-radius:15px}
 .md-member-day-form .md-member-check input[type=checkbox]{width:21px;height:21px;accent-color:#347c55}
 @media(max-width:650px){.md-learning-challenge-join{padding:15px;margin:13px 0}.md-member-day{margin:10px 0}}
+
+/* 1.4.1 — same compact accessible day disclosure in learner view. */
+.md-member-page{padding-block:16px 44px}
+.md-member-days{max-width:none;margin-top:20px}
+.md-member-days > h2{font-size:19px;line-height:1.55;margin:0 0 12px}
+.md-member-day.md-day-accordion{padding:0;margin:0 0 10px;border-radius:13px;box-shadow:0 3px 14px rgba(35,78,66,.045);overflow:hidden;scroll-margin-top:95px}
+.md-member-day.md-day-accordion > .md-member-day-head{margin:0;padding:11px 16px;min-height:54px;gap:9px}
+.md-member-day.md-day-accordion > summary > span:first-child{font-size:11px;flex:0 0 auto;padding:4px 9px;border-radius:7px}
+.md-member-day.md-day-accordion > summary h3{font-size:clamp(15px,1.45vw,19px);line-height:1.55;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.md-member-day.md-day-accordion > summary strong{font-size:11px;font-weight:700;flex:0 0 auto;white-space:nowrap}
+.md-member-day-body{padding:14px 18px 18px}
+.md-member-day-body .md-member-day-content{font-size:14px;line-height:1.95;padding-bottom:6px}
+.md-member-day-form{gap:13px;padding-top:16px;margin-top:18px}
+.md-member-day-form > label{font-size:13px;gap:6px}
+.md-member-day-form textarea{font-size:13px;min-height:82px;padding:10px 12px;line-height:1.85}
+.md-member-question-index{display:inline-block;background:#e7f2e9;color:#306a4d;padding:3px 8px;border-radius:7px;font-size:11px;line-height:1.6;margin-left:9px}
+.md-member-day-form .btn{font-size:13px;min-height:43px;padding:9px 17px}
+@media(max-width:720px){
+ .md-member-days{margin-top:16px}
+ .md-member-days > h2{font-size:17px;margin:0 0 9px}
+ .md-member-day.md-day-accordion{border-radius:11px;margin:0 0 8px}
+ .md-member-day.md-day-accordion > .md-member-day-head{padding:9px 11px;min-height:48px;flex-wrap:nowrap;gap:7px}
+ .md-member-day.md-day-accordion > summary h3{font-size:14px;flex:1 1 auto}
+ .md-member-day.md-day-accordion > summary strong{font-size:10px}
+ .md-member-day-body{padding:12px}
+ .md-member-day-body .md-member-day-content{font-size:13px}
+ .md-member-day-form{margin-top:14px;padding-top:13px;gap:11px}
+ .md-member-day-form textarea{min-height:75px}
+}
+@media(max-width:365px){
+ .md-member-day.md-day-accordion > summary > span:first-child{padding:3px 6px}
+ .md-member-day.md-day-accordion > summary strong{font-size:9px}
+ .md-member-day.md-day-accordion > summary h3{font-size:13px}
+}
