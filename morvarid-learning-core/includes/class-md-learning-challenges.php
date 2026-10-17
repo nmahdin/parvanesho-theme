@@ -67,6 +67,16 @@ final class MD_Learning_Challenges {
         return $member && (int) $member->ID === absint($member_id);
     }
 
+    public static function members_for_challenge($challenge_id) {
+        global $wpdb;
+        $table = self::table();
+        $ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT member_id FROM {$table} WHERE challenge_id = %d ORDER BY id DESC",
+            absint($challenge_id)
+        ));
+        return array_values(array_filter(array_map('get_post', array_map('absint', $ids))));
+    }
+
     public static function enroll($challenge_id, $learner_id) {
         $challenge_id = absint($challenge_id);
         $learner_id = absint($learner_id);
