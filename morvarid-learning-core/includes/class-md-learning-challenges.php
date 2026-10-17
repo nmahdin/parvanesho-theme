@@ -206,6 +206,11 @@ final class MD_Learning_Challenges {
         if (!self::enabled() || !self::valid_challenge($challenge_id)) {
             return;
         }
+        // No second registration form for a member who already joined.
+        // The public challenge template renders the member dashboard instead.
+        if (self::current_member($challenge_id)) {
+            return;
+        }
         $learner_id = MD_Learning_Auth::current_learner_id();
         echo '<section class="md-member-registration md-learning-challenge-join" id="md-challenge-enroll" dir="rtl">';
         echo '<h2>عضویت در چالش</h2>';
