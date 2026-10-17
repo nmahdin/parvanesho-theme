@@ -61,6 +61,9 @@ final class MD_Learning_Profile {
         if ($updated === false) {
             self::fail('ویرایش نام انجام نشد. دوباره تلاش کنید.', 500);
         }
+        if (class_exists('MD_Learning_Challenges')) {
+            MD_Learning_Challenges::sync_member_titles($id, $name);
+        }
         wp_safe_redirect(self::dashboard_url('profile', 'name_updated'), 303);
         exit;
     }
