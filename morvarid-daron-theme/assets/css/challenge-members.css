@@ -70,3 +70,21 @@
 .md-admin-create-member label { display: grid; gap: 6px; color: #385b46; }
 .md-admin-create-member input { min-width: 250px; min-height: 36px; border: 1px solid #cadfd0; }
 .md-member-admin-code { letter-spacing: 2px; font-variant-numeric: tabular-nums; font-size: 16px; display: block; white-space: nowrap; }
+
+/* 1.4.0 — compact enrollment, correctly separated controls. */
+.md-learning-challenge-join{border:none;box-shadow:none;background:#f2f8f2;padding:clamp(16px,2vw,23px);border-radius:15px;margin:20px 0}
+.md-learning-challenge-join h2{font-size:19px}
+.md-learning-challenge-join form{max-width:620px;gap:0!important;display:flex!important;flex-direction:column;align-items:flex-start}
+.md-learning-challenge-join .md-enroll-consent{display:flex!important;align-items:center!important;gap:12px!important;cursor:pointer;margin:10px 0 24px;line-height:1.8;font-size:13px;color:#3c604b}
+.md-learning-challenge-join .md-enroll-consent input[type=checkbox]{appearance:none;-webkit-appearance:none;flex:0 0 22px;width:22px;height:22px;margin:0;border-radius:7px;border:2px solid #7da68d;background:#fff;cursor:pointer;position:relative;transition:.15s ease}
+.md-learning-challenge-join .md-enroll-consent input[type=checkbox]:checked{background:#347c55;border-color:#347c55}
+.md-learning-challenge-join .md-enroll-consent input[type=checkbox]:checked:after{content:'✓';position:absolute;inset:0;text-align:center;line-height:18px;color:#fff;font-size:15px;font-weight:800}
+.md-learning-challenge-join .md-enroll-consent input[type=checkbox]:focus-visible{outline:3px solid #97cbb0;outline-offset:3px}
+.md-learning-challenge-join form .btn{min-height:45px;border-radius:12px;align-self:flex-start;margin:0;padding:11px 22px;font-size:13px}
+.md-learning-challenge-join .md-join-error{color:#8f2828;padding:12px;background:#fff2f2;border-radius:8px;margin-bottom:12px}
+.md-member-hero{padding:clamp(17px,2.5vw,27px);border-radius:16px}
+.md-member-hero h1{font-size:clamp(21px,2.5vw,30px)}
+.md-member-days{max-width:none;margin-top:24px}
+.md-member-day{margin:13px 0;padding:clamp(14px,2vw,22px);border-radius:15px}
+.md-member-day-form .md-member-check input[type=checkbox]{width:21px;height:21px;accent-color:#347c55}
+@media(max-width:650px){.md-learning-challenge-join{padding:15px;margin:13px 0}.md-member-day{margin:10px 0}}
