@@ -75,7 +75,7 @@ final class MD_Learning_Pages {
             </label>
             <label class="md-learning-check">
                 <input type="checkbox" name="md_consent" value="1" required>
-                <span>با ذخیره نام، وضعیت یادگیری و پاسخ‌های آموزشی‌ام موافقم. می‌دانم کد و لینک خصوصی مانند رمز ورود هستند.</span>
+                <span>با ذخیره نام، وضعیت یادگیری و پاسخ‌های آموزشی‌ام موافقم. <?php if ($challenge_id) : ?>همچنین درخواست عضویت در چالش انتخاب‌شده را دارم. <?php endif; ?>می‌دانم کد و لینک خصوصی مانند رمز ورود هستند.</span>
             </label>
             <div class="md-learning-trap" aria-hidden="true">
                 <label>وب‌سایت <input type="text" name="md_website" tabindex="-1" autocomplete="off"></label>
