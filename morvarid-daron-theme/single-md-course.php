@@ -1,1 +1,8 @@
-<?php get_header(); ?><main class="container reading-layout md-course-page" id="main"><?php while(have_posts()):the_post(); ?><article <?php post_class(); ?>><span class="eyebrow">آکادمی مروارید درون / دوره آموزشی</span><h1><?php the_title(); ?></h1><?php if(has_post_thumbnail())the_post_thumbnail('large',['class'=>'single-cover']); ?><?php if(function_exists('md_academy_media'))echo md_academy_media(get_the_ID()); ?><div class="entry-content"><?php the_content(); ?></div><section class="md-course-lessons"><h2>جلسات این دوره</h2><?php if(function_exists('md_academy_lessons'))echo md_academy_lessons(get_the_ID()); ?></section></article><?php endwhile; ?></main><?php get_footer(); ?>
+<?php
+/**
+ * Compatibility wrapper: the canonical template uses the real post type key.
+ *
+ * @package Morvarid_Daron
+ */
+
+require get_template_directory() . '/single-md_course.php';

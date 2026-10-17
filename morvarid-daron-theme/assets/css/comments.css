@@ -1,0 +1,242 @@
+/*
+ * Comments, author box and attachment pages.
+ * Loaded only on singular screens that can show comments.
+ */
+
+.md-comments {
+    margin: 46px 0 10px;
+    padding: 32px;
+    background: #fff;
+    border: 1px solid var(--line, #e5e9e2);
+    border-radius: 20px;
+    box-shadow: var(--shadow, 0 14px 44px rgba(30, 65, 50, 0.07));
+}
+
+.md-comments-title {
+    font-size: 22px;
+    margin: 0 0 22px;
+    color: var(--green, #28594b);
+}
+
+.md-comment-list,
+.md-comment-list .children {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.md-comment-list .children {
+    padding-inline-start: 26px;
+    margin-top: 14px;
+}
+
+.md-comment-list .comment-body {
+    padding: 18px 20px;
+    border: 1px solid var(--line, #e5e9e2);
+    border-radius: 16px;
+    background: #fffdfa;
+    margin-bottom: 14px;
+}
+
+.md-comment-list .comment-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: var(--ink, #233b35);
+}
+
+.md-comment-list .comment-author img {
+    border-radius: 50%;
+}
+
+.md-comment-list .comment-meta {
+    font-size: 12px;
+    color: var(--muted, #60716a);
+    margin: 6px 0 12px;
+}
+
+.md-comment-list .comment-content p {
+    margin: 0 0 10px;
+}
+
+.md-comment-list .reply a {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: bold;
+    color: var(--green, #28594b);
+    background: #edf7f2;
+    border-radius: 30px;
+    padding: 5px 14px;
+}
+
+.md-comment-list .comment-body .reply {
+    margin-top: 8px;
+}
+
+.md-comments-closed {
+    color: var(--muted, #60716a);
+    background: #f6f1e8;
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+
+/* ---------------------------------------------------------------- comment form */
+
+.md-comments .comment-reply-title {
+    font-size: 20px;
+    margin: 28px 0 14px;
+    display: block;
+}
+
+.md-comments .comment-form {
+    display: grid;
+    gap: 14px;
+}
+
+.md-comments .comment-form p {
+    margin: 0;
+}
+
+.md-comments .comment-form label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: var(--ink, #233b35);
+}
+
+.md-comments .comment-form input[type='text'],
+.md-comments .comment-form input[type='email'],
+.md-comments .comment-form input[type='url'],
+.md-comments .comment-form textarea {
+    width: 100%;
+    border: 1px solid #d7e0d7;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font: inherit;
+    background: #fffdfa;
+    color: var(--ink, #233b35);
+}
+
+.md-comments .comment-form textarea {
+    min-height: 132px;
+    resize: vertical;
+}
+
+.md-comments .comment-form input:focus,
+.md-comments .comment-form textarea:focus {
+    outline: 2px solid #c78c68;
+    outline-offset: 1px;
+}
+
+.md-comments .comment-form-author,
+.md-comments .comment-form-email,
+.md-comments .comment-form-url {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.md-comments .comment-form-author,
+.md-comments .comment-form-email,
+.md-comments .comment-form-url {
+    grid-template-columns: 1fr;
+}
+
+.md-comments .comment-notes,
+.md-comments .md-comment-notes,
+.md-comments .comment-form-cookies-consent {
+    font-size: 12.5px;
+    color: var(--muted, #60716a);
+}
+
+.md-comments .comment-form-cookies-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.md-comments .comment-form-cookies-consent label {
+    margin: 0;
+    font-weight: normal;
+    font-size: 12.5px;
+}
+
+.md-comments .form-submit .submit {
+    border: 0;
+    border-radius: 40px;
+    background: var(--green, #28594b);
+    color: #fff;
+    font: inherit;
+    font-weight: bold;
+    padding: 12px 30px;
+    cursor: pointer;
+}
+
+.md-comments .form-submit .submit:hover {
+    background: #1c4639;
+}
+
+.md-comments .required {
+    color: #b4553a;
+}
+
+@media (min-width: 760px) {
+    .md-comments .comment-form-author,
+    .md-comments .comment-form-email,
+    .md-comments .comment-form-url {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* --------------------------------------------------------- archive / author */
+
+.md-archive-head {
+    margin-bottom: 28px;
+}
+
+.md-archive-head .eyebrow {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.md-archive-intro {
+    color: var(--muted, #60716a);
+    max-width: 720px;
+}
+
+.md-author-head {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: #f7f3ea;
+    border-radius: 20px;
+    padding: 26px 28px;
+}
+
+.md-author-avatar img {
+    border-radius: 50%;
+    display: block;
+}
+
+@media (max-width: 620px) {
+    .md-author-head {
+        flex-direction: column;
+    }
+}
+
+/* ------------------------------------------------------------ attachments */
+
+.attachment-media {
+    margin: 24px 0;
+}
+
+.attachment-media img {
+    border-radius: 16px;
+}
+
+.attachment-caption {
+    color: var(--muted, #60716a);
+    font-size: 14px;
+}

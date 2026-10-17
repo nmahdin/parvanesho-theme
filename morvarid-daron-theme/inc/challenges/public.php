@@ -1,0 +1,455 @@
+<?php
+/**
+ * Public challenge rendering.
+ *
+ * @package Morvarid_Daron
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Enrollment URL of a challenge.
+ *
+ * @param int $challenge_id Challenge ID.
+ * @return string
+ */
+function md_challenge_enrollment_url($challenge_id) {
+    return esc_url_raw(get_post_meta($challenge_id, '_md_enrollment_url', true));
+}
+
+/**
+ * Render the media block of a day.
+ *
+ * @param WP_Post $day Day post.
+ * @return string
+ */
+function md_challenge_day_media_html($day) {
+    $audio_id    = absint(get_post_meta($day->ID, '_md_day_audio_id', true));
+    $audio_title = sanitize_text_field(get_post_meta($day->ID, '_md_day_audio_title', true));
+    $video_id    = absint(get_post_meta($day->ID, '_md_day_video_id', true));
+    $video_url   = esc_url_raw(get_post_meta($day->ID, '_md_day_video_url', true));
+    $video_title = sanitize_text_field(get_post_meta($day->ID, '_md_day_video_title', true));
+    $file_id     = absint(get_post_meta($day->ID, '_md_day_file_id', true));
+    $file_title  = sanitize_text_field(get_post_meta($day->ID, '_md_day_file_title', true));
+
+    $sections = array();
+
+    if ($audio_id) {
+        $src = wp_get_attachment_url($audio_id);
+        if ($src) {
+            $sections[] = '<div class="md-day-media-item">'
+                . ($audio_title ? '<h3>' . esc_html($audio_title) . '</h3>' : '')
+                . wp_audio_shortcode(array('src' => $src, 'preload' => 'metadata'))
+                . '</div>';
+        }
+    }
+
+    if ($video_url) {
+        $embed = wp_oembed_get($video_url);
+        if ($embed) {
+            $sections[] = '<div class="md-day-media-item">'
+                . ($video_title ? '<h3>' . esc_html($video_title) . '</h3>' : '')
+                . $embed
+                . '</div>';
+        } else {
+            $sections[] = '<div class="md-day-media-item"><p><a class="btn btn-light" href="' . esc_url($video_url) . '" rel="nofollow noopener" target="_blank">تماشای ویدیو</a></p></div>';
+        }
+    } elseif ($video_id) {
+        $src = wp_get_attachment_url($video_id);
+        if ($src) {
+            $sections[] = '<div class="md-day-media-item">'
+                . ($video_title ? '<h3>' . esc_html($video_title) . '</h3>' : '')
+                . wp_video_shortcode(array('src' => $src, 'preload' => 'metadata'))
+                . '</div>';
+        }
+    }
+
+    if ($file_id) {
+        $file = wp_get_attachment_url($file_id);
+        if ($file) {
+            $sections[] = '<div class="md-day-media-item md-day-file">'
+                . ($file_title ? '<h3>' . esc_html($file_title) . '</h3>' : '')
+                . '<a class="btn btn-light" href="' . esc_url($file) . '" download>دریافت فایل <span aria-hidden="true">↓</span></a>'
+                . '</div>';
+        }
+    }
+
+    if (!$sections) {
+        return '';
+    }
+
+    return '<section class="md-day-media" aria-label="محتوای چندرسانه‌ای روز">' . implode('', $sections) . '</section>';
+}
+
+/**
+ * Render the tip block of a day.
+ *
+ * @param WP_Post $day Day post.
+ * @return string
+ */
+function md_challenge_day_tip_html($day) {
+    $title = sanitize_text_field(get_post_meta($day->ID, '_md_day_tip_title', true));
+    $tip   = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_tip', true));
+    if ('' === trim($tip)) {
+        return '';
+    }
+    $html  = '<aside class="md-day-tip">';
+    $html .= '<span class="md-day-label">نکته روز</span>';
+    if ($title) {
+        $html .= '<h3>' . esc_html($title) . '</h3>';
+    }
+    $html .= wpautop(esc_html($tip));
+    $html .= '</aside>';
+    return $html;
+}
+
+/**
+ * Render the exercise block of a day.
+ *
+ * @param WP_Post $day Day post.
+ * @return string
+ */
+function md_challenge_day_exercise_html($day) {
+    $title = sanitize_text_field(get_post_meta($day->ID, '_md_day_exercise_title', true));
+    $desc  = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_exercise_desc', true));
+    $steps = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_exercise_steps', true));
+
+    if ('' === trim($title) && '' === trim($desc) && '' === trim($steps)) {
+        return '';
+    }
+
+    $html  = '<section class="md-day-exercise">';
+    $html .= '<span class="md-day-label">تمرین عملی</span>';
+    if ($title) {
+        $html .= '<h3>' . esc_html($title) . '</h3>';
+    }
+    if ($desc) {
+        $html .= wpautop(esc_html($desc));
+    }
+    if ($steps) {
+        $lines = preg_split('/\r\n|\r|\n/', $steps);
+        $lines = array_filter(array_map('trim', $lines));
+        if ($lines) {
+            $html .= '<ol class="md-exercise-steps">';
+            foreach ($lines as $line) {
+                $html .= '<li>' . esc_html($line) . '</li>';
+            }
+            $html .= '</ol>';
+        }
+    }
+    $html .= '</section>';
+    return $html;
+}
+
+/**
+ * Render the Q&A block of a day.
+ *
+ * @param WP_Post $day Day post.
+ * @return string
+ */
+function md_challenge_day_qa_html($day) {
+    $items = md_challenge_day_qa($day->ID);
+    if (!$items) {
+        return '';
+    }
+
+    $html = '<section class="md-day-qa"><h3>پرسش و پاسخ</h3>';
+    $i    = 0;
+    foreach ($items as $item) {
+        $question = isset($item['q']) ? sanitize_textarea_field($item['q']) : '';
+        $answer   = isset($item['a']) ? sanitize_textarea_field($item['a']) : '';
+        if ('' === trim($question) && '' === trim($answer)) {
+            continue;
+        }
+        $html .= '<details class="md-qa-item"' . (0 === $i ? ' open' : '') . '>';
+        $html .= '<summary>' . esc_html($question ? $question : 'پرسش') . '</summary>';
+        $html .= '<div class="md-qa-answer">' . wpautop(esc_html($answer)) . '</div>';
+        $html .= '</details>';
+        $i++;
+    }
+    $html .= '</section>';
+    return $html;
+}
+
+/**
+ * Render one challenge day.
+ *
+ * @param WP_Post $day          Day post.
+ * @param int     $challenge_id Challenge ID.
+ */
+function md_challenge_render_day($day, $challenge_id) {
+    if (!$day instanceof WP_Post) {
+        return;
+    }
+
+    $order       = md_challenge_day_order($day->ID);
+    $unlocked    = md_challenge_day_is_unlocked($day, $challenge_id);
+    $show_title  = md_challenge_show_locked_title($challenge_id);
+    $is_editor   = md_challenge_is_editor($challenge_id);
+    $title       = $day->post_title ? $day->post_title : 'روز ' . md_fa_num($order);
+    $summary     = sanitize_textarea_field($day->post_excerpt);
+    $unlock_date = md_challenge_day_unlock_date($day, $challenge_id);
+
+    echo '<article id="day-' . esc_attr($order) . '" class="md-day' . ($unlocked ? '' : ' md-day-locked') . '">';
+
+    echo '<header class="md-day-header">';
+    echo '<span class="md-day-number">روز ' . esc_html(md_fa_num($order)) . '</span>';
+
+    if ($unlocked || $show_title) {
+        echo '<h2>' . esc_html($title) . '</h2>';
+    } else {
+        echo '<h2>روز ' . esc_html(md_fa_num($order)) . '</h2>';
+    }
+
+    if ($is_editor) {
+        echo '<span class="md-day-preview-badge">پیش‌نمایش مدیر</span>';
+    }
+    if (!$unlocked) {
+        echo '<span class="md-day-lock-badge"><span aria-hidden="true">🔒</span> قفل</span>';
+    }
+    echo '</header>';
+
+    if (!$unlocked) {
+        echo '<div class="md-day-locked-note">';
+        if ($unlock_date) {
+            echo '<p>این روز در <strong>' . esc_html(md_format_jalali($unlock_date)) . '</strong> باز می‌شود.</p>';
+        } elseif ('publish' !== $day->post_status) {
+            echo '<p>این روز هنوز منتشر نشده است.</p>';
+        } else {
+            echo '<p>محتوای این روز هنوز در دسترس نیست.</p>';
+        }
+        echo '</div></article>';
+        return;
+    }
+
+    if ($summary) {
+        echo '<p class="md-day-summary">' . esc_html($summary) . '</p>';
+    }
+
+    global $post;
+    $original_post = $post;
+    $post = $day; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+    setup_postdata($day);
+    $content = apply_filters('the_content', $day->post_content);
+    wp_reset_postdata();
+    $post = $original_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+    if ('' !== trim($day->post_content)) {
+        echo '<div class="md-day-content entry-content">' . $content . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    } elseif ($is_editor) {
+        echo '<p class="md-empty-day">محتوای این روز هنوز تکمیل نشده است.</p>';
+    }
+
+    $extra = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_extra', true));
+    if ($extra) {
+        echo '<div class="md-day-extra">' . wpautop(esc_html($extra)) . '</div>';
+    }
+
+    echo md_challenge_day_tip_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo md_challenge_day_exercise_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo md_challenge_day_media_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo md_challenge_day_qa_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+    echo '</article>';
+}
+
+/**
+ * Day navigation for the single challenge page.
+ *
+ * @param WP_Post[] $days         Days.
+ * @param int       $challenge_id Challenge ID.
+ */
+function md_challenge_render_day_nav($days, $challenge_id) {
+    if (!$days) {
+        return;
+    }
+    ?>
+    <nav class="md-day-nav" aria-label="فهرست روزهای چالش">
+        <span class="md-day-nav-title">روزهای چالش</span>
+        <ol>
+            <?php foreach ($days as $day) : ?>
+                <?php
+                $order    = md_challenge_day_order($day->ID);
+                $unlocked = md_challenge_day_is_unlocked($day, $challenge_id);
+                ?>
+                <li class="<?php echo esc_attr($unlocked ? 'is-open' : 'is-locked'); ?>">
+                    <a href="#day-<?php echo esc_attr($order); ?>">
+                        <span class="md-day-nav-number"><?php echo esc_html(md_fa_num($order)); ?></span>
+                        <span class="md-day-nav-label"><?php echo esc_html($day->post_title ? $day->post_title : 'روز ' . md_fa_num($order)); ?></span>
+                        <?php if (!$unlocked) : ?><span class="md-day-nav-lock" aria-label="قفل">🔒</span><?php endif; ?>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    </nav>
+    <?php
+}
+
+/**
+ * Render a challenge card.
+ *
+ * @param int|null $post_id Challenge ID.
+ */
+function md_challenge_render_card($post_id = null) {
+    $post_id = $post_id ? $post_id : get_the_ID();
+    if (!$post_id) {
+        return;
+    }
+
+    $start      = md_challenge_start($post_id);
+    $end        = md_challenge_end($post_id);
+    $days       = md_challenge_days($post_id, false);
+    $stats      = md_challenge_stats($post_id);
+    $time       = md_challenge_time_status($post_id);
+    $time_label = md_challenge_time_label($post_id);
+    $category   = md_challenge_categories($post_id);
+
+    $excerpt = get_post_field('post_excerpt', $post_id);
+    if (!$excerpt) {
+        $excerpt = get_post_field('post_content', $post_id);
+    }
+    ?>
+    <article class="md-challenge-card md-challenge-card-<?php echo esc_attr($time); ?>">
+        <a class="md-challenge-card-cover" href="<?php echo esc_url(get_permalink($post_id)); ?>" aria-label="<?php echo esc_attr(get_the_title($post_id)); ?>">
+            <?php
+            if (has_post_thumbnail($post_id)) {
+                echo get_the_post_thumbnail($post_id, 'md-card', array('loading' => 'lazy'));
+            } else {
+                echo '<span class="md-challenge-card-fallback" aria-hidden="true">✦</span>';
+            }
+            ?>
+        </a>
+        <div class="md-challenge-card-body">
+            <?php if ($time_label) : ?>
+                <span class="md-challenge-status md-challenge-status-<?php echo esc_attr($time); ?>"><?php echo esc_html($time_label); ?></span>
+            <?php endif; ?>
+            <?php if ($category) : ?>
+                <span class="md-challenge-category"><?php echo esc_html($category); ?></span>
+            <?php endif; ?>
+            <h3><a href="<?php echo esc_url(get_permalink($post_id)); ?>"><?php echo esc_html(get_the_title($post_id)); ?></a></h3>
+            <p><?php echo esc_html(md_trim_text($excerpt, 18)); ?></p>
+            <div class="md-challenge-card-meta">
+                <span><?php echo esc_html($start ? md_format_jalali($start, 'short') : 'تاریخ اعلام نشده'); ?></span>
+                <span><?php echo esc_html(count($days) ? md_fa_num(count($days)) . ' روز' : md_fa_num($stats['calendar']) . ' روز'); ?></span>
+            </div>
+            <a class="text-link" href="<?php echo esc_url(get_permalink($post_id)); ?>">مشاهده چالش ←</a>
+        </div>
+    </article>
+    <?php
+}
+
+/**
+ * Shortcode: [morvarid_challenges].
+ *
+ * @param array $atts Attributes.
+ * @return string
+ */
+function md_challenge_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'count'    => 3,
+        'title'    => 'چالش‌های مروارید درون',
+        'subtitle' => '',
+        'status'   => 'all',
+        'category' => '',
+    ), $atts, 'morvarid_challenges');
+
+    $args = array(
+        'posts_per_page' => max(1, min(12, absint($atts['count']))),
+        'orderby'        => 'meta_value',
+        'order'          => 'DESC',
+    );
+
+    if ('upcoming' === $atts['status']) {
+        $args['order'] = 'ASC';
+        $args['meta_query'][] = array(
+            'key'     => '_md_start_date',
+            'value'   => md_today(),
+            'compare' => '>',
+            'type'    => 'DATE',
+        );
+    } elseif ('active' === $atts['status']) {
+        $args['meta_query'][] = array('key' => '_md_start_date', 'value' => md_today(), 'compare' => '<=', 'type' => 'DATE');
+        $args['meta_query'][] = array('key' => '_md_end_date', 'value' => md_today(), 'compare' => '>=', 'type' => 'DATE');
+    }
+
+    if ($atts['category']) {
+        $args['tax_query'][] = array(
+            'taxonomy' => 'md_challenge_cat',
+            'field'    => 'slug',
+            'terms'    => sanitize_title($atts['category']),
+        );
+    }
+
+    $query = md_challenge_query($args);
+    if (!$query->have_posts()) {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <section class="section md-challenge-grid-section">
+        <div class="container">
+            <?php if ($atts['title'] || $atts['subtitle']) : ?>
+                <div class="section-head">
+                    <div>
+                        <?php if ($atts['title']) : ?><h2><?php echo esc_html($atts['title']); ?></h2><?php endif; ?>
+                        <?php if ($atts['subtitle']) : ?><p><?php echo esc_html($atts['subtitle']); ?></p><?php endif; ?>
+                    </div>
+                    <?php $archive = get_post_type_archive_link('md_challenge'); ?>
+                    <?php if ($archive) : ?><a class="text-link" href="<?php echo esc_url($archive); ?>">همه چالش‌ها ←</a><?php endif; ?>
+                </div>
+            <?php endif; ?>
+            <div class="three-col card-grid md-challenge-grid">
+                <?php
+                while ($query->have_posts()) {
+                    $query->the_post();
+                    md_challenge_render_card(get_the_ID());
+                }
+                ?>
+            </div>
+        </div>
+    </section>
+    <?php
+    wp_reset_postdata();
+    return ob_get_clean();
+}
+add_shortcode('morvarid_challenges', 'md_challenge_shortcode');
+
+/**
+ * Enqueue public challenge styles.
+ */
+function md_challenge_public_assets() {
+    $is_challenge = is_singular('md_challenge')
+        || is_post_type_archive('md_challenge')
+        || is_tax('md_challenge_cat');
+
+    if (!$is_challenge) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'md-challenge',
+        MD_THEME_URI . '/assets/css/challenge.css',
+        array('md-main'),
+        MD_THEME_VERSION
+    );
+}
+add_action('wp_enqueue_scripts', 'md_challenge_public_assets', 15);
+
+/**
+ * Register a block pattern for the challenge grid.
+ */
+function md_challenge_register_pattern() {
+    if (!function_exists('register_block_pattern')) {
+        return;
+    }
+    register_block_pattern('morvarid/challenge-grid', array(
+        'title'       => 'مروارید | چالش‌های چندروزه',
+        'description' => 'نمایش خودکار چالش‌های منتشرشده با استفاده از شورت‌کد قالب.',
+        'categories'  => array('morvarid'),
+        'content'     => '<!-- wp:shortcode -->[morvarid_challenges count="3" title="چالش‌های مروارید درون" subtitle="قدم‌به‌قدم، همراه با هم" status="all"]<!-- /wp:shortcode -->',
+    ));
+}
+add_action('init', 'md_challenge_register_pattern', 20);

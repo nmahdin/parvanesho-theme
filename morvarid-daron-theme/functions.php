@@ -1,20 +1,46 @@
 <?php
 if (!defined('ABSPATH')) exit;
-require_once get_template_directory() . '/inc/customizer.php';
+
+if (!defined('MD_THEME_VERSION')) {
+ define('MD_THEME_VERSION', wp_get_theme()->get('Version') ? wp_get_theme()->get('Version') : '1.0.0');
+}
+if (!defined('MD_THEME_DIR')) define('MD_THEME_DIR', get_template_directory());
+if (!defined('MD_THEME_URI')) define('MD_THEME_URI', get_template_directory_uri());
+
+require_once MD_THEME_DIR . '/inc/helpers.php';
+require_once MD_THEME_DIR . '/inc/post-types.php';
+require_once MD_THEME_DIR . '/inc/academy.php';
+require_once MD_THEME_DIR . '/inc/challenges/helpers.php';
+require_once MD_THEME_DIR . '/inc/challenges/ajax.php';
+require_once MD_THEME_DIR . '/inc/challenges/admin.php';
+require_once MD_THEME_DIR . '/inc/challenges/public.php';
+require_once MD_THEME_DIR . '/inc/customizer.php';
 function md_setup() {
- add_theme_support('title-tag'); add_theme_support('post-thumbnails'); add_theme_support('html5', ['search-form','comment-form','comment-list','gallery','caption','style','script']); add_theme_support('custom-logo', ['height'=>100,'width'=>260,'flex-height'=>true,'flex-width'=>true]); add_theme_support('responsive-embeds'); add_theme_support('editor-styles');
+ add_theme_support('title-tag'); add_theme_support('post-thumbnails'); add_theme_support('html5', ['search-form','comment-form','comment-list','gallery','caption','style','script']); add_theme_support('custom-logo', ['height'=>100,'width'=>260,'flex-height'=>true,'flex-width'=>true]); add_theme_support('responsive-embeds'); add_theme_support('editor-styles'); add_theme_support('align-wide'); add_theme_support('wp-block-styles'); add_theme_support('automatic-feed-links'); add_theme_support('customize-selective-refresh-widgets'); add_theme_support('starter-content');
+ load_theme_textdomain('morvarid-daron', get_template_directory() . '/languages');
  register_nav_menus(['primary'=>__('منوی اصلی','morvarid-daron'),'footer'=>__('منوی پایین سایت','morvarid-daron')]);
  add_image_size('md-card',720,480,true);
 }
 add_action('after_setup_theme','md_setup');
 function md_assets() {
- wp_enqueue_style('md-main',get_template_directory_uri().'/assets/css/main.css',[],wp_get_theme()->get('Version'));
- wp_enqueue_script('md-main',get_template_directory_uri().'/assets/js/main.js',[],wp_get_theme()->get('Version'),true);
+ wp_enqueue_style('md-main', MD_THEME_URI . '/assets/css/main.css', [], MD_THEME_VERSION);
+ wp_enqueue_style('md-academy', MD_THEME_URI . '/assets/css/academy.css', ['md-main'], MD_THEME_VERSION);
+ wp_enqueue_style('md-challenge', MD_THEME_URI . '/assets/css/challenge.css', ['md-main'], MD_THEME_VERSION);
+ wp_enqueue_script('md-main', MD_THEME_URI . '/assets/js/main.js', [], MD_THEME_VERSION, true);
+ if (is_singular() || is_author() || is_tax() || is_attachment()) {
+  wp_enqueue_style('md-comments', MD_THEME_URI . '/assets/css/comments.css', ['md-main'], MD_THEME_VERSION);
+ }
 }
 add_action('wp_enqueue_scripts','md_assets');
 function md_excerpt($length){return is_admin() ? $length : 18;}
 add_filter('excerpt_length','md_excerpt',99);
-function md_fallback_menu(){echo '<ul class="nav-list"><li><a href="'.esc_url(home_url('/')).'">خانه</a></li><li><a href="'.esc_url(get_post_type_archive_link('post') ?: home_url('/#magazine')).'">مجله</a></li><li><a href="'.esc_url(home_url('/#coaching')).'">کوچینگ</a></li><li><a href="'.esc_url(home_url('/#academy')).'">آکادمی</a></li></ul>';}
+function md_fallback_menu(){
+ $blog = get_option('page_for_posts') ? get_permalink(get_option('page_for_posts')) : home_url('/');
+ $academy = get_post_type_archive_link('md_course') ?: home_url('/#academy');
+ $coaching = get_post_type_archive_link('md_service') ?: home_url('/#coaching');
+ $challenges = get_post_type_archive_link('md_challenge') ?: home_url('/');
+ echo '<ul class="nav-list"><li><a href="'.esc_url(home_url('/')).'">خانه</a></li><li><a href="'.esc_url($blog).'">مجله</a></li><li><a href="'.esc_url($coaching).'">کوچینگ</a></li><li><a href="'.esc_url($academy).'">آکادمی</a></li><li><a href="'.esc_url($challenges).'">چالش‌ها</a></li></ul>';
+}
 function md_card($post_id,$label='') { ?>
 <article class="content-card">
 <a href="<?php echo esc_url(get_permalink($post_id)); ?>" class="card-cover" aria-label="<?php echo esc_attr(get_the_title($post_id)); ?>">
@@ -23,12 +49,16 @@ function md_card($post_id,$label='') { ?>
 <div class="card-body"><span class="eyebrow"><?php echo esc_html($label ?: 'مروارید درون'); ?></span><h3><a href="<?php echo esc_url(get_permalink($post_id)); ?>"><?php echo esc_html(get_the_title($post_id)); ?></a></h3><p><?php echo esc_html(wp_trim_words(get_post_field('post_excerpt',$post_id) ?: wp_strip_all_tags(get_post_field('post_content',$post_id)),19,'…')); ?></p><a class="text-link" href="<?php echo esc_url(get_permalink($post_id)); ?>">بیشتر بخوانید ←</a></div>
 </article><?php }
 
-// سبک نگارش فارسی؛ هنگام عدم دسترسی به سرویس فونت از فونت‌های سیستمی استفاده می‌شود.
+// فونت وزیرمتن به‌صورت محلی در قالب میزبانی می‌شود؛ هیچ درخواستی به CDN گوگل ارسال نمی‌شود.
 function md_typography_assets(){
- wp_enqueue_style('md-vazirmatn','https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap',[],null);
+ wp_enqueue_style('md-fonts', MD_THEME_URI . '/assets/css/fonts.css', array(), MD_THEME_VERSION);
 }
 add_action('wp_enqueue_scripts','md_typography_assets',5);
-function md_editor_style(){ add_editor_style('assets/css/editor.css'); }
+// پیش‌بارگذاری فونت متغیر برای جلوگیری از پرش متن (FOUT).
+add_action('wp_head', function () {
+ echo '<link rel="preload" href="' . esc_url(MD_THEME_URI . '/assets/fonts/Vazirmatn-Variable.woff2') . '" as="font" type="font/woff2" crossorigin>' . "\n";
+}, 2);
+function md_editor_style(){ add_editor_style(['assets/css/fonts.css', 'assets/css/editor.css']); }
 add_action('after_setup_theme','md_editor_style');
 
 
@@ -94,15 +124,15 @@ add_action('admin_menu',function(){add_theme_page('تنظیمات مروارید
 add_action('admin_init',function(){
  register_setting('md_theme_options','md_theme_options',['type'=>'array','sanitize_callback'=>'md_sanitize_theme_options','default'=>[]]);
  add_settings_section('md_general','نمایش و چیدمان','__return_false','md-theme-options');
- foreach(['magazine_title'=>'عنوان مجله','academy_title'=>'عنوان آکادمی','academy_intro'=>'توضیحات آکادمی','magazine_intro'=>'توضیحات مجله','primary_color'=>'رنگ اصلی (HEX)','items_per_page'=>'تعداد کارت در هر صفحه'] as $key=>$label){
+ foreach(['magazine_title'=>'عنوان مجله','academy_title'=>'عنوان آکادمی','academy_intro'=>'توضیحات آکادمی','challenges_title'=>'عنوان چالش‌ها','challenges_intro'=>'توضیحات چالش‌ها','magazine_intro'=>'توضیحات مجله','primary_color'=>'رنگ اصلی (HEX)','items_per_page'=>'تعداد کارت در هر صفحه'] as $key=>$label){
  add_settings_field($key,$label,function($args){$o=get_option('md_theme_options',[]);$k=$args['key'];$v=$o[$k]??'';echo '<input class="regular-text" type="'.($k==='items_per_page'?'number':'text').'" name="md_theme_options['.esc_attr($k).']" value="'.esc_attr($v).'" '.($k==='items_per_page'?'min="3" max="24"':'').'/>';},'md-theme-options','md_general',['key'=>$key]);
  }
 });
-function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));return $out;}
+function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));return $out;}
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
 function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی. ویرایش ترتیب صفحه اصلی از «برگه‌ها ← خانه» انجام می‌شود. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
 add_action('wp_enqueue_scripts',function(){ $c=md_theme_option('primary_color','#326d62');wp_add_inline_style('md-main',':root{--md-accent:'.esc_attr($c).';} .md-search-button,.md-academy-pill.is-active{background:var(--md-accent)}');},20);
-function md_pretty_search($only_posts=true){$action=home_url('/');return '<form role="search" method="get" class="md-pretty-search" action="'.esc_url($action).'"><label class="screen-reader-text" for="md-search-side">جستجو در مجله</label><span class="md-search-icon" aria-hidden="true">⌕</span><input id="md-search-side" type="search" name="s" placeholder="در مجله جستجو کنید…" value="'.esc_attr(get_search_query()).'" />'.($only_posts?'<input type="hidden" name="post_type" value="post">':'').'<button class="md-search-button" type="submit">جستجو ←</button></form>';}
+function md_pretty_search($only_posts=true){$action=home_url('/');$id=wp_unique_id('md-search-');return '<form role="search" method="get" class="md-pretty-search" action="'.esc_url($action).'"><label class="screen-reader-text" for="'.esc_attr($id).'">جستجو در مجله</label><span class="md-search-icon" aria-hidden="true">⌕</span><input id="'.esc_attr($id).'" type="search" name="s" placeholder="در مجله جستجو کنید…" value="'.esc_attr(get_search_query()).'" />'.($only_posts?'<input type="hidden" name="post_type" value="post">':'').'<button class="md-search-button" type="submit">جستجو ←</button></form>';}
 add_filter('get_search_form',function($form){if(is_home()||is_singular('post')||is_category()||is_tag())return md_pretty_search();return $form;});
 // Make searchable archive of academy content across format types.
 add_action('pre_get_posts',function($q){if(is_admin()||!$q->is_main_query())return; if($q->is_post_type_archive('md_course')||$q->is_post_type_archive('md_lesson')||$q->is_post_type_archive('md_podcast'))$q->set('posts_per_page',max(3,min(24,(int)md_theme_option('items_per_page',9))));if($q->is_home())$q->set('posts_per_page',max(3,min(24,(int)md_theme_option('items_per_page',9))));});
@@ -152,7 +182,7 @@ function md_design_block_render($attributes, $content, $block) {
 }
 add_action('init', function() {
  $script='md-design-editor';
- wp_register_script($script,get_template_directory_uri().'/assets/js/gutenberg-blocks.js',['wp-blocks','wp-element','wp-components','wp-block-editor','wp-server-side-render'],'0.7.0',true);
+ wp_register_script($script,get_template_directory_uri().'/assets/js/gutenberg-blocks.js',['wp-blocks','wp-element','wp-components','wp-block-editor','wp-server-side-render'],MD_THEME_VERSION,true);
  $blocks=[
   'hero'=>['title'=>'جایی برای کشف خود','subtitle'=>'رشد، آگاهی و ارتباط عمیق‌تر','buttonLabel'=>'شروع کنید','buttonUrl'=>''],
   'content-grid'=>['title'=>'تازه‌ترین مطالب','postType'=>'post','count'=>3,'columns'=>3,'categorySlug'=>''],
@@ -163,4 +193,4 @@ add_action('init', function() {
  foreach($blocks as $slug=>$fields){$attributes=[];foreach($fields as $field=>$default)$attributes[$field]=['type'=>(is_int($default)?'number':(is_bool($default)?'boolean':(is_array($default)?'array':'string'))),'default'=>$default];
  register_block_type('morvarid/'.$slug,['api_version'=>2,'editor_script'=>$script,'attributes'=>$attributes,'render_callback'=>'md_design_block_render']);}
 });
-add_action('enqueue_block_assets', function(){wp_enqueue_style('md-gutenberg-shared',get_template_directory_uri().'/assets/css/gutenberg-blocks.css',[], '0.7.0');});
+add_action('enqueue_block_assets', function(){wp_enqueue_style('md-gutenberg-shared',get_template_directory_uri().'/assets/css/gutenberg-blocks.css',[], MD_THEME_VERSION);});

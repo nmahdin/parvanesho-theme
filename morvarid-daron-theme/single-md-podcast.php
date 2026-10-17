@@ -1,1 +1,8 @@
-<?php get_header(); ?><main class="container reading-layout md-lesson-page" id="main"><?php while(have_posts()):the_post(); ?><article <?php post_class(); ?>><span class="eyebrow">آکادمی مروارید درون / پادکست</span><h1><?php the_title(); ?></h1><p class="post-meta"><?php echo esc_html(get_post_meta(get_the_ID(),'_md_duration',true)); ?></p><?php if(has_post_thumbnail())the_post_thumbnail('large',['class'=>'single-cover']); ?><?php if(function_exists('md_academy_media'))echo md_academy_media(get_the_ID()); ?><div class="entry-content"><?php the_content(); ?></div><?php  ?></article><?php endwhile; ?></main><?php get_footer(); ?>
+<?php
+/**
+ * Compatibility wrapper: the canonical template uses the real post type key.
+ *
+ * @package Morvarid_Daron
+ */
+
+require get_template_directory() . '/single-md_podcast.php';

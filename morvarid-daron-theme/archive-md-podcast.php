@@ -1,1 +1,8 @@
-<?php require get_template_directory().'/archive-md-course.php';
+<?php
+/**
+ * Compatibility wrapper: the canonical template uses the real post type key.
+ *
+ * @package Morvarid_Daron
+ */
+
+require get_template_directory() . '/archive-md_podcast.php';

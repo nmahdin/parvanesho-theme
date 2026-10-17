@@ -1,0 +1,55 @@
+/* Shared admin field styles for Morvarid Daron */
+
+.md-admin-fields {
+    display: grid;
+    gap: 18px;
+    max-width: 820px;
+}
+
+.md-admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 14px;
+}
+
+.md-admin-field > label {
+    font-weight: 700;
+    color: #1d3d35;
+}
+
+.md-admin-field input[type="text"],
+.md-admin-field input[type="url"],
+.md-admin-field input[type="number"],
+.md-admin-field input[type="date"],
+.md-admin-field select,
+.md-admin-field textarea {
+    max-width: 100%;
+}
+
+.md-admin-field .regular-text {
+    width: min(100%, 420px);
+}
+
+.md-media-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.md-media-name {
+    color: #4a5c56;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.md-admin-field .description {
+    margin: 2px 0 0;
+    color: #60716a;
+}
+
+.md-admin-field .required,
+.md-required {
+    color: #b32d2e;
+}

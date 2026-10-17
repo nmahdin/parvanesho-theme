@@ -1,0 +1,70 @@
+<?php
+/**
+ * Single course.
+ *
+ * @package Morvarid_Daron
+ */
+
+get_header();
+
+while (have_posts()) :
+    the_post();
+
+    $course_id = get_the_ID();
+    $pairs     = md_academy_meta_pairs($course_id);
+    $price     = get_post_meta($course_id, '_md_course_price', true);
+    $cta       = esc_url_raw(get_post_meta($course_id, '_md_course_cta_url', true));
+    if (!$cta) {
+        $cta = get_theme_mod('md_booking_url', home_url('/contact/'));
+    }
+    $lessons   = md_get_course_lessons($course_id, current_user_can('edit_post', $course_id));
+    ?>
+    <main id="main" class="container reading-layout md-academy-single">
+        <article <?php post_class('article-single'); ?>>
+            <a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>">← همه دوره‌ها</a>
+            <div class="eyebrow">آکادمی مروارید درون / دوره آموزشی</div>
+            <h1><?php the_title(); ?></h1>
+
+            <?php if ($pairs) : ?>
+                <div class="md-academy-meta">
+                    <?php foreach ($pairs as $pair) : ?>
+                        <span>
+                            <?php echo esc_html($pair['label']); ?>:
+                            <?php if (!empty($pair['url'])) : ?>
+                                <a href="<?php echo esc_url($pair['url']); ?>"><?php echo esc_html($pair['value']); ?></a>
+                            <?php else : ?>
+                                <?php echo esc_html($pair['value']); ?>
+                            <?php endif; ?>
+                        </span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (has_post_thumbnail()) : ?>
+                <?php the_post_thumbnail('large', array('class' => 'single-cover')); ?>
+            <?php endif; ?>
+
+            <?php echo md_academy_media($course_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+            <div class="entry-content">
+                <?php the_content(); ?>
+            </div>
+
+            <div class="md-course-cta">
+                <div>
+                    <strong><?php echo esc_html($price ? 'هزینه دوره: ' . $price : 'برای شرکت در این دوره آماده‌اید؟'); ?></strong>
+                    <span><?php echo esc_html(count($lessons) ? md_fa_num(count($lessons)) . ' جلسه در این دوره ثبت شده است.' : 'جزئیات ثبت‌نام را از طریق فرم درخواست دریافت کنید.'); ?></span>
+                </div>
+                <a class="btn btn-primary" href="<?php echo esc_url($cta); ?>">درخواست ثبت‌نام ←</a>
+            </div>
+
+            <section class="md-course-lessons">
+                <h2>جلسات این دوره</h2>
+                <?php echo md_academy_lessons($course_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </section>
+        </article>
+    </main>
+    <?php
+endwhile;
+
+get_footer();
