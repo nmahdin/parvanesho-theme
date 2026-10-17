@@ -105,6 +105,7 @@ final class MD_Learning_Questions {
         $changed = false;
         self::normalize_blocks($blocks, $seen_blocks, $seen_questions, $changed);
         if (!$changed) {
+            self::sync_manager_visibility($post_id, $blocks);
             return;
         }
         self::$normalizing = true;
@@ -115,6 +116,42 @@ final class MD_Learning_Questions {
         self::$normalizing = false;
         if (is_wp_error($result)) {
             error_log('Morvarid Learning Core: could not normalize question IDs on content ' . absint($post_id));
+        } else {
+            self::sync_manager_visibility($post_id, $blocks);
+        }
+    }
+
+    /**
+     * Synchronize an editor's reporting choice to existing responses.
+     * Removed blocks preserve their last state for archival protection.
+     */
+    private static function sync_manager_visibility($post_id, $blocks) {
+        global $wpdb;
+        $rules = array();
+        self::collect_visibility($blocks, $rules);
+        $table = MD_Learning_Schema::table('responses');
+        foreach ($rules as $block_id => $visible) {
+            $wpdb->update(
+                $table,
+                array('manager_visible' => $visible ? 1 : 0),
+                array('content_id' => absint($post_id), 'block_id' => $block_id),
+                array('%d'), array('%d', '%s')
+            );
+        }
+    }
+
+    private static function collect_visibility($blocks, &$rules) {
+        foreach ($blocks as $block) {
+            if (isset($block['blockName']) && $block['blockName'] === self::BLOCK) {
+                $attrs = isset($block['attrs']) && is_array($block['attrs']) ? $block['attrs'] : array();
+                $id = isset($attrs['blockId']) ? $attrs['blockId'] : '';
+                if (self::valid_uuid($id)) {
+                    $rules[$id] = !isset($attrs['managerVisible']) || (bool) $attrs['managerVisible'];
+                }
+            }
+            if (!empty($block['innerBlocks'])) {
+                self::collect_visibility($block['innerBlocks'], $rules);
+            }
         }
     }
 
