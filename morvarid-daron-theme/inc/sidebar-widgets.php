@@ -253,7 +253,7 @@ function md_seed_default_sidebar_widgets() {
         $existing = isset($config[$area]) && is_array($config[$area]) ? $config[$area] : array();
         // Keep every existing widget and its order; convert the old
         // always-visible family footer card to ONE removable real widget.
-        $seed_types = $existing ? array() : $types;
+        $seed_types = $existing ? array('family') : $types;
         foreach ($seed_types as $type) {
             if ($type === 'family') {
                 $found = false;
