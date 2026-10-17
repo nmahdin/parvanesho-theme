@@ -567,12 +567,25 @@ body.md-modal-open {
 
 /* Reliable, JavaScript-independent edit form at the end of the admin screen. */
 .md-day-fallback-notice { padding: 12px 16px; background: #eff8f3; border-right: 3px solid #3b8b65; line-height: 1.9; border-radius: 9px; margin-top: 18px; }
-.md-direct-day-panel { max-width: 1140px; margin: 32px auto 50px; padding: clamp(20px,3vw,35px); background: #fff; border: 1px solid #dce7df; border-radius: 16px; box-shadow: 0 10px 30px rgba(26,64,45,.05); scroll-margin-top: 40px; }
-.md-direct-day-panel h2 { font-size: 22px; color: #245742; margin-top: 0; }
-.md-direct-day-panel > p { color: #63766a; }
-.md-direct-day-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0 26px; }
-.md-direct-day-fields label { display: grid; gap: 7px; color: #345745; font-weight: 600; }
-.md-direct-day-fields label.md-wide { grid-column: 1/-1; }
-.md-direct-day-fields input, .md-direct-day-fields textarea, .md-direct-day-fields select { box-sizing: border-box; width: 100%; max-width: 100%; border-radius: 9px; padding: 9px 12px; }
-.md-direct-day-panel .button { margin-inline-end: 10px; }
-@media (max-width: 760px) { .md-direct-day-fields { grid-template-columns: 1fr; } }
+
+/* Advanced modal — independently ordered tips, practical tasks, attachments. */
+.md-repeatable-section{min-width:0}
+.md-repeatable-section>.description{color:#607467;margin:0 0 14px;line-height:1.9}
+.md-repeatable-list{display:grid;gap:12px;margin:14px 0}
+.md-repeat-row{background:#fbfdfa;border:1px solid #dae8dc;border-radius:13px;padding:15px;display:grid;gap:12px;min-width:0;box-shadow:0 2px 10px rgba(37,92,57,.035)}
+.md-repeat-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #e9f0e9;padding-bottom:10px}
+.md-repeat-head strong{color:#2c6548}
+.md-repeat-actions{display:flex;align-items:center;gap:6px}
+.md-repeat-actions .button{min-height:32px}
+.md-repeat-remove{color:#a22b2b!important}
+.md-repeat-field{display:grid;gap:6px;font-size:13px;font-weight:600;color:#345b44}
+.md-repeat-field input,.md-repeat-field textarea{min-width:0;width:100%;max-width:100%;box-sizing:border-box;border:1px solid #cedfd3;border-radius:8px;padding:9px 11px;font:inherit;line-height:1.8}
+.md-repeat-field textarea{resize:vertical;min-height:78px}
+.md-repeat-field input:focus,.md-repeat-field textarea:focus{border-color:#54936c;box-shadow:0 0 0 2px rgba(64,131,82,.13)}
+.md-repeat-media{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.md-repeat-media-name{font-size:12px;color:#66806c;overflow-wrap:anywhere}
+.md-repeat-add{min-height:38px;background:#edf6ee!important;color:#296440!important;border-color:#b5d6bc!important;border-radius:8px!important}
+.md-repeat-add:hover{background:#dff1e3!important}
+.md-modal-dialog{width:min(1050px,calc(100vw - 40px))}
+.md-modal-body{overscroll-behavior:contain}
+@media(max-width:680px){.md-repeat-row{padding:11px}.md-repeat-head{align-items:flex-start}.md-modal-dialog{width:100vw;max-height:100dvh;border-radius:0}.md-modal-body{padding:13px}.md-repeat-actions .button{padding:2px 9px;min-width:32px}}
