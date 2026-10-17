@@ -291,7 +291,7 @@ final class MD_Learning_Dashboard {
         $data = self::challenge_data($id);
         ob_start();
         ?>
-        <main class="md-learning-app md-learning-workspace" dir="rtl">
+        <section class="md-learning-app md-learning-workspace" dir="rtl">
             <div class="md-learning-shell">
                 <header class="md-learning-workspace-hero">
                     <div><span class="md-learning-eyebrow">مروارید درون · فضای شخصی یادگیری</span>
