@@ -1,7 +1,7 @@
-# Morvarid Learning Core — Phases A + B + C + D
+# Morvarid Learning Core — Phases A + B + C + D + E
 
 Standalone WordPress plugin for an **email-free, unified learner identity**.
-Version: **0.4.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
+Version: **0.5.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
 website **must use HTTPS**. WordPress administrator login stays separate.
 
 ## Installation
@@ -14,13 +14,14 @@ then upload it via Plugins > Add New > Upload Plugin.
 
 Do not upload this folder as a theme and do not edit `functions.php`.
 
-Activation and upgrades create five tables (with the site's configured prefix):
+Activation and upgrades create six tables (with the site's configured prefix):
 
 - `<prefix>md_learning_learners`: profile, one globally unique hashed 8-digit code.
 - `<prefix>md_learning_links`: long random access-link secrets, stored only as keyed hashes.
 - `<prefix>md_learning_sessions`: independently managed, hashed browser sessions.
 - `<prefix>md_learning_challenges`: one challenge membership per learner per challenge, with database uniqueness constraints.
-- `<prefix>md_learning_responses`: private question answers (draft/final) keyed by learner, educational content and stable question UUID.
+- `<prefix>md_learning_responses`: private question answers (draft/final) keyed by learner, educational content and stable question UUID; v0.5.0 adds a manager-visibility flag.
+- `<prefix>md_learning_audit_events`: audited administrator answer-detail views, metadata only (no private answer text).
 
 And three published pages (unless an unrelated page already occupies the slug):
 
@@ -67,6 +68,79 @@ invalidates prior code, links and sessions without deleting the learner record.
 - This identity is **not** a WordPress user account. Never authorize access
   to answers using a user-supplied learner ID. Always resolve it from the
   validated server-side session.
+
+## Phase E: private answer-report administration (v0.5.0)
+
+The WordPress admin receives **یادگیرندگان → پاسخ‌های آموزشی**.
+The reporting module is read-only: it never edits, deletes, publishes or
+exports learners' answers.
+
+- Real-time counts of answer rows, drafts, final submissions, distinct
+  responding learners and distinct educational posts, all reflecting the
+  *currently applied filters*.
+- Metadata-only paginated list (25 per page) sorted by most recently updated.
+  Answer text is not selected in list queries and is not searchable.
+- Search by learner display name, educational content title or question
+  wording; independent filters for draft/final, numeric learner and content
+  IDs, and inclusive start/end date (calendar controls use Gregorian dates,
+  stored timestamps are UTC).
+- Detail page renders the saved question wording, private answer, learner,
+  content, status and timestamps with proper escaping; the answer page is
+  never cached.
+- Reading a detail creates a metadata-only audit event with the WordPress
+  administrator's user ID, learner ID, response ID and UTC timestamp.
+  **If the audit event cannot be stored, private detail display is denied**.
+- Read permissions use a dedicated WordPress capability:
+  `md_view_learning_responses`. This capability is granted to the
+  WordPress **administrator role only** during plugin activation/upgrade.
+  It is NOT automatically granted to editors, authors or mentors.
+  For a specifically authorized WordPress staff account, a site administrator
+  may grant this capability through a trusted role/capability-management
+  workflow. Such a staff account sees a separate top-level response menu
+  if the main learners administration is otherwise unavailable.
+- Gutenberg's educational question block now has a **per-block switch**:
+  `نمایش پاسخ‌ها برای مدیران دارای مجوز`. It defaults to enabled for
+  existing questions. Disabling it excludes the block's existing and future
+  answers from manager reports, aggregates and direct-ID detail lookups.
+  Answers remain intact in the individual learner's profile. Changes to the
+  switch synchronize to answer records when the post is saved. Removing
+  a block keeps the previously selected visibility for archived responses.
+  Database administrators can still technically access the underlying data.
+
+This feature intentionally does not offer anonymous answer APIs, batch CSV
+export, access codes, mentor access based only on challenge assignment, or a
+universal answer deletion control. It does not overwrite old user records.
+
+### Phase E staging acceptance checks
+
+1. Upgrade plugin to v0.5.0; log into WP administration once. Check
+   `md_learning_audit_events` and the new `manager_visible` column exist.
+   Ensure the administrator role has `md_view_learning_responses`.
+2. Check the reports menu, filter controls, pagination, summary counts and
+   detail view against test draft/final responses. Verify the list never
+   contains full answer plaintext.
+3. Try the reports page URL and a known detail-ID URL while logged in as an
+   ordinary editor or anonymous user: both must return unauthorized.
+4. Create a specially authorized staff role with ONLY the response-view
+   capability; confirm it sees only the response menu, not learners' access
+   codes/credential management.
+5. Toggle a question block's manager visibility off, save the educational
+   post, verify existing answers disappear from counts and details but remain
+   in the learner's own dashboard. Toggle on and verify report visibility
+   returns. Check newly saved answers inherit the same setting.
+6. Open a detail as an authorized manager and verify an audit event is
+   written without answer text. Disable the audit table on a **staging**
+   database and verify detail viewing is refused, then restore it.
+7. Try malicious search terms, forged numeric IDs, invalid dates and
+   an expired/deleted educational post; there must be no unauthorized
+   plaintext disclosure or broken SQL.
+8. Check HTTPS and private/no-store behavior, and inspect a responsive
+   small-screen view.
+
+CI contains PHP/JS lint and isolated PHP smoke tests for role permission
+checks, parameterized filters, draft/final reporting, manager-hidden rows and
+audit fail-closed behavior. Live WordPress/MySQL and browser testing remains
+necessary before production deployment.
 
 ## Phase D: editable educational questions and private answers (v0.4.0)
 
