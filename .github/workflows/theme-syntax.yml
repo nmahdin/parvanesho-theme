@@ -22,6 +22,8 @@ jobs:
         run: find morvarid-learning-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Parse theme JavaScript
         run: find morvarid-daron-theme -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Smoke-test central challenge identity and membership
+        run: php morvarid-learning-core/tests/phase-b-smoke.php
       - name: Check plugin source contracts
         shell: bash
         run: |
