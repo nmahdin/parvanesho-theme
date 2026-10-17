@@ -128,7 +128,7 @@ add_action('admin_init',function(){
 });
 function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));foreach(['telegram_url','bale_url','instagram_url'] as $k)$out[$k]=esc_url_raw($input[$k]??'');return $out;}
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
-function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود.'.$home_link.'</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
+function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود. '.$home_link.'</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
 add_action('wp_enqueue_scripts',function(){ $c=md_theme_option('primary_color','#326d62');wp_add_inline_style('md-main',':root{--md-accent:'.esc_attr($c).';} .md-search-button,.md-academy-pill.is-active{background:var(--md-accent)}');},20);
 function md_pretty_search($only_posts=true){$action=home_url('/');$id=wp_unique_id('md-search-');return '<form role="search" method="get" class="md-pretty-search" action="'.esc_url($action).'"><label class="screen-reader-text" for="'.esc_attr($id).'">جستجو در مجله</label><span class="md-search-icon" aria-hidden="true">⌕</span><input id="'.esc_attr($id).'" type="search" name="s" placeholder="در مجله جستجو کنید…" value="'.esc_attr(get_search_query()).'" />'.($only_posts?'<input type="hidden" name="post_type" value="post">':'').'<button class="md-search-button" type="submit">جستجو ←</button></form>';}
 add_filter('get_search_form',function($form){if(is_home()||is_singular('post')||is_category()||is_tag())return md_pretty_search();return $form;});
@@ -193,7 +193,9 @@ function md_design_block_render($attributes, $content, $block) {
   $head.='</div>';
   $q=new WP_Query($args);ob_start();
   echo '<section class="md-gb-grid-section'.$bg.'"><div class="container">'.$head.'<div class="md-gb-grid md-gb-cols-'.esc_attr((string)$columns).'">';
-  if ($q->have_posts()) { while ($q->have_posts()) {$q->the_post();md_card(get_the_ID(),$type==='post'?'مجله':'آکادمی مروارید');}wp_reset_postdata(); }
+  $labels=['post'=>'مجله','md_course'=>'دوره آموزشی','md_lesson'=>'جلسه','md_podcast'=>'پادکست','md_service'=>'کوچینگ','md_resource'=>'منبع رایگان'];
+  $card_label=$labels[$type] ?? 'مروارید درون';
+  if ($q->have_posts()) { while ($q->have_posts()) {$q->the_post();md_card(get_the_ID(),$card_label);}wp_reset_postdata(); }
   else echo '<p class="md-gb-empty">هنوز محتوای منتشرشده‌ای وجود ندارد.</p>';
   echo '</div></div></section>';return ob_get_clean();
  }
@@ -214,9 +216,9 @@ function md_design_block_render($attributes, $content, $block) {
 }
 add_action('init', function() {
  $script='md-design-editor';
- wp_register_script($script,get_template_directory_uri().'/assets/js/gutenberg-blocks.js',['wp-blocks','wp-element','wp-components','wp-block-editor','wp-server-side-render'],MD_THEME_VERSION,true);
+ wp_register_script($script,get_template_directory_uri().'/assets/js/gutenberg-blocks.js',['wp-blocks','wp-element','wp-components','wp-block-editor','wp-server-side-render','wp-media'],MD_THEME_VERSION,true);
  $blocks=[
-  'hero'=>['eyebrow'=>'مروارید درون','title'=>'جایی برای کشف خود','subtitle'=>'رشد، آگاهی و ارتباط عمیق‌تر','buttonLabel'=>'شروع کنید','buttonUrl'=>'','secondaryLabel'=>'','secondaryUrl'=>'','imageId'=>0,'artQuote'=>'هر گفت‌وگوی خوب، آغاز یک کشف تازه است.'],
+  'hero'=>['eyebrow'=>'مروارید درون','title'=>'جایی برای کشف خود','subtitle'=>'رشد، آگاهی و ارتباط عمیق‌تر','buttonLabel'=>'شروع کنید','buttonUrl'=>'','secondaryLabel'=>'','secondaryUrl'=>'','imageId'=>0,'artQuote'=>''],
   'content-grid'=>['title'=>'تازه‌ترین مطالب','subtitle'=>'','postType'=>'post','count'=>3,'columns'=>3,'categorySlug'=>'','linkLabel'=>'','linkUrl'=>'','background'=>''],
   'action'=>['title'=>'برای گفت‌وگو آماده‌ای؟','subtitle'=>'با یک قدم کوچک شروع کن','buttonLabel'=>'رزرو جلسه','buttonUrl'=>''],
   'download'=>['title'=>'کاربرگ آموزشی','description'=>'فایل کمکی برای یادگیری','fileUrl'=>'','buttonLabel'=>'دریافت فایل'],

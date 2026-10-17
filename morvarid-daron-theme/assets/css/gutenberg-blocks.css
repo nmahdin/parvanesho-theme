@@ -70,12 +70,16 @@
     color: #fff !important;
 }
 
+.md-gb-pillars-section {
+    padding-block: 26px;
+}
+
 .md-gb-pillars-section .pillar {
     height: 100%;
 }
 
 .md-gb-pillars-section .md-gb-features {
-    gap: 18px;
+    gap: 10px;
 }
 
 .md-gb-newsletter .newsletter-inner {
@@ -162,4 +166,26 @@
     .md-gb-hero-media .hero-art {
         height: 300px;
     }
+}
+
+/* Block inspector helpers */
+
+.md-block-media-field {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.md-form-fields-editor {
+    margin-top: 8px;
+}
+
+.md-form-field-row {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid #e0e5df;
+    border-radius: 10px;
+    background: #fbfcfb;
 }
