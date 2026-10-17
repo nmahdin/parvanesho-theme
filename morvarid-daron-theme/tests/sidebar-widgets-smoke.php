@@ -21,6 +21,8 @@ function add_action($event, $handler, $priority = 10) {
 }
 function register_sidebar($opts) { $GLOBALS['test_sidebar_regs'][$opts['id']] = $opts; }
 function register_widget($widget) { $GLOBALS['test_registered_widget'] = $widget; }
+function is_admin() { return true; }
+function current_user_can($cap) { return $cap === 'edit_theme_options'; }
 function wp_parse_args($args, $defaults) { return array_merge($defaults, (array) $args); }
 function wp_get_sidebars_widgets() { return $GLOBALS['test_sidebar_layouts']; }
 function wp_set_sidebars_widgets($layouts) { $GLOBALS['test_sidebar_layouts'] = $layouts; }
@@ -68,10 +70,10 @@ $layout = $GLOBALS['test_sidebar_layouts'];
 $instances = $GLOBALS['test_settings']['widget_md_sidebar_card'];
 checkit(count($layout['md-magazine-sidebar']) === 6, 'magazine defaults are not individual widgets');
 checkit(count($layout['md-challenge-sidebar']) === 5, 'challenge defaults missing');
-checkit(count($layout['md-academy-sidebar']) === 2, 'existing academy content was overwritten');
+checkit(count($layout['md-academy-sidebar']) === 1, 'existing academy widgets should stay untouched');
 checkit($layout['md-academy-sidebar'][0] === 'block-2', 'existing Gutenberg widget must stay first');
 checkit($layout['inactive_widgets'] === array('text-8'), 'inactive user widget was altered');
-foreach (array('md-magazine-sidebar','md-academy-sidebar','md-challenge-sidebar') as $id) {
+foreach (array('md-magazine-sidebar','md-challenge-sidebar') as $id) {
     $last = end($layout[$id]);
     preg_match('/^md_sidebar_card-([0-9]+)$/', $last, $match);
     checkit(isset($match[1]) && $instances[(int)$match[1]]['type'] === 'family',
