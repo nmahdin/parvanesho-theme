@@ -35,7 +35,16 @@ final class MD_Learning_Course_Admin {
         $course_id = isset($_POST['md_course']) ? absint($_POST['md_course']) : 0;
         $status = isset($_POST['md_status']) && is_string($_POST['md_status'])
             ? sanitize_key(wp_unslash($_POST['md_status'])) : '';
-        check_admin_referer('md_learning_course_admin_' . $learner_id . '_' . $course_id);
+        // The create form uses a static administrator nonce because IDs are
+        // typed after page load. Row controls use member-specific nonces.
+        $specific = wp_verify_nonce(
+            isset($_POST['_wpnonce']) && is_string($_POST['_wpnonce'])
+                ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '',
+            'md_learning_course_admin_' . $learner_id . '_' . $course_id
+        );
+        if (!$specific) {
+            check_admin_referer('md_learning_course_admin_membership');
+        }
         if (!$learner_id || !$course_id || !in_array($status, array('active', 'revoked'), true)) {
             wp_die('شناسه یا وضعیت عضویت معتبر نیست.', '', array('response' => 400));
         }
@@ -89,6 +98,7 @@ final class MD_Learning_Course_Admin {
                 <h2>ثبت یا تغییر عضویت</h2>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <input type="hidden" name="action" value="md_learning_course_admin_membership">
+                    <?php wp_nonce_field('md_learning_course_admin_membership'); ?>
                     <label>شناسه یادگیرنده (شماره بعد از L-)
                         <input type="number" name="md_learner" id="md-learning-course-learner" min="1" required>
                     </label>
@@ -103,7 +113,7 @@ final class MD_Learning_Course_Admin {
                         </select>
                     </label>
                     <button class="button button-primary" type="submit">ذخیره عضویت</button>
-                    <p class="description">کد امنیتی هنگام ارسال فرم برای همین شناسه‌های انتخابی کنترل می‌شود.</p>
+                    <p class="description">فقط مدیرکل وردپرس می‌تواند این درخواست را ارسال کند. صحت فرم و شناسه‌ها در سرور کنترل می‌شود.</p>
                 </form>
             </div>
             <form method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>" class="md-learning-admin-search">
