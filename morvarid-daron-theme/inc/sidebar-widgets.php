@@ -233,9 +233,9 @@ function md_seed_default_sidebar_widgets() {
     }
     foreach ($layouts as $area => $types) {
         $existing = isset($config[$area]) && is_array($config[$area]) ? $config[$area] : array();
-        // Never modify an already customized sidebar. A previously empty
-        // area gets real editable defaults once, without touching user data.
-        $seed_types = $existing ? array() : $types;
+        // Keep every existing widget and its order; convert the old
+        // always-visible family footer card to ONE removable real widget.
+        $seed_types = $existing ? array('family') : $types;
         foreach ($seed_types as $type) {
             if ($type === 'family') {
                 $found = false;
