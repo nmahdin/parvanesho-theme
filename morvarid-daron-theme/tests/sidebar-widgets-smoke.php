@@ -33,8 +33,6 @@ function update_option($key, $value, $autoload = null) {
     $GLOBALS['test_settings'][$key] = $value;
     return true;
 }
-function is_admin() { return true; }
-function current_user_can($capability) { return $capability === 'edit_theme_options'; }
 function is_active_sidebar($id) { return !empty($GLOBALS['test_sidebar_layouts'][$id]); }
 function dynamic_sidebar($id) {
     $GLOBALS['test_rendered_sidebars'][] = $id;
