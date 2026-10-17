@@ -310,6 +310,14 @@ final class MD_Learning_Dashboard {
                         <a class="md-learning-button" href="<?php echo esc_url(get_permalink($challenge)); ?>">رفتن به چالش ←</a>
                     </section>
                 <?php endif; ?>
+                <?php $resource_id = MD_Learning_Auth::requested_resource(); ?>
+                <?php if ($resource_id) : ?>
+                    <section class="md-learning-challenge-next">
+                        <h2>بازگشت به محتوای آموزشی</h2>
+                        <p>پروفایل شما آماده است. اکنون می‌توانید پاسخ پرسش‌های آموزشی را در حساب خود ذخیره کنید.</p>
+                        <a class="md-learning-button" href="<?php echo esc_url(get_permalink($resource_id)); ?>">ادامه آموزش ←</a>
+                    </section>
+                <?php endif; ?>
                 <div class="md-learning-workspace-layout">
                     <div class="md-learning-workspace-main">
                         <?php self::navigation($tab); ?>
