@@ -707,10 +707,14 @@ function md_challenge_admin_assets($hook) {
         MD_THEME_VERSION,
         true
     );
+    // Do not depend on "wp-media": this is a JS namespace, not a core
+    // script handle. An unregistered dependency prevents WordPress from
+    // printing admin-challenge.js at all, making "Add new day" inert.
+    // wp_enqueue_media() and wp_enqueue_editor() above load their APIs.
     wp_enqueue_script(
         'md-admin-challenge',
         MD_THEME_URI . '/assets/js/admin-challenge.js',
-        array('jquery', 'jquery-ui-sortable', 'wp-editor', 'wp-media', 'wp-util', 'md-jalali'),
+        array('jquery', 'jquery-ui-sortable', 'md-jalali'),
         MD_THEME_VERSION,
         true
     );
