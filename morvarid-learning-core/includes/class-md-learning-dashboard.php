@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
  * data. No profile details or activity responses are published via REST.
  */
 final class MD_Learning_Dashboard {
-    const TABS = array('home', 'challenges', 'activity', 'profile', 'security');
+    const TABS = array('home', 'challenges', 'activity', 'answers', 'profile', 'security');
 
     public static function selected_tab() {
         $tab = isset($_GET['md_tab']) && is_string($_GET['md_tab'])
@@ -143,6 +143,7 @@ final class MD_Learning_Dashboard {
             'home' => array('خانه من', 'dashicons-admin-home'),
             'challenges' => array('چالش‌های من', 'dashicons-flag'),
             'activity' => array('فعالیت‌ها', 'dashicons-chart-line'),
+            'answers' => array('پاسخ‌های آموزشی من', 'dashicons-edit-page'),
             'profile' => array('پروفایل', 'dashicons-id'),
             'security' => array('تنظیمات ورود', 'dashicons-lock'),
         );
@@ -157,7 +158,7 @@ final class MD_Learning_Dashboard {
         echo '</nav>';
     }
 
-    private static function cards($data) {
+    private static function cards($data, $answers) {
         ?>
         <div class="md-learning-kpis">
             <div><span class="dashicons dashicons-flag" aria-hidden="true"></span>
@@ -166,6 +167,8 @@ final class MD_Learning_Dashboard {
                 <strong><?php echo esc_html(number_format_i18n($data['completed'])); ?></strong><span>روزهای انجام‌شده</span></div>
             <div><span class="dashicons dashicons-calendar-alt" aria-hidden="true"></span>
                 <strong><?php echo esc_html(number_format_i18n($data['total_days'])); ?></strong><span>روزهای منتشرشده</span></div>
+            <div><span class="dashicons dashicons-edit-page" aria-hidden="true"></span>
+                <strong><?php echo esc_html(number_format_i18n(count($answers))); ?></strong><span>پاسخ‌های آموزشی من</span></div>
         </div>
         <?php
     }
@@ -206,6 +209,25 @@ final class MD_Learning_Dashboard {
             echo '<time>' . esc_html($activity['date']) . '</time></li>';
         }
         echo '</ol>';
+    }
+
+    private static function answer_history($answers, $limit = 50) {
+        if (!$answers) {
+            echo '<div class="md-learning-empty"><p>هنوز پاسخی برای فایل‌های آموزشی ذخیره نکرده‌اید.</p></div>';
+            return;
+        }
+        echo '<div class="md-learning-answer-history">';
+        foreach (array_slice($answers, 0, $limit) as $a) {
+            $url = get_permalink(absint($a->content_id)) . '#md-learning-q-' . $a->block_id;
+            echo '<article class="md-learning-answer-card">';
+            echo '<div class="md-learning-answer-heading"><a href="' . esc_url($url) . '">' . esc_html(get_the_title(absint($a->content_id))) . '</a>';
+            echo '<span class="md-learning-answer-badge">' . ($a->status === 'final' ? 'ثبت نهایی' : 'پیش‌نویس') . '</span></div>';
+            echo '<strong>' . esc_html($a->question_text) . '</strong>';
+            echo '<p>' . nl2br(esc_html($a->answer_text)) . '</p>';
+            echo '<small>آخرین ویرایش: ' . self::escaped_date($a->updated_at) . '</small>';
+            echo '</article>';
+        }
+        echo '</div>';
     }
 
     private static function profile($learner) {
@@ -289,6 +311,8 @@ final class MD_Learning_Dashboard {
         $tab = self::selected_tab();
         $receipt = MD_Learning_Auth::take_receipt();
         $data = self::challenge_data($id);
+        $answers = class_exists('MD_Learning_Questions')
+            ? MD_Learning_Questions::personal_answers($id, 100) : array();
         ob_start();
         ?>
         <section class="md-learning-app md-learning-workspace" dir="rtl">
@@ -324,17 +348,22 @@ final class MD_Learning_Dashboard {
                         <section class="md-learning-workspace-content" aria-live="polite">
                         <?php if ($tab === 'home') : ?>
                             <div class="md-learning-section-head"><h2>نمای کلی یادگیری من</h2><p>تصویری از فعالیت‌های ثبت‌شده و قدم‌های بعدی شما</p></div>
-                            <?php self::cards($data); ?>
+                            <?php self::cards($data, $answers); ?>
                             <div class="md-learning-section-head"><h2>ادامه چالش‌ها</h2><a href="<?php echo self::link('challenges'); ?>">همه چالش‌های من ←</a></div>
                             <?php self::challenge_cards($data); ?>
                             <div class="md-learning-section-head"><h2>آخرین فعالیت‌ها</h2><a href="<?php echo self::link('activity'); ?>">مشاهده همه ←</a></div>
                             <?php self::activities($data, 5); ?>
+                            <div class="md-learning-section-head"><h2>پاسخ‌های آموزشی اخیر</h2><a href="<?php echo self::link('answers'); ?>">همه پاسخ‌ها ←</a></div>
+                            <?php self::answer_history($answers, 3); ?>
                         <?php elseif ($tab === 'challenges') : ?>
                             <div class="md-learning-section-head"><h2>چالش‌های من</h2><p>پیشرفت هر چالش مستقل محاسبه می‌شود.</p></div>
                             <?php self::challenge_cards($data); ?>
                         <?php elseif ($tab === 'activity') : ?>
                             <div class="md-learning-section-head"><h2>تاریخچه فعالیت‌های من</h2><p>آخرین پاسخ‌های ذخیره‌شده و مراحل انجام‌شدهٔ چالش‌ها</p></div>
                             <?php self::activities($data, 25); ?>
+                        <?php elseif ($tab === 'answers') : ?>
+                            <div class="md-learning-section-head"><h2>پاسخ‌های آموزشی من</h2><p>پیش‌نویس‌ها و پاسخ‌های نهایی؛ فقط برای خودتان</p></div>
+                            <?php self::answer_history($answers, 100); ?>
                         <?php elseif ($tab === 'profile') : ?>
                             <?php self::profile($learner); ?>
                         <?php elseif ($tab === 'security') : ?>
@@ -345,13 +374,14 @@ final class MD_Learning_Dashboard {
                     <aside class="md-learning-workspace-side" aria-label="دسترسی‌های آموزشی">
                         <h2>مسیرهای یادگیری</h2>
                         <a href="<?php echo self::link('challenges'); ?>"><span class="dashicons dashicons-flag" aria-hidden="true"></span> چالش‌های من</a>
+                        <a href="<?php echo self::link('answers'); ?>"><span class="dashicons dashicons-edit-page" aria-hidden="true"></span> پاسخ‌های آموزشی من</a>
                         <?php if (post_type_exists('md_course')) : ?>
                             <a href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>"><span class="dashicons dashicons-welcome-learn-more" aria-hidden="true"></span> مشاهده دوره‌ها</a>
                         <?php endif; ?>
                         <?php if (post_type_exists('md_resource')) : ?>
                             <a href="<?php echo esc_url(get_post_type_archive_link('md_resource')); ?>"><span class="dashicons dashicons-media-document" aria-hidden="true"></span> منابع آموزشی</a>
                         <?php endif; ?>
-                        <p>پیشرفت دوره‌ها و پاسخ‌های فایل‌های آموزشی در فازهای بعد به همین پروفایل متصل می‌شوند.</p>
+                        <p>پاسخ‌های آموزشی به این پروفایل متصل‌اند. پیشرفت دوره‌ها در فاز بعدی اضافه خواهد شد.</p>
                         <div class="md-learning-side-divider"></div>
                         <a href="<?php echo self::link('profile'); ?>"><span class="dashicons dashicons-id" aria-hidden="true"></span> ویرایش پروفایل</a>
                         <a href="<?php echo self::link('security'); ?>"><span class="dashicons dashicons-shield" aria-hidden="true"></span> امنیت حساب</a>
