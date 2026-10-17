@@ -31,24 +31,52 @@ function md_challenge_register_private_types() {
 }
 add_action('init', 'md_challenge_register_private_types', 7);
 
-function md_challenge_participants($challenge_id) {
-    return get_posts(array(
-        'post_type' => 'md_challenge_member',
-        'post_status' => 'private',
-        'posts_per_page' => -1,
-        'orderby' => 'date',
-        'order' => 'DESC',
-        'meta_key' => '_md_challenge_id',
-        'meta_value' => absint($challenge_id),
-        'no_found_rows' => true,
+/**
+ * Internal private CPT lookup. Public WP_Query deliberately excludes private
+ * posts for signed-out visitors, even when explicitly requested. Authorise
+ * the caller before accessing data returned by this helper.
+ */
+function md_challenge_private_posts_by_meta($type, $key, $value) {
+    global $wpdb;
+    $ids = $wpdb->get_col($wpdb->prepare(
+        "SELECT p.ID FROM {$wpdb->posts} p
+         INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID
+         WHERE p.post_type = %s AND p.post_status = 'private'
+         AND m.meta_key = %s AND m.meta_value = %s
+         ORDER BY p.post_date DESC, p.ID DESC",
+        $type, $key, (string) $value
     ));
+    return array_values(array_filter(array_map('get_post', array_map('intval', $ids))));
+}
+
+function md_challenge_participants($challenge_id) {
+    return md_challenge_private_posts_by_meta('md_challenge_member', '_md_challenge_id', absint($challenge_id));
+}
+
+function md_challenge_find_member_by_email($challenge_id, $email_hash) {
+    global $wpdb;
+    $id = $wpdb->get_var($wpdb->prepare(
+        "SELECT p.ID FROM {$wpdb->posts} p
+         INNER JOIN {$wpdb->postmeta} c ON c.post_id = p.ID
+         INNER JOIN {$wpdb->postmeta} e ON e.post_id = p.ID
+         WHERE p.post_type = 'md_challenge_member' AND p.post_status = 'private'
+         AND c.meta_key = '_md_challenge_id' AND c.meta_value = %s
+         AND e.meta_key = '_md_member_email_hash' AND e.meta_value = %s LIMIT 1",
+        (string) absint($challenge_id), $email_hash
+    ));
+    return $id ? absint($id) : 0;
+}
+
+function md_challenge_limit_response($text, $max) {
+    $text = sanitize_textarea_field($text);
+    return function_exists('mb_substr') ? mb_substr($text, 0, $max) : substr($text, 0, $max * 2);
 }
 
 function md_challenge_member_link($member) {
     $member_id = is_object($member) ? $member->ID : absint($member);
     $challenge_id = absint(get_post_meta($member_id, '_md_challenge_id', true));
     $token = (string) get_post_meta($member_id, '_md_member_key', true);
-    if (!$challenge_id || !$token || get_post_status($member_id) !== 'private') {
+    if (!$challenge_id || !$token || get_post_status($member_id) !== 'private' || get_post_meta($member_id, '_md_member_revoked', true)) {
         return '';
     }
     return add_query_arg(array('md_member' => $member_id, 'md_key' => $token), get_permalink($challenge_id));
@@ -144,19 +172,10 @@ function md_challenge_register_member() {
     }
 
     $email_hash = hash_hmac('sha256', strtolower($email), wp_salt('auth'));
-    $existing = get_posts(array(
-        'post_type' => 'md_challenge_member',
-        'post_status' => 'private',
-        'posts_per_page' => 1,
-        'fields' => 'ids',
-        'meta_query' => array(
-            array('key' => '_md_challenge_id', 'value' => $challenge_id),
-            array('key' => '_md_member_email_hash', 'value' => $email_hash),
-        ),
-    ));
-    if ($existing) {
-        $old_link = md_challenge_member_link($existing[0]);
-        if ($old_link && !get_post_meta($existing[0], '_md_member_revoked', true)) {
+    $existing_id = md_challenge_find_member_by_email($challenge_id, $email_hash);
+    if ($existing_id) {
+        $old_link = md_challenge_member_link($existing_id);
+        if ($old_link && !get_post_meta($existing_id, '_md_member_revoked', true)) {
             wp_mail($email, 'لینک اختصاصی چالش ' . get_the_title($challenge_id), "لینک خصوصی ورود شما:\n" . $old_link . "\nاین لینک را محرمانه نگه دارید.");
         }
         // Never reveal an existing person's private link to an unverified caller.
@@ -185,14 +204,7 @@ add_action('admin_post_nopriv_md_challenge_register_member', 'md_challenge_regis
 
 /** One saved record per participant/day; submissions stay private. */
 function md_challenge_member_entries($member_id) {
-    $rows = get_posts(array(
-        'post_type' => 'md_challenge_entry',
-        'post_status' => 'private',
-        'posts_per_page' => -1,
-        'meta_key' => '_md_member_id',
-        'meta_value' => absint($member_id),
-        'no_found_rows' => true,
-    ));
+    $rows = md_challenge_private_posts_by_meta('md_challenge_entry', '_md_member_id', absint($member_id));
     $map = array();
     foreach ($rows as $row) {
         $day_id = absint(get_post_meta($row->ID, '_md_day_id', true));
@@ -249,9 +261,9 @@ function md_challenge_save_member_entry() {
     $submitted = isset($_POST['answers']) && is_array($_POST['answers']) ? wp_unslash($_POST['answers']) : array();
     $answers = array();
     foreach ($prompts as $index => $prompt) {
-        $answers[] = isset($submitted[$index]) && is_string($submitted[$index]) ? mb_substr(sanitize_textarea_field($submitted[$index]), 0, 4000) : '';
+        $answers[] = isset($submitted[$index]) && is_string($submitted[$index]) ? md_challenge_limit_response($submitted[$index], 4000) : '';
     }
-    $notes = isset($_POST['member_notes']) && is_string($_POST['member_notes']) ? mb_substr(sanitize_textarea_field(wp_unslash($_POST['member_notes'])), 0, 5000) : '';
+    $notes = isset($_POST['member_notes']) && is_string($_POST['member_notes']) ? md_challenge_limit_response(wp_unslash($_POST['member_notes']), 5000) : '';
     $completed = !empty($_POST['task_done']) ? 1 : 0;
     $entry = isset($entries[$day_id]) ? $entries[$day_id] : null;
     if (!$entry) {
