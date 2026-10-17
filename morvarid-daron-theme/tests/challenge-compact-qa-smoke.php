@@ -10,7 +10,7 @@ function sanitize_textarea_field($v) { return trim(strip_tags((string) $v)); }
 function sanitize_text_field($v) { return trim(strip_tags((string) $v)); }
 function esc_html($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); }
 function wpautop($s) { return '<p>' . $s . '</p>'; }
-function md_fa_num($v) { return strtr((string)$v, '0123456789','۰۱۲۳۴۵۶۷۸۹'); }
+function md_fa_num($v) { return strtr((string)$v, array_combine(str_split('0123456789'), preg_split('//u','۰۱۲۳۴۵۶۷۸۹',-1,PREG_SPLIT_NO_EMPTY))); }
 function md_challenge_day_qa($day_id) {
     return array(
         array('q' => 'سؤال اول بدون جواب', 'a' => ''),
