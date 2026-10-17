@@ -77,7 +77,8 @@ function md_challenge_render_day_row($day, $challenge_id) {
             </span>
         </td>
         <td class="md-col-actions">
-            <button type="button" class="button md-edit-day">ویرایش</button>
+            <a class="button" href="<?php echo esc_url(add_query_arg(array('post' => $challenge_id, 'action' => 'edit', 'md_edit_day' => $day->ID), admin_url('post.php')) . '#md-day-inline-form'); ?>">ویرایش مستقیم</a>
+            <button type="button" class="button md-edit-day">ویرایش پیشرفته</button>
             <button type="button" class="button md-duplicate-day">کپی</button>
             <button type="button" class="button md-delete-day">حذف</button>
             <span class="md-order-buttons">
