@@ -146,6 +146,12 @@ final class MD_Learning_Courses {
         if (!self::is_published_course($course_id)) {
             return new WP_Error('unavailable', 'دوره منتشر نشده است.');
         }
+        if ($status === 'active') {
+            $learner = MD_Learning_Auth::get_learner($learner_id);
+            if (!$learner || $learner->status !== 'active') {
+                return new WP_Error('inactive_learner', 'ابتدا حساب مرکزی یادگیرنده را فعال کنید.');
+            }
+        }
         $current = self::enrollment($learner_id, $course_id);
         if (!$current) {
             return $status === 'active'
@@ -324,7 +330,9 @@ final class MD_Learning_Courses {
         }
         $learner = MD_Learning_Auth::current_learner_id();
         $open = self::open_enrollment($course_id);
-        $joined = $learner && self::is_enrolled($learner, $course_id);
+        $membership = $learner ? self::enrollment($learner, $course_id) : null;
+        $revoked = $membership && $membership->status === 'revoked';
+        $joined = $membership && $membership->status === 'active';
         ob_start();
         ?>
         <section class="md-learning-course-box" id="md-learning-course" dir="rtl">
@@ -348,6 +356,8 @@ final class MD_Learning_Courses {
                     <?php endforeach; ?>
                 </ol>
                 <a href="<?php echo esc_url(add_query_arg('md_tab', 'courses', MD_Learning_Schema::url('dashboard'))); ?>">همه دوره‌های من ←</a>
+            <?php elseif ($revoked) : ?>
+                <p>عضویت شما در این دوره غیرفعال است. برای فعال‌سازی مجدد با مدیر دوره هماهنگ کنید؛ پیشرفت قبلی حفظ شده است.</p>
             <?php elseif ($open && !$learner) : ?>
                 <p>ثبت‌نام این دوره باز است. برای ثبت پیشرفت، یک‌بار با کد مرکزی وارد شوید.</p>
                 <p><a class="md-learning-button" href="<?php echo esc_url(self::course_login_url($course_id)); ?>">ورود به پروفایل</a>
