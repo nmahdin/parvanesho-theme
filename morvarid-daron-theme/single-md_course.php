@@ -21,26 +21,27 @@ while (have_posts()) :
     ?>
     <main id="main" class="container md-magazine-layout sidebar-right md-academy-single">
         <div class="md-magazine-main">
-        <article <?php post_class('article-single'); ?>>
-            <a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>">← همه دوره‌ها</a>
-            <div class="eyebrow">آکادمی مروارید درون / دوره آموزشی</div>
-            <h1><?php the_title(); ?></h1>
-
-            <?php if ($pairs) : ?>
-                <div class="md-academy-meta">
-                    <?php foreach ($pairs as $pair) : ?>
-                        <span>
-                            <?php echo esc_html($pair['label']); ?>:
-                            <?php if (!empty($pair['url'])) : ?>
-                                <a href="<?php echo esc_url($pair['url']); ?>"><?php echo esc_html($pair['value']); ?></a>
-                            <?php else : ?>
-                                <?php echo esc_html($pair['value']); ?>
-                            <?php endif; ?>
-                        </span>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-
+        <article <?php post_class('md-course-single'); ?>>
+            <header class="md-course-header-card md-article-header-card">
+                <a class="md-article-back" href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>">← همه دوره‌ها</a>
+                <div class="eyebrow">آکادمی مروارید درون · دوره آموزشی</div>
+                <h1><?php the_title(); ?></h1>
+                <?php if ($pairs) : ?>
+                    <div class="md-academy-meta md-course-header-meta">
+                        <?php foreach ($pairs as $pair) : ?>
+                            <span><?php echo esc_html($pair['label']); ?>:
+                                <?php if (!empty($pair['url'])) : ?>
+                                    <a href="<?php echo esc_url($pair['url']); ?>"><?php echo esc_html($pair['value']); ?></a>
+                                <?php else : ?>
+                                    <?php echo esc_html($pair['value']); ?>
+                                <?php endif; ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <?php if (has_excerpt()) : ?><p class="md-course-summary"><?php echo esc_html(get_the_excerpt()); ?></p><?php endif; ?>
+            </header>
+            <div class="md-course-content-card">
             <?php if (has_post_thumbnail()) : ?>
                 <?php the_post_thumbnail('large', array('class' => 'single-cover')); ?>
             <?php endif; ?>
@@ -66,7 +67,8 @@ while (have_posts()) :
             </div>
             <?php endif; ?>
 
-            <section class="md-course-lessons">
+            </div>
+            <section class="md-course-lessons md-course-lessons-card">
                 <h2>جلسات این دوره</h2>
                 <?php echo md_academy_lessons($course_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </section>
