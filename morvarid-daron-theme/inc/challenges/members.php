@@ -404,7 +404,7 @@ function md_challenge_member_render_day_form($day, $challenge_id, $state) {
 }
 
 function md_challenge_render_member_dashboard($challenge_id, $member) {
-    $days = md_challenge_days($challenge_id);
+    $days = md_challenge_days($challenge_id, true);
     $entries = md_challenge_member_entries($member->ID);
     $completed = 0;
     foreach ($days as $day) {
