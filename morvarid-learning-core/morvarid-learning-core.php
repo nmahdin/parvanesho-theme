@@ -3,7 +3,7 @@
  * Plugin Name: Morvarid Learning Core
  * Plugin URI: https://morvarid-daron.ir/
  * Description: Independent, email-free learner identity, eight-digit access codes, private access links and secure sessions for Morvarid Daron Academy.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Requires at least: 6.4
  * Requires PHP: 7.4
  * Text Domain: morvarid-learning
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MD_LEARNING_CORE_VERSION', '0.3.0');
+define('MD_LEARNING_CORE_VERSION', '0.4.0');
 define('MD_LEARNING_CORE_FILE', __FILE__);
 define('MD_LEARNING_CORE_DIR', plugin_dir_path(__FILE__));
 define('MD_LEARNING_CORE_URL', plugin_dir_url(__FILE__));
@@ -23,6 +23,7 @@ require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-pages.php';
 require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-profile.php';
 require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-dashboard.php';
 require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-challenges.php';
+require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-questions.php';
 require_once MD_LEARNING_CORE_DIR . 'includes/class-md-learning-admin.php';
 
 register_activation_hook(__FILE__, array('MD_Learning_Schema', 'activate'));
@@ -31,6 +32,7 @@ add_action('admin_init', array('MD_Learning_Schema', 'maybe_upgrade'));
 add_action('init', array('MD_Learning_Auth', 'init'));
 add_action('init', array('MD_Learning_Pages', 'init'));
 add_action('init', array('MD_Learning_Profile', 'init'));
+add_action('init', array('MD_Learning_Questions', 'init'), 25);
 add_action('init', array('MD_Learning_Challenges', 'init'));
 add_action('init', array('MD_Learning_Admin', 'init'));
 
