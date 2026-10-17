@@ -74,3 +74,9 @@ body,button,input,select,textarea{font-family:'Vazirmatn',Tahoma,sans-serif}
  .md-header-profile{font-size:10px;padding:7px}
  .md-header-profile svg{width:16px}
 }
+
+/* Homepage without a personal photo is text-first, never placeholder artwork. */
+.hero-grid:not(:has(.hero-image)){grid-template-columns:minmax(0,1fr);min-height:0;padding-block:clamp(35px,5vw,65px)}
+.hero-grid:not(:has(.hero-image)) .hero-copy{max-width:960px}
+.hero-image.md-home-portrait>img{border-radius:20px;object-position:center top;box-shadow:0 12px 28px rgba(30,65,50,.12)}
+@media(max-width:650px){.hero-grid:not(:has(.hero-image)){padding-block:24px}.hero-image.md-home-portrait>img{height:240px;border-radius:13px}}
