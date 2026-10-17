@@ -1,29 +1,48 @@
 /**
  * Morvarid Daron block library — academy, challenges and media.
  */
-(function (wp) {
+(function boot(wp) {
     'use strict';
+
+    // Only the two APIs that are guaranteed to exist in every block editor are
+    // required. Everything else is optional, so a renamed package can never
+    // stop the blocks from being registered.
+    if (!wp || !wp.blocks || !wp.element) {
+        window.__mdBlocksTries = (window.__mdBlocksTries || 0) + 1;
+        if (window.__mdBlocksTries < 60) {
+            window.setTimeout(function () { boot(window.wp); }, 200);
+        }
+        return;
+    }
 
     // Safety guard: the theme also prints this file inline as a fallback, so a
     // second execution must never register the same block twice.
-    if (!wp || !wp.blocks || !wp.blockEditor || !wp.components || !wp.element) {
-        return;
-    }
     if (typeof wp.blocks.getBlockType === 'function' && wp.blocks.getBlockType('morvarid/course-grid')) {
         return;
     }
 
     var el = wp.element.createElement;
     var register = wp.blocks.registerBlockType;
-    var Inspector = wp.blockEditor.InspectorControls;
+    var BE = wp.blockEditor || wp.editor || {};
+    var C = wp.components || {};
+    function fallback(tag) {
+        return function (props) {
+            return el(tag || 'div', { className: 'md-missing-control' },
+                props && props.label ? el('span', {}, props.label) : null,
+                props && props.children ? props.children : null);
+        };
+    }
+    function pick(name, tag) { return C[name] || fallback(tag); }
+    var useBlockProps = BE.useBlockProps || function (props) { return props || {}; };
+    var Inspector = BE.InspectorControls || fallback('div');
     var ServerSideRender = wp.serverSideRender;
-    var PanelBody = wp.components.PanelBody;
-    var TextControl = wp.components.TextControl;
-    var TextareaControl = wp.components.TextareaControl;
-    var SelectControl = wp.components.SelectControl;
-    var RangeControl = wp.components.RangeControl;
-    var ToggleControl = wp.components.ToggleControl;
-    var Button = wp.components.Button;
+    var PanelBody = pick('PanelBody', 'div');
+    var TextControl = pick('TextControl', 'div');
+    var TextareaControl = pick('TextareaControl', 'div');
+    var SelectControl = pick('SelectControl', 'div');
+    var RangeControl = pick('RangeControl', 'div');
+    var ToggleControl = pick('ToggleControl', 'div');
+    var Button = pick('Button', 'button');
 
     function field(props, key, label) {
         return el(TextControl, {
@@ -161,7 +180,7 @@
     }
 
     function preview(name, props, definition) {
-        return el('div', wp.blockEditor.useBlockProps({ className: 'md-block-editor-preview' }),
+        return el('div', useBlockProps({ className: 'md-block-editor-preview' }),
             el(Inspector, {},
                 el(PanelBody, { title: 'تنظیمات بلوک', initialOpen: true },
                     definition.fields(props)

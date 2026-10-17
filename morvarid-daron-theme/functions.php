@@ -272,6 +272,15 @@ add_action('admin_print_footer_scripts', function(){
   echo '<script id="md-inline-'.esc_attr(str_replace('.','-',$md_file)).'">'."\n".$md_js."\n".'</script>'."\n";
  }
 },99);
+// Collect early JavaScript errors on editor screens so the diagnostic panel can
+// show them without the owner opening the browser console.
+add_action('admin_head', function(){
+ if(!function_exists('get_current_screen'))return;
+ $screen=get_current_screen();
+ if(!$screen||!in_array($screen->base,['post','post-new'],true))return;
+ if(!use_block_editor_for_post_type($screen->post_type))return;
+ echo '<script>window.__mdErrors=[];window.addEventListener("error",function(e){try{window.__mdErrors.push((e.filename||"").split("/").pop()+":"+(e.lineno||0)+" — "+(e.message||""));}catch(x){}},true);window.addEventListener("unhandledrejection",function(e){try{window.__mdErrors.push("promise: "+((e.reason&&e.reason.message)||e.reason));}catch(x){}},true);</script>'."\n";
+},1);
 // Diagnostic panel: if the theme blocks are still missing from the editor a few
 // seconds after load, show a small Persian box with the browser-side state and
 // the real HTTP status of both bundles. Invisible on a healthy install.
@@ -291,36 +300,51 @@ add_action('admin_print_footer_scripts', function(){
  $md_diag=<<<'JS'
 (function(){
  var D = /*DATA*/;
- function say(html,ok){
+ function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+ function say(html){
   var box=document.getElementById('md-block-diagnosis');
   if(!box){box=document.createElement('div');box.id='md-block-diagnosis';box.setAttribute('dir','rtl');
-   box.style.cssText='position:fixed;inset-inline-start:16px;bottom:16px;max-width:430px;z-index:100000;background:#fffdfa;border:1px solid #c0392b;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:14px 16px;font:13px/1.9 Tahoma,sans-serif;color:#233b35';
+   box.style.cssText='position:fixed;inset-inline-start:16px;bottom:16px;max-width:460px;max-height:70vh;overflow:auto;z-index:100000;background:#fffdfa;border:1px solid #c0392b;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:14px 16px;font:13px/1.9 Tahoma,sans-serif;color:#233b35';
    document.body.appendChild(box);}
   box.innerHTML=html;
  }
+ function row(html){return '<div style="margin:2px 0">'+html+'</div>';}
+ function tags(file){
+  var ext=document.querySelectorAll('script[src*="'+file+'"]').length;
+  var inl=document.getElementById('md-inline-'+file.replace(/\./g,'-'))?1:0;
+  return ext+' / '+inl;
+ }
+ function perf(url){
+  try{
+   var list=performance.getEntriesByType('resource').filter(function(e){return e.name.indexOf(url)>-1;});
+   if(!list.length)return 'بارگذاری نشده';
+   var e=list[list.length-1];
+   return (e.responseStatus?('HTTP '+e.responseStatus):('بارگذاری شد ('+Math.round(e.duration)+'ms)'));
+  }catch(x){return 'نامشخص';}
+ }
  function check(){
   var wp=window.wp||{};
+  var types=(wp.blocks&&typeof wp.blocks.getBlockTypes==='function')?wp.blocks.getBlockTypes():[];
+  var mine=types.filter(function(b){return b&&b.name&&b.name.indexOf('morvarid/')===0;}).length;
   if(wp.blocks&&typeof wp.blocks.getBlockType==='function'&&wp.blocks.getBlockType(D.probe)){
-   console.log('[MD] theme blocks registered');return;
+   if(window.console)console.log('[MD] theme blocks registered:',mine);return;
   }
-  console.warn('[MD] theme blocks missing');
+  if(window.console)console.warn('[MD] theme blocks missing');
   var head='<strong style="color:#c0392b">بلوک‌های قالب مروارید درون در این صفحه ثبت نشده‌اند.</strong>'
-   +'<div style="margin:6px 0 8px">این کادر را اسکرین‌شات بگیرید و برای پشتیبانی بفرستید.</div>'
-   +'<div style="background:#f6efe6;border-radius:8px;padding:8px 10px;margin-bottom:8px">'
-   +'wp: '+(window.wp?'هست':'نیست')+' · wp.blocks: '+(wp.blocks?'هست':'نیست')
-   +' · wp.blockEditor: '+(wp.blockEditor?'هست':'نیست')+' · serverSideRender: '+(wp.serverSideRender?'هست':'نیست')+'</div>';
-  if(!window.fetch){say(head+'<div>مرورگر از بررسی فایل‌ها پشتیبانی نمی‌کند.</div>');return;}
-  Promise.all(D.files.map(function(f){
-   return fetch(f.url,{cache:'no-store'}).then(function(r){return f.name+' → HTTP '+r.status;})
-    .catch(function(){return f.name+' → خطای شبکه';});
-  })).then(function(res){
-   say(head+res.map(function(t){return '<div style="font-family:monospace;direction:ltr;text-align:left">'+t+'</div>';}).join('')
-    +'<div style="margin-top:8px;color:#60716a">اگر این کادر را نمی‌بینید، یعنی افزونه‌ای اسکریپت‌های داخل پیشخوان را حذف می‌کند.</div>');
-  });
+   +'<div style="margin:4px 0 8px;font-size:12px;color:#60716a">این کادر را اسکرین‌شات بگیرید و برای پشتیبانی بفرستید.</div>';
+  var state=row('wp: <b>'+(window.wp?'هست':'نیست')+'</b> · wp.blocks: <b>'+(wp.blocks?'هست':'نیست')+'</b> · wp.blockEditor: <b>'+(wp.blockEditor?'هست':'نیست')+'</b> · wp.components: <b>'+(wp.components?'هست':'نیست')+'</b> · serverSideRender: <b>'+(wp.serverSideRender?'هست':'نیست')+'</b>');
+  var reg=row('بلوک‌های ثبت‌شده از قالب: <b>'+mine+'</b> از ۱۷');
+  var t1=row('<span style="font-family:monospace;direction:ltr;display:inline-block">blocks.js</span> — تگ اسکریپت (خارجی/درون‌خطی): <b>'+tags('blocks.js')+'</b> — '+perf('blocks.js'));
+  var t2=row('<span style="font-family:monospace;direction:ltr;display:inline-block">gutenberg-blocks.js</span> — تگ اسکریپت (خارجی/درون‌خطی): <b>'+tags('gutenberg-blocks.js')+'</b> — '+perf('gutenberg-blocks.js'));
+  var errs=(window.__mdErrors||[]).slice(0,4);
+  var errBox=errs.length?row('<b style="color:#c0392b">خطاهای جاوااسکریپت:</b><div style="font-family:monospace;direction:ltr;text-align:left;font-size:11px">'+errs.map(esc).join('<br>')+'</div>'):row('<span style="color:#60716a">خطای جاوااسکریپتی ثبت نشده است.</span>');
+  say(head+'<div style="background:#f6efe6;border-radius:8px;padding:8px 10px;margin-bottom:8px">'+state+reg+t1+t2+'</div>'+errBox
+   +'<div style="margin-top:8px;font-size:12px;color:#60716a">اگر این کادر را نمی‌بینید، یعنی افزونه‌ای اسکریپت‌های داخل پیشخوان را حذف می‌کند.</div>');
  }
  if(document.readyState==='complete'){setTimeout(check,1500);}
  else{window.addEventListener('load',function(){setTimeout(check,1500);});}
 })();
+JS;
 JS;
  echo '<script id="md-block-diagnosis-script">'."\n".str_replace('/*DATA*/',$md_data,$md_diag)."\n".'</script>'."\n";
 },120);
