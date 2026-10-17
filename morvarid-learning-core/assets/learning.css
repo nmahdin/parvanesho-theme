@@ -227,3 +227,6 @@
 .md-learning-app .md-learning-form .md-learning-button{width:100%;white-space:normal;overflow-wrap:anywhere}
 .md-learning-app .md-learning-form input[type=text],.md-learning-app .md-learning-form input[type=password]{width:100%;font-size:16px!important}
 }
+
+/* Rounded profile navigation tabs, including active states. */
+.md-learning-workspace .md-learning-tabs a,.md-learning-workspace .md-learning-nav a,.md-learning-workspace .md-learning-tab,.md-learning-workspace .md-learning-nav button,.md-learning-workspace .md-learning-workspace-nav a{border-radius:999px!important}
