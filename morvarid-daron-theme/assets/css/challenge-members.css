@@ -130,3 +130,19 @@
 .md-challenge-first-receipt p{font-size:14px;line-height:1.9;color:#426d56}
 .md-challenge-first-receipt label{display:grid;gap:7px;margin:14px 0;font-size:13px;font-weight:700;color:#355f47}
 .md-challenge-first-receipt input{width:100%;padding:12px;border:1px solid #a8ccb0;border-radius:12px;background:white;font-size:16px;direction:ltr;text-align:left}
+
+
+/* Member challenge inherits the public challenge layout, with form-only extras. */
+.md-challenge-page.md-member-page{padding:0;color:inherit}
+.md-challenge-page .md-member-days{max-width:none;margin:0;gap:18px}
+.md-challenge-page .md-member-day-form{background:#f4f9f5;border:0;border-radius:24px;padding:23px 25px;margin:24px 0 0;gap:16px}
+.md-challenge-page .md-member-day-form textarea{border-radius:17px;background:#fff;min-height:110px}
+.md-challenge-page .md-member-day-form .md-member-check{display:flex;align-items:center;gap:10px}
+.md-challenge-page .md-member-task-toggle{display:inline-flex;align-items:center;gap:9px;margin:10px 0 4px;font-size:14px;font-weight:700;cursor:pointer;color:#246543}
+.md-challenge-page .md-member-task-toggle input{width:22px;height:22px;accent-color:#327d59;cursor:pointer}
+.md-challenge-page .md-day-exercise:has(.md-member-task-toggle input:checked){background:#dff1e6!important}
+.md-challenge-page .md-member-progress-badge{border-radius:999px;background:#e3f1e7;color:#296346}
+.md-challenge-page .md-member-day-form h3{font-size:19px;margin:0}
+.md-challenge-page .md-member-answer-field{background:white;border-radius:19px;padding:15px 18px}
+.md-challenge-page .md-member-answer-field strong{line-height:1.9}
+@media(max-width:650px){.md-challenge-page .md-member-day-form{border-radius:20px;padding:15px}.md-challenge-page .md-member-answer-field{border-radius:15px;padding:12px}}
