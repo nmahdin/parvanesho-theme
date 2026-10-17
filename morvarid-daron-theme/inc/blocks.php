@@ -707,7 +707,6 @@ function md_register_extra_blocks() {
                     'type'    => 'array',
                     'default' => array(
                         array('icon' => '▤', 'title' => 'مجله رشد', 'text' => 'مقاله، داستان و راهکارهای کاربردی', 'url' => ''),
-                        array('icon' => '❀', 'title' => 'کوچینگ فردی', 'text' => 'همراهی در مسیر شناخت و تغییر', 'url' => ''),
                         array('icon' => '✦', 'title' => 'آکادمی آموزشی', 'text' => 'دوره و کارگاه برای رشد آگاهانه', 'url' => ''),
                     ),
                 ),
