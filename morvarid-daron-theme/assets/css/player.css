@@ -593,3 +593,34 @@ overflow:visible;
 .md-day-media .md-audio-toggle{display:grid!important;visibility:visible!important;flex-shrink:0}
 .md-day-media .md-audio-title{white-space:normal;overflow:visible;text-overflow:clip}
 @media(max-width:620px){.md-day-media .md-audio-player{padding:15px!important;border-radius:20px!important}.md-day-media .md-audio-inner{gap:12px}}
+
+
+/* Complete audio controls in courses and lessons: override the old
+   site-wide transparent-player rule without expanding beyond its container. */
+.md-academy-single .md-audio-player,
+.md-academy-single .md-audio-player:focus-within{
+ width:100%;max-width:100%;min-width:0;
+ background:linear-gradient(120deg,#fffdfa,#eef6ef)!important;
+ border:1px solid #d7e5da!important;
+ border-radius:24px!important;
+ padding:19px 22px!important;
+ box-shadow:0 10px 26px rgba(30,65,50,.07)!important;
+ overflow:visible;
+}
+.md-academy-single .md-player:has(.md-audio-player){min-width:0;max-width:100%;width:100%;margin:0}
+.md-academy-single .md-audio-inner{display:flex;gap:16px;align-items:center;min-width:0}
+.md-academy-single .md-audio-body{flex:1 1 auto;min-width:0}
+.md-academy-single .md-audio-title{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+.md-academy-single .md-audio-footer{display:flex;flex-wrap:wrap;gap:10px;min-width:0}
+.md-academy-single .md-player-actions{display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0}
+.md-academy-single .md-audio-toggle{flex-shrink:0}
+.md-academy-single .md-audio-player:after{display:none!important}
+.md-academy-single .md-video-player,.md-academy-single .md-video-embed{max-width:100%;min-width:0}
+@media(max-width:600px){
+.md-academy-single .md-audio-player{padding:14px!important;border-radius:19px!important}
+.md-academy-single .md-audio-inner{align-items:flex-start;gap:10px}
+.md-academy-single .md-audio-toggle{width:64px;height:64px}
+.md-academy-single .md-audio-body{min-width:0}
+.md-academy-single .md-player-actions{justify-content:flex-start}
+.md-academy-single .md-audio-footer{align-items:flex-start}
+}
