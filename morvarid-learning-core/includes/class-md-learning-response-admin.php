@@ -326,9 +326,9 @@ final class MD_Learning_Response_Admin {
                     <?php endif; ?>
                     <?php foreach ($report['rows'] as $row) : ?>
                         <tr>
-                            <td><strong><?php echo esc_html($row->display_name ?: 'یادگیرنده حذف‌شده'); ?></strong>
+                            <td><strong><a href="<?php echo esc_url(self::page_url(array_merge(self::filter_params($filters), array('md_learner' => absint($row->learner_id))))); ?>"><?php echo esc_html($row->display_name ?: 'یادگیرنده حذف‌شده'); ?></a></strong>
                                 <small><?php echo esc_html('L-' . $row->learner_id); ?></small></td>
-                            <td><strong><?php echo esc_html($row->content_title ?: 'آموزش حذف‌شده'); ?></strong>
+                            <td><strong><a href="<?php echo esc_url(self::page_url(array_merge(self::filter_params($filters), array('md_content' => absint($row->content_id))))); ?>"><?php echo esc_html($row->content_title ?: 'آموزش حذف‌شده'); ?></a></strong>
                                 <small><?php echo esc_html('#' . $row->content_id); ?></small></td>
                             <td class="md-learning-report-question"><?php echo esc_html(wp_trim_words($row->question_text, 16, '…')); ?></td>
                             <td><span class="md-learning-report-state <?php echo esc_attr($row->status === 'final' ? 'is-final' : 'is-draft'); ?>"><?php echo esc_html(self::status_label($row->status)); ?></span></td>
