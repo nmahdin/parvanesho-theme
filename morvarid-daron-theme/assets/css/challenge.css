@@ -1020,3 +1020,22 @@ body.admin-bar .md-day-nav {
 .md-day-media{border-radius:19px}
 .md-challenge-auth-actions .md-challenge-join-button{padding:12px 17px}
 }
+
+
+/* Spacious rounded Q&A, for both public and member day views. */
+.md-challenge-page .md-day-qa,.md-member-page .md-day-qa{border-radius:26px}
+.md-challenge-page .md-qa-item,.md-member-page .md-qa-item{
+border-radius:23px!important;
+padding:17px 20px!important;
+margin-bottom:13px;
+overflow:hidden;
+}
+.md-challenge-page .md-qa-number,.md-member-page .md-qa-number{border-radius:999px;padding:5px 12px}
+.md-challenge-page .md-qa-item .md-qa-answer,.md-member-page .md-qa-item .md-qa-answer{
+border-radius:15px;
+padding:11px 15px;
+background:#f3f8f4;
+border:0!important;
+margin:13px 0 0;
+}
+@media(max-width:650px){.md-challenge-page .md-qa-item,.md-member-page .md-qa-item{border-radius:19px!important;padding:14px 15px!important}.md-challenge-page .md-qa-item .md-qa-answer,.md-member-page .md-qa-item .md-qa-answer{border-radius:13px}}
