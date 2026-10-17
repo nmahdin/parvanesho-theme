@@ -99,14 +99,16 @@ function md_challenge_day_tip_html($day) {
         return '';
     }
     $html = '<section class="md-day-tips" aria-label="نکته‌های این روز">';
+    $index = 0;
     foreach ($items as $item) {
         $title = sanitize_text_field($item['title'] ?? '');
         $body = sanitize_textarea_field($item['text'] ?? '');
         if ($title === '' && $body === '') {
             continue;
         }
+        $index++;
         $html .= '<aside class="md-day-tip">';
-        $html .= '<span class="md-day-label">نکته روز</span>';
+        $html .= '<span class="md-day-label">نکته ' . esc_html(md_fa_num($index)) . '</span>';
         if ($title !== '') {
             $html .= '<h3>' . esc_html($title) . '</h3>';
         }
@@ -125,6 +127,7 @@ function md_challenge_day_exercise_html($day) {
         return '';
     }
     $html = '<section class="md-day-tasks" aria-label="کارها و تمرین‌های این روز">';
+    $index = 0;
     foreach ($items as $item) {
         $title = sanitize_text_field($item['title'] ?? '');
         $desc = sanitize_textarea_field($item['description'] ?? '');
@@ -132,7 +135,8 @@ function md_challenge_day_exercise_html($day) {
         if ($title === '' && $desc === '' && $steps === '') {
             continue;
         }
-        $html .= '<section class="md-day-exercise"><span class="md-day-label">تمرین عملی</span>';
+        $index++;
+        $html .= '<section class="md-day-exercise"><span class="md-day-label">کار ' . esc_html(md_fa_num($index)) . '</span>';
         if ($title !== '') {
             $html .= '<h3>' . esc_html($title) . '</h3>';
         }
