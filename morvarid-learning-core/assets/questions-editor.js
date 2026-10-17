@@ -22,6 +22,29 @@
     return { id: id32(), text: text || '', hint: '', type: 'long', required: false };
   }
 
+  // Gutenberg duplicates attributes when cloning a block. Ensure that a
+  // copied instance receives new stable IDs before the editor saves it.
+  function hasEarlierSameId(clientId, blockId) {
+    if (!HEX.test(blockId || '') || !wp.data) { return false; }
+    const store = wp.data.select('core/block-editor');
+    if (!store || !store.getBlocks) { return false; }
+    let seen = false, earlier = false;
+    function walk(list) {
+      (list || []).forEach(block => {
+        if (block.clientId === clientId) {
+          earlier = seen;
+        }
+        if (block.name === 'morvarid/learning-questions' && block.attributes &&
+            block.attributes.blockId === blockId) {
+          seen = true;
+        }
+        if (block.innerBlocks && block.innerBlocks.length) { walk(block.innerBlocks); }
+      });
+    }
+    walk(store.getBlocks());
+    return earlier;
+  }
+
   registerBlockType('morvarid/learning-questions', {
     apiVersion: 2,
     title: 'پرسش‌های آموزشی مروارید',
@@ -50,10 +73,13 @@
         const needsId = !HEX.test(a.blockId || '');
         const needsQuestions = !questions.length;
         const needsItemIds = questions.some(q => !q || !HEX.test(q.id || ''));
-        if (!needsId && !needsQuestions && !needsItemIds) { return; }
+        const cloned = hasEarlierSameId(props.clientId, a.blockId);
+        if (!needsId && !needsQuestions && !needsItemIds && !cloned) { return; }
         const changes = {};
-        if (needsId) { changes.blockId = id32(); }
-        if (needsQuestions) {
+        if (needsId || cloned) { changes.blockId = id32(); }
+        if (cloned) {
+          changes.questions = questions.map(q => Object.assign({}, q || {}, { id: id32() }));
+        } else if (needsQuestions) {
           changes.questions = [newQuestion('چه چیزی در این آموزش برای شما مهم‌تر بود؟')];
         } else if (needsItemIds) {
           changes.questions = questions.map(q => Object.assign({}, q || {}, {
