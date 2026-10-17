@@ -408,91 +408,82 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
     $entries = md_challenge_member_entries($member->ID);
     $completed = 0;
     foreach ($days as $day) {
-        if (isset($entries[$day->ID]) && get_post_meta($entries[$day->ID]->ID, '_md_task_done', true)) {
-            $completed++;
-        }
+        if (isset($entries[$day->ID]) && get_post_meta($entries[$day->ID]->ID, '_md_task_done', true)) ++$completed;
     }
     $total = count($days);
     $percent = $total ? (int) round($completed * 100 / $total) : 0;
     $central = function_exists('md_learning_current_challenge_member');
     $token = $central ? '' : (string) get_post_meta($member->ID, '_md_member_key', true);
+    $intro = apply_filters('the_content', get_post_field('post_content', $challenge_id));
+    $receipt = $central && class_exists('MD_Learning_Auth') ? MD_Learning_Auth::take_receipt() : null;
     ?>
-    <main class="md-member-page container" dir="rtl">
-        <?php
-        // On first signup the visitor lands here directly. Show their newly
-        // issued credentials once, otherwise they would never see the code.
-        $receipt = $central && class_exists('MD_Learning_Auth') ? MD_Learning_Auth::take_receipt() : null;
-        if (is_array($receipt) && isset($receipt['code'], $receipt['link'])) : ?>
-            <section class="md-learning-receipt md-challenge-first-receipt" aria-label="اطلاعات ورود خصوصی">
-                <h2>کد و لینک ورود شما آماده است</h2>
-                <p><strong>این اطلاعات فقط یک بار نمایش داده می‌شود.</strong> آن‌ها را در جای امن نگه دارید.</p>
-                <label>کد ۸ رقمی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['code']); ?>"></label>
-                <label>لینک اختصاصی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['link']); ?>"></label>
-                <p>این اطلاعات محرمانه‌اند و نباید با دیگران به اشتراک گذاشته شوند.</p>
-            </section>
-        <?php endif; ?>
-        <?php if (isset($_GET['md_joined']) && $_GET['md_joined'] === '1' && $central) : ?>
-            <p class="md-enroll-message" role="status">عضویت شما در چالش با موفقیت ثبت شد. از اینجا می‌توانید گام‌های چالش را دنبال کنید.</p>
-        <?php endif; ?>
-        <nav class="md-member-breadcrumb"><a href="<?php echo esc_url(get_post_type_archive_link('md_challenge')); ?>">همه چالش‌ها</a>
-        <?php if ($central) : ?> / <a href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">داشبورد یادگیری من</a><?php endif; ?>
-        / چالش من</nav>
-        <header class="md-member-hero">
-            <span class="eyebrow">مسیر اختصاصی من</span>
-            <h1><?php echo esc_html($member->post_title); ?>، به چالش «<?php echo esc_html(get_the_title($challenge_id)); ?>» خوش آمدید</h1>
-            <p>پاسخ‌ها و پیشرفت شما فقط با پروفایل اختصاصی‌تان نمایش داده می‌شوند.</p>
-            <div class="md-member-progress"><strong><?php echo esc_html(md_fa_num($completed)); ?> از <?php echo esc_html(md_fa_num($total)); ?> روز تکمیل‌شده</strong><span><?php echo esc_html(md_fa_num($percent)); ?>٪</span></div>
-            <div class="md-member-progress-track"><span style="width:<?php echo esc_attr($percent); ?>%"></span></div>
-            <?php if ($central) : ?>
-                <p><a class="btn btn-light" href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">بازگشت به داشبورد یکپارچه</a></p>
-            <?php else : ?>
-            <div class="md-member-code-display">
-                <span>کد ورود ۸ رقمی شما</span>
-                <strong dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true)); ?></strong>
-                <p>کد را یادداشت کنید؛ با همین کد می‌توانید دوباره وارد داشبورد شوید.</p>
-            </div>
-            <label class="md-member-link-label">لینک خصوصی شما
-                <input type="text" readonly onclick="this.select()" value="<?php echo esc_attr(md_challenge_member_link($member)); ?>">
-            </label>
-            <?php endif; ?>
-        </header>
-        <section class="md-member-days" id="md-member-days">
-            <h2>گام‌های من</h2>
-            <?php if (!$days) : ?><p>هنوز محتوای روزهای این چالش منتشر نشده است.</p><?php endif; ?>
-            <?php foreach ($days as $day) :
-                $opened = md_challenge_member_can_open_day($day, $challenge_id, $entries, $days);
-                $entry = isset($entries[$day->ID]) ? $entries[$day->ID] : null;
-                $tasks = $entry ? get_post_meta($entry->ID, '_md_tasks_checked', true) : array();
-                $member_state = array(
-                    'opened' => $opened,
-                    'done' => $entry && get_post_meta($entry->ID, '_md_task_done', true),
-                    'tasks' => is_array($tasks) ? $tasks : array(),
-                    'form_id' => 'md-member-entry-' . $day->ID,
-                    'member_id' => $member->ID,
-                    'central' => $central,
-                    'token' => $token,
-                    'entry' => $entry,
-                );
-                md_challenge_render_day($day, $challenge_id, $member_state);
-            endforeach; ?>
-                        <label><strong>یادداشت و گزارش تمرین من</strong>
-                            <textarea name="member_notes" rows="4" maxlength="5000"><?php echo esc_textarea($notes); ?></textarea>
-                        </label>
-                        <label class="md-member-check"><input type="checkbox" name="task_done" value="1" <?php checked($is_done); ?>> این مرحله را انجام داده‌ام.</label>
-                        <button type="submit" class="btn btn-primary">ذخیره پاسخ و پیشرفت</button>
-                        <?php if (isset($_GET['md_saved']) && absint($_GET['md_saved']) === $day->ID) : ?>
-                            <span class="md-member-saved" role="status">پاسخ شما ذخیره شد.</span>
-                        <?php endif; ?>
-                    </form>
-                    <?php endif; ?>
+    <main id="main" class="md-challenge-page md-member-page" dir="rtl">
+        <section class="md-challenge-hero">
+            <div class="container md-challenge-hero-grid">
+                <div class="md-challenge-hero-copy">
+                    <span class="eyebrow">چالش مروارید درون · مسیر اختصاصی من</span>
+                    <h1><?php echo esc_html(get_the_title($challenge_id)); ?></h1>
+                    <div class="md-challenge-meta">
+                        <span>عضو چالش: <?php echo esc_html($member->post_title); ?></span>
+                        <span><?php echo esc_html(md_fa_num($total)); ?> روز</span>
+                        <span><?php echo esc_html(md_fa_num($completed)); ?> روز انجام‌شده</span>
                     </div>
-                </details>
-            <?php endforeach; ?>
+                    <?php if (has_excerpt($challenge_id)) : ?>
+                        <p class="md-challenge-summary"><?php echo esc_html(get_the_excerpt($challenge_id)); ?></p>
+                    <?php endif; ?>
+                    <div class="md-challenge-progress">
+                        <div class="md-challenge-progress-head"><strong>پیشرفت من</strong><span><?php echo esc_html(md_fa_num($percent)); ?>٪</span></div>
+                        <div class="md-challenge-progress-bar" role="progressbar" aria-valuenow="<?php echo esc_attr($percent); ?>" aria-valuemin="0" aria-valuemax="100">
+                            <span style="width:<?php echo esc_attr($percent); ?>%"></span>
+                        </div>
+                    </div>
+                    <?php if ($central) : ?>
+                        <a class="btn btn-light" href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">داشبورد یادگیری من ←</a>
+                    <?php endif; ?>
+                </div>
+            </div>
         </section>
+        <div class="container md-challenge-layout">
+            <div class="md-challenge-main">
+                <?php if ($receipt && isset($receipt['code'], $receipt['link'])) : ?>
+                    <section class="md-learning-receipt md-challenge-first-receipt" aria-label="اطلاعات ورود خصوصی">
+                        <h2>کد و لینک ورود شما آماده است</h2>
+                        <p><strong>این اطلاعات فقط یک بار نمایش داده می‌شود.</strong> آن‌ها را در جای امن نگه دارید.</p>
+                        <label>کد ۸ رقمی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['code']); ?>"></label>
+                        <label>لینک اختصاصی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['link']); ?>"></label>
+                        <p>این اطلاعات محرمانه‌اند و نباید با دیگران به اشتراک گذاشته شوند.</p>
+                    </section>
+                <?php endif; ?>
+                <?php if (isset($_GET['md_joined']) && $_GET['md_joined'] === '1' && $central) : ?>
+                    <p class="md-enroll-message" role="status">عضویت شما با موفقیت ثبت شد.</p>
+                <?php endif; ?>
+                <?php if (trim(wp_strip_all_tags($intro)) !== '') : ?>
+                    <section class="md-challenge-intro entry-content"><?php echo $intro; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></section>
+                <?php endif; ?>
+                <div class="md-challenge-days md-member-days" id="md-member-days">
+                    <?php if (!$days) : ?><p class="empty-note">محتوای روزهای این چالش هنوز منتشر نشده است.</p><?php endif; ?>
+                    <?php foreach ($days as $day) :
+                        $opened = md_challenge_member_can_open_day($day, $challenge_id, $entries, $days);
+                        $entry = isset($entries[$day->ID]) ? $entries[$day->ID] : null;
+                        $tasks = $entry ? get_post_meta($entry->ID, '_md_tasks_checked', true) : array();
+                        md_challenge_render_day($day, $challenge_id, array(
+                            'opened' => $opened,
+                            'done' => $entry && get_post_meta($entry->ID, '_md_task_done', true),
+                            'tasks' => is_array($tasks) ? $tasks : array(),
+                            'form_id' => 'md-member-entry-' . $day->ID,
+                            'member_id' => $member->ID,
+                            'central' => $central,
+                            'token' => $token,
+                            'entry' => $entry,
+                        ));
+                    endforeach; ?>
+                </div>
+            </div>
+            <?php md_render_sidebar('challenge', 'right'); ?>
+        </div>
     </main>
     <?php
 }
-
 
 /** Load participant styling only on public challenge screens. */
 function md_challenge_member_public_assets() {
