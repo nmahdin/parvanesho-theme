@@ -12,6 +12,13 @@ class CourseDb extends DummyDb {
     public $last_insert_sql = '';
     public $last_insert_args = array();
 
+    public function prepare($sql, ...$args) {
+        // wpdb::prepare accepts a flat list OR a single array of parameters.
+        if (count($args) === 1 && is_array($args[0])) {
+            $args = $args[0];
+        }
+        return array('sql' => $sql, 'params' => $args);
+    }
     public function get_row($q) {
         $sql = $q['sql'];
         $params = $q['params'];
