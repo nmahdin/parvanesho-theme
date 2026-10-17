@@ -108,7 +108,7 @@ function md_challenge_day_tip_html($day) {
         }
         $index++;
         $html .= '<aside class="md-day-tip">';
-        $html .= '<span class="md-day-label">نکته ' . esc_html(md_fa_num($index)) . '</span>';
+        $html .= '<span class="md-day-label"><span aria-hidden="true">💡</span> نکته</span>';
         if ($title !== '') {
             $html .= '<h3>' . esc_html($title) . '</h3>';
         }
