@@ -1,0 +1,53 @@
+/* Participant dashboard and private admin reporting. */
+.md-member-page { padding-block: 28px 72px; color: #28483e; }
+.md-member-page *, .md-member-registration *, .md-participants-admin * { box-sizing: border-box; }
+.md-member-breadcrumb { font-size: 13px; margin-bottom: 20px; color: #56746a; }
+.md-member-hero { padding: clamp(20px, 4vw, 44px); border-radius: 25px; background: linear-gradient(135deg,#eaf4ed,#fff9f0); border: 1px solid #d5e6d9; }
+.md-member-hero h1 { font-size: clamp(23px,3vw,37px); line-height: 1.6; margin: 10px 0; color: #214b39; }
+.md-member-hero > p { color: #5a7368; }
+.md-member-progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; font-size: 14px; }
+.md-member-progress-track { height: 11px; background: #dce7dd; overflow: hidden; border-radius: 20px; margin: 8px 0 20px; }
+.md-member-progress-track span { display: block; height: 100%; border-radius: inherit; background: #328060; }
+.md-member-link-label { display: block; font-weight: 700; font-size: 13px; }
+.md-member-link-label input { display: block; width: 100%; padding: 12px; margin-top: 7px; background: #fff; border: 1px solid #c2dacf; border-radius: 12px; direction: ltr; text-align: left; font-size: 12px; }
+.md-member-days { max-width: 940px; margin: 38px auto 0; }
+.md-member-days h2 { color: #214b39; font-size: 24px; }
+.md-member-day { background: #fff; border: 1px solid #dae6dc; border-radius: 20px; padding: clamp(17px,3vw,30px); margin: 20px 0; box-shadow: 0 7px 24px rgba(37,77,55,.06); scroll-margin-top: 90px; }
+.md-member-day.is-done { border-color: #80c0a0; }
+.md-member-day-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; }
+.md-member-day-head > span { background: #e4f0e9; border-radius: 18px; padding: 5px 12px; color: #286d4c; }
+.md-member-day-head h3 { margin: 0; flex: 1 1 190px; font-size: 20px; color: #234b3b; }
+.md-member-day-head strong { font-size: 12px; color: #397459; }
+.md-member-day-content { padding-bottom: 15px; line-height: 2; }
+.md-member-day-form { display: grid; gap: 17px; border-top: 1px solid #e5eee8; padding-top: 24px; margin-top: 25px; }
+.md-member-day-form > label { display: grid; gap: 8px; font-size: 14px; }
+.md-member-day-form textarea { min-height: 100px; resize: vertical; width: 100%; border: 1px solid #cfded4; border-radius: 11px; padding: 12px; font: inherit; background: #fcfefd; }
+.md-member-day-form .md-member-check { display: flex; align-items: center; gap: 10px; }
+.md-member-day-form .btn { justify-self: start; }
+.md-member-saved { font-size: 13px; color: #1c7c46; font-weight: bold; }
+.md-member-registration { margin: 30px 0; padding: clamp(20px,3vw,32px); background: #f5faf7; border: 1px solid #cee1d6; border-radius: 20px; }
+.md-member-registration h2 { margin-top: 0; color: #24533d; }
+.md-member-registration p { color: #526b5d; line-height: 1.9; }
+.md-member-registration-form { display: grid; gap: 15px; max-width: 570px; }
+.md-member-registration-form > label { display: grid; gap: 7px; font-size: 14px; font-weight: 700; }
+.md-member-registration-form input[type="text"], .md-member-registration-form input[type="email"] { width: 100%; min-height: 44px; background: #fff; border: 1px solid #cddfd5; border-radius: 10px; padding: 9px 12px; }
+.md-member-registration-form .md-enroll-consent { display: flex; align-items: flex-start; font-size: 13px; font-weight: normal; gap: 9px; }
+.md-member-registration-form .btn { justify-self: start; }
+.md-enroll-honeypot { position: absolute; left: -10000px; height: 1px; overflow: hidden; }
+.md-enroll-privacy { font-size: 12px; }
+.md-enroll-message { background: #f0f8ef; padding: 16px; border-right: 3px solid #31845d; border-radius: 6px; }
+.md-member-access-error { padding-block: 60px; }
+/* Admin reporting */
+.md-participant-admin-summary { display: grid; grid-template-columns: repeat(4,minmax(150px,1fr)); gap: 15px; margin: 24px 0; }
+.md-participant-admin-summary > div { display: flex; flex-direction: column; gap: 9px; background: #fff; border: 1px solid #dce7e0; border-radius: 14px; padding: 16px; }
+.md-participant-admin-summary span { font-size: 12px; color: #64766b; }
+.md-participant-admin-summary strong { color: #2b6650; font-size: 20px; }
+.md-participants-table-wrap { overflow-x: auto; }
+.md-participants-table th, .md-participants-table td { vertical-align: middle; padding: 12px 8px; }
+.md-member-admin-url { min-width: 220px; max-width: 300px; width: 100%; direction: ltr; text-align: left; font-size: 11px; }
+.md-admin-answer-detail { max-width: 1050px; border: 1px solid #d7e5d9; background: #fff; padding: 24px; border-radius: 15px; margin-top: 28px; }
+.md-admin-day-answer { border: 1px solid #dde7df; border-radius: 10px; margin: 12px 0; padding: 12px 18px; background: #fafdfa; }
+.md-admin-day-answer summary { font-weight: 700; color: #2e5e49; cursor: pointer; }
+.md-admin-day-answer p { line-height: 1.9; overflow-wrap: anywhere; }
+@media (max-width: 900px) { .md-participant-admin-summary { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) { .md-member-day-head { align-items: flex-start; } .md-participant-admin-summary { grid-template-columns: 1fr; } }
