@@ -144,8 +144,25 @@ function md_sanitize_theme_options($input){
    $out[$k]=isset($input[$k])&&$input[$k]==='0'?'0':'1';
  }
  $out['header_logo_id']=absint($input['header_logo_id']??0);
+ $out['home_person_image_id']=absint($input['home_person_image_id']??0);
  return $out;
 }
+// Homepage portrait can be uploaded without editing the Gutenberg page.
+add_action('admin_init',function(){
+ add_settings_section('md_home_photo_options','تصویر معرفی صفحه اصلی',function(){
+   echo '<p>عکس شخص را از کتابخانهٔ رسانه انتخاب کنید. جایگزین تصویر تزئینی قبلی خواهد شد. اگر عکس انتخاب نشود، صفحه بدون تصویر تزئینی نمایش داده می‌شود.</p>';
+ },'md-theme-options');
+ add_settings_field('home_person_image_id','عکس شخص در سربرگ صفحه اصلی',function(){
+   $opts=get_option('md_theme_options',[]);
+   $id=absint($opts['home_person_image_id']??0);
+   $src=$id?wp_get_attachment_image_url($id,'medium'):'';
+   echo '<input type="hidden" id="md-home-person-id" name="md_theme_options[home_person_image_id]" value="'.esc_attr($id).'">';
+   echo '<img id="md-home-person-preview" src="'.esc_url($src).'" alt="پیش‌نمایش عکس شخص" style="display:'.($src?'block':'none').';width:150px;height:150px;object-fit:cover;object-position:center top;border-radius:18px;margin:0 0 12px">';
+   echo '<button type="button" class="button" id="md-home-person-choose">انتخاب یا بارگذاری عکس</button> ';
+   echo '<button type="button" class="button" id="md-home-person-clear">حذف عکس</button>';
+   echo '<p class="description">در صورت انتخاب تصویر مستقل در بلوک «بخش اصلی / هیرو»، تصویر همان بلوک اولویت دارد.</p>';
+ },'md-theme-options','md_home_photo_options');
+});
 // All visible header controls live inside Appearance > Theme Settings.
 add_action('admin_init',function(){
  add_settings_section('md_header_options','تنظیمات هدر و دسترسی سریع','__return_false','md-theme-options');
