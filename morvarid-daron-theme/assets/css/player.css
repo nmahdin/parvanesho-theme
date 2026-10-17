@@ -562,3 +562,12 @@
 .md-audio-player{background:transparent;border:0;box-shadow:none;padding:6px 0;border-radius:0}
 .md-audio-player::after{display:none}
 .md-player.md-audio-player,.md-player:has(>.md-audio-player){background:transparent;border:0;box-shadow:none}
+
+
+/* Flatten *all* audio-block wrappers, including WP block group backgrounds. */
+.md-player:has(.md-audio-player),.wp-block-group:has(>.md-player .md-audio-player),
+.wp-block-group:has(>.md-audio-player),.md-day-media-item:has(.md-audio-player),
+.md-day-media:has(.md-audio-player){background:transparent!important;box-shadow:none!important;border-color:transparent}
+.md-audio-player,.md-audio-player:focus-within{background:transparent!important;box-shadow:none!important;border:0!important;padding:0!important}
+.md-audio-player:before,.md-audio-player:after{display:none!important}
+.md-player:has(.md-audio-player){margin-block:14px}
