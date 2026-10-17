@@ -65,8 +65,12 @@ while (have_posts()) :
                         <p class="md-challenge-summary"><?php echo esc_html(get_the_excerpt()); ?></p>
                     <?php endif; ?>
 
+                    <div class="md-challenge-auth-actions">
+                        <a class="btn btn-primary" href="#md-challenge-enroll">ثبت‌نام در چالش</a>
+                        <a class="btn btn-light" href="#md-challenge-enroll">ورود با کد ۸ رقمی</a>
+                    </div>
                     <?php if ($enroll) : ?>
-                        <a class="btn btn-primary" href="<?php echo esc_url($enroll); ?>">شرکت در چالش ←</a>
+                        <a class="text-link" href="<?php echo esc_url($enroll); ?>">لینک تکمیلی ثبت‌نام ←</a>
                     <?php endif; ?>
 
                     <?php if ($stats['total'] && 'unknown' !== $time_status) : ?>
