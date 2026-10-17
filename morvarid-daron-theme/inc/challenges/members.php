@@ -53,18 +53,44 @@ function md_challenge_participants($challenge_id) {
     return md_challenge_private_posts_by_meta('md_challenge_member', '_md_challenge_id', absint($challenge_id));
 }
 
-function md_challenge_find_member_by_email($challenge_id, $email_hash) {
+/**
+ * Short 8-digit code login for a challenge.
+ * No attempt rate limit is applied to this login, as configured by the owner.
+ * The separate direct link uses a high-entropy bearer token.
+ */
+function md_challenge_code_hash($challenge_id, $code) {
+    return hash_hmac('sha256', absint($challenge_id) . ':' . $code, wp_salt('auth'));
+}
+
+function md_challenge_find_member_by_code($challenge_id, $code, $include_revoked = false) {
+    if (!preg_match('/^[0-9]{8}$/D', $code)) {
+        return null;
+    }
     global $wpdb;
+    $hash = md_challenge_code_hash($challenge_id, $code);
     $id = $wpdb->get_var($wpdb->prepare(
         "SELECT p.ID FROM {$wpdb->posts} p
          INNER JOIN {$wpdb->postmeta} c ON c.post_id = p.ID
-         INNER JOIN {$wpdb->postmeta} e ON e.post_id = p.ID
+         INNER JOIN {$wpdb->postmeta} h ON h.post_id = p.ID
          WHERE p.post_type = 'md_challenge_member' AND p.post_status = 'private'
          AND c.meta_key = '_md_challenge_id' AND c.meta_value = %s
-         AND e.meta_key = '_md_member_email_hash' AND e.meta_value = %s LIMIT 1",
-        (string) absint($challenge_id), $email_hash
+         AND h.meta_key = '_md_member_code_hash' AND h.meta_value = %s LIMIT 1",
+        (string) absint($challenge_id), $hash
     ));
-    return $id ? absint($id) : 0;
+    if (!$id || (!$include_revoked && get_post_meta($id, '_md_member_revoked', true))) {
+        return null;
+    }
+    return get_post($id);
+}
+
+function md_challenge_generate_member_code($challenge_id) {
+    for ($attempt = 0; $attempt < 30; $attempt++) {
+        $code = (string) random_int(10000000, 99999999);
+        if (!md_challenge_find_member_by_code($challenge_id, $code, true)) {
+            return $code;
+        }
+    }
+    return '';
 }
 
 function md_challenge_limit_response($text, $max) {
@@ -128,25 +154,41 @@ function md_challenge_member_rate_limit($action) {
     set_transient($key, $count + 1, HOUR_IN_SECONDS);
 }
 
+/** Registration and login via eight-digit code for either challenge mode. */
 function md_challenge_registration_form($challenge_id) {
     if (get_post_status($challenge_id) !== 'publish') {
         return;
     }
     ?>
     <section class="md-member-registration" id="md-challenge-enroll" aria-labelledby="md-enroll-heading">
-        <h2 id="md-enroll-heading">ثبت‌نام و شروع چالش</h2>
-        <p>با وارد کردن نام و ایمیل، لینک خصوصی مسیر خود را دریافت می‌کنید. پاسخ‌ها و تمرین‌های شما برای بازدیدکنندگان دیگر نمایش داده نمی‌شوند.</p>
+        <h2 id="md-enroll-heading">عضویت در چالش</h2>
+        <p>فقط نام خود را ثبت کنید. کد ۸ رقمی و لینک اختصاصی شما در داشبورد نمایش داده می‌شود. هر دو را برای ورودهای بعدی نگه دارید.</p>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-member-registration-form">
             <input type="hidden" name="action" value="md_challenge_register_member">
             <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
             <?php wp_nonce_field('md_challenge_register_' . $challenge_id); ?>
             <label>نام و نام خانوادگی <input type="text" name="member_name" maxlength="120" autocomplete="name" required></label>
-            <label>ایمیل <input type="email" name="member_email" autocomplete="email" maxlength="190" required></label>
-            <label class="md-enroll-consent"><input type="checkbox" name="member_consent" value="1" required> با ذخیره نام، ایمیل و پاسخ‌هایم برای اجرای این چالش موافقم.</label>
+            <label class="md-enroll-consent"><input type="checkbox" name="member_consent" value="1" required> با ذخیره نام و پاسخ‌های تمرین‌هایم در این چالش موافقم.</label>
             <div class="md-enroll-honeypot" aria-hidden="true"><label>وب‌سایت <input type="text" name="member_website" tabindex="-1" autocomplete="off"></label></div>
-            <button type="submit" class="btn btn-primary">دریافت لینک اختصاصی من</button>
+            <button type="submit" class="btn btn-primary">ثبت‌نام و دریافت کد</button>
         </form>
-        <p class="md-enroll-privacy">لینک اختصاصی مانند رمز عبور است؛ آن را فقط نزد خود نگه دارید. در ثبت‌نام مجدد با همان ایمیل، لینک موجود فقط به همان نشانی ایمیل ارسال می‌شود.</p>
+        <div class="md-member-code-login">
+            <h3>قبلاً ثبت‌نام کرده‌ام</h3>
+            <p>کد ۸ رقمی خود را وارد کنید تا وارد همان داشبورد قبلی شوید.</p>
+            <?php if (isset($_GET['md_login_error']) && 'invalid' === sanitize_key(wp_unslash($_GET['md_login_error']))) : ?>
+                <p class="md-code-login-error" role="alert">کد واردشده معتبر نیست یا غیرفعال شده است.</p>
+            <?php endif; ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-member-code-form">
+                <input type="hidden" name="action" value="md_challenge_login_code">
+                <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
+                <?php wp_nonce_field('md_challenge_login_' . $challenge_id); ?>
+                <label>کد اختصاصی ۸ رقمی
+                    <input type="text" name="member_code" inputmode="numeric" pattern="[0-9۰-۹٠-٩]{8}" maxlength="8" minlength="8" autocomplete="off" dir="ltr" required placeholder="۱۲۳۴۵۶۷۸">
+                </label>
+                <button type="submit" class="btn btn-primary">ورود به داشبورد من</button>
+            </form>
+        </div>
+        <p class="md-enroll-privacy">ورود به ایمیل یا حساب وردپرس نیاز ندارد. کد و لینک شما خصوصی‌اند؛ در صورت گم‌شدن، مدیر چالش می‌تواند کدتان را به شما بدهد.</p>
     </section>
     <?php
 }
@@ -165,42 +207,48 @@ function md_challenge_register_member() {
     if (empty($_POST['member_consent'])) {
         wp_die('برای ثبت‌نام، رضایت به ذخیره اطلاعات ضروری است.', '', array('response' => 400));
     }
-    $name = isset($_POST['member_name']) ? sanitize_text_field(wp_unslash($_POST['member_name'])) : '';
-    $email = isset($_POST['member_email']) ? sanitize_email(wp_unslash($_POST['member_email'])) : '';
-    if (!$name || strlen($name) > 360 || !is_email($email)) {
-        wp_die('نام و ایمیل معتبر را وارد کنید.', '', array('response' => 400));
+    $name = isset($_POST['member_name']) && is_string($_POST['member_name']) ? sanitize_text_field(wp_unslash($_POST['member_name'])) : '';
+    if (!$name || strlen($name) > 360) {
+        wp_die('نام معتبر را وارد کنید.', '', array('response' => 400));
     }
-
-    $email_hash = hash_hmac('sha256', strtolower($email), wp_salt('auth'));
-    $existing_id = md_challenge_find_member_by_email($challenge_id, $email_hash);
-    if ($existing_id) {
-        $old_link = md_challenge_member_link($existing_id);
-        if ($old_link && !get_post_meta($existing_id, '_md_member_revoked', true)) {
-            wp_mail($email, 'لینک اختصاصی چالش ' . get_the_title($challenge_id), "لینک خصوصی ورود شما:\n" . $old_link . "\nاین لینک را محرمانه نگه دارید.");
-        }
-        // Never reveal an existing person's private link to an unverified caller.
-        wp_safe_redirect(add_query_arg('md_enroll_result', 'check-email', get_permalink($challenge_id)) . '#md-challenge-enroll');
-        exit;
+    $code = md_challenge_generate_member_code($challenge_id);
+    if (!$code) {
+        wp_die('ساخت کد ورود ممکن نشد. دوباره تلاش کنید.', '', array('response' => 500));
     }
-
     $member_id = wp_insert_post(array('post_type' => 'md_challenge_member', 'post_status' => 'private', 'post_title' => $name), true);
     if (is_wp_error($member_id) || !$member_id) {
         wp_die('ثبت‌نام انجام نشد. دوباره تلاش کنید.', '', array('response' => 500));
     }
-    $key = bin2hex(random_bytes(32));
     update_post_meta($member_id, '_md_challenge_id', $challenge_id);
-    update_post_meta($member_id, '_md_member_email', $email);
-    update_post_meta($member_id, '_md_member_email_hash', $email_hash);
-    update_post_meta($member_id, '_md_member_key', $key);
+    update_post_meta($member_id, '_md_member_code', $code);
+    update_post_meta($member_id, '_md_member_code_hash', md_challenge_code_hash($challenge_id, $code));
+    update_post_meta($member_id, '_md_member_key', bin2hex(random_bytes(32)));
     update_post_meta($member_id, '_md_member_registered_at', current_time('mysql'));
-
-    $link = md_challenge_member_link($member_id);
-    wp_mail($email, 'لینک اختصاصی چالش ' . get_the_title($challenge_id), "ثبت‌نام شما انجام شد.\nلینک اختصاصی چالش:\n" . $link . "\nلطفاً لینک را محرمانه نگه دارید.");
-    wp_safe_redirect($link);
+    wp_safe_redirect(md_challenge_member_link($member_id));
     exit;
 }
 add_action('admin_post_md_challenge_register_member', 'md_challenge_register_member');
 add_action('admin_post_nopriv_md_challenge_register_member', 'md_challenge_register_member');
+
+/** Code-only login: deliberately no attempt counter or lockout. */
+function md_challenge_login_code() {
+    $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
+    if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge' || get_post_status($challenge_id) !== 'publish') {
+        wp_die('چالش موجود نیست.', '', array('response' => 400));
+    }
+    check_admin_referer('md_challenge_login_' . $challenge_id);
+    $raw = isset($_POST['member_code']) && is_string($_POST['member_code']) ? wp_unslash($_POST['member_code']) : '';
+    $code = md_normalize_digits(trim($raw));
+    $member = md_challenge_find_member_by_code($challenge_id, $code);
+    if (!$member) {
+        wp_safe_redirect(add_query_arg('md_login_error', 'invalid', get_permalink($challenge_id)) . '#md-challenge-enroll');
+        exit;
+    }
+    wp_safe_redirect(md_challenge_member_link($member));
+    exit;
+}
+add_action('admin_post_md_challenge_login_code', 'md_challenge_login_code');
+add_action('admin_post_nopriv_md_challenge_login_code', 'md_challenge_login_code');
 
 /** One saved record per participant/day; submissions stay private. */
 function md_challenge_member_entries($member_id) {
@@ -310,6 +358,11 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
             <p>پاسخ‌های این صفحه خصوصی هستند. این لینک را برای دیگران ارسال نکنید.</p>
             <div class="md-member-progress"><strong><?php echo esc_html(md_fa_num($completed)); ?> از <?php echo esc_html(md_fa_num($total)); ?> روز تکمیل‌شده</strong><span><?php echo esc_html(md_fa_num($percent)); ?>٪</span></div>
             <div class="md-member-progress-track"><span style="width:<?php echo esc_attr($percent); ?>%"></span></div>
+            <div class="md-member-code-display">
+                <span>کد ورود ۸ رقمی شما</span>
+                <strong dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true)); ?></strong>
+                <p>کد را یادداشت کنید؛ با همین کد می‌توانید دوباره وارد داشبورد شوید.</p>
+            </div>
             <label class="md-member-link-label">لینک خصوصی شما
                 <input type="text" readonly onclick="this.select()" value="<?php echo esc_attr(md_challenge_member_link($member)); ?>">
             </label>
