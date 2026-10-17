@@ -59,6 +59,7 @@
       mode: { type: 'string', default: 'reflection' },
       appearance: { type: 'string', default: 'card' },
       allowEdit: { type: 'boolean', default: true },
+      managerVisible: { type: 'boolean', default: true },
       questions: { type: 'array', default: [] }
     },
     supports: { html: false, multiple: true },
@@ -130,6 +131,12 @@
             label: 'امکان ویرایش پاسخ پس از ثبت نهایی',
             checked: a.allowEdit !== false,
             onChange: allowEdit => props.setAttributes({ allowEdit })
+          }) : null,
+          interactive ? el(ToggleControl, {
+            label: 'نمایش پاسخ‌ها برای مدیران دارای مجوز',
+            help: 'در صورت خاموش‌بودن، پاسخ‌ها در فهرست و جزئیات گزارش مدیریت دیده نمی‌شوند؛ در حساب خود یادگیرنده باقی می‌مانند.',
+            checked: a.managerVisible !== false,
+            onChange: managerVisible => props.setAttributes({ managerVisible })
           }) : null,
           el('p', {}, 'بلوک را مانند متن، صوت و ویدیو جابه‌جا کنید. برای تکثیر کل بلوک از ابزارهای ویرایشگر وردپرس استفاده کنید.')
         )
