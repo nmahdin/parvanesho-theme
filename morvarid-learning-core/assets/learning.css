@@ -230,3 +230,6 @@
 
 /* Rounded profile navigation tabs, including active states. */
 .md-learning-workspace .md-learning-tabs a,.md-learning-workspace .md-learning-nav a,.md-learning-workspace .md-learning-tab,.md-learning-workspace .md-learning-nav button,.md-learning-workspace .md-learning-workspace-nav a{border-radius:999px!important}
+
+/* The offscreen antispam field must never create a 10,000px mobile canvas. */
+.md-learning-app .md-learning-trap{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;left:auto!important}
