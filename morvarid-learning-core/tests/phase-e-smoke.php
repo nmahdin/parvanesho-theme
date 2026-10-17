@@ -23,6 +23,8 @@ function wp_unslash($s) { return $s; }
 function sanitize_key($s) { return preg_replace('/[^a-z0-9_-]/', '', strtolower((string) $s)); }
 function sanitize_text_field($s) { return trim(strip_tags((string) $s)); }
 function get_current_user_id() { return 51; }
+function admin_url($path = '') { return '/wp-admin/' . $path; }
+function add_query_arg($args, $url = '') { return $url . '?' . http_build_query($args); }
 class MD_Learning_Schema {
     public static function table($name) { return 'wp_md_learning_' . $name; }
 }
