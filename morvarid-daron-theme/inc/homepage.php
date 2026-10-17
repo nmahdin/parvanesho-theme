@@ -89,7 +89,6 @@ function md_home_default_content() {
                 'buttonUrl'      => '/category/parents/',
                 'secondaryLabel' => 'من نوجوان هستم',
                 'secondaryUrl'   => '/category/teens/',
-                'artQuote'       => 'هر گفت‌وگوی خوب، آغاز یک کشف تازه است.',
             )
         ),
         md_home_block(
