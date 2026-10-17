@@ -158,6 +158,58 @@
         $('#md-days-table').toggle(hasRows);
     }
 
+    function normalizeSearch(text) {
+        return String(text || '').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک')
+            .replace(/[۰-۹]/g, function (n) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(n); })
+            .replace(/[٠-٩]/g, function (n) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(n); })
+            .toLowerCase().trim();
+    }
+
+    function applyDayFilters() {
+        var term = normalizeSearch($('#md-day-search').val());
+        var filter = $('#md-day-status-filter').val() || 'all';
+        var filtered = !!term || filter !== 'all';
+        var visible = 0;
+        $('#md-days-list tr').each(function () {
+            var $row = $(this);
+            var title = normalizeSearch($row.find('.md-day-row-title').text());
+            var number = normalizeSearch($row.attr('data-order'));
+            var content = $row.attr('data-content-state');
+            var publication = $row.attr('data-publish-state');
+            var matchesText = !term || title.indexOf(term) !== -1 || number.indexOf(term) !== -1;
+            var matchesStatus = filter === 'all' ||
+                (filter === 'ready' && content === 'ready') ||
+                (filter === 'incomplete' && content !== 'ready') ||
+                (filter === 'published' && publication === 'publish') ||
+                (filter === 'unpublished' && publication !== 'publish');
+            var show = matchesText && matchesStatus;
+            $row.toggle(show);
+            if (show) {
+                visible++;
+            }
+        });
+        $('#md-days-no-match').prop('hidden', !filtered || !!visible || !$('#md-days-list tr').length);
+        if ($.fn.sortable && $('#md-days-list').data('ui-sortable')) {
+            $('#md-days-list').sortable('option', 'disabled', filtered);
+        }
+    }
+
+    function updateDayOverview() {
+        var $rows = $('#md-days-list tr');
+        var total = $rows.length;
+        var ready = $rows.filter('[data-content-state="ready"]').length;
+        var published = $rows.filter('[data-publish-state="publish"]').length;
+        var percent = total ? Math.round((ready / total) * 100) : 0;
+        $('#md-kpi-total').text(faNum(total));
+        $('#md-kpi-ready').text(faNum(ready));
+        $('#md-kpi-published').text(faNum(published));
+        $('#md-kpi-incomplete').text(faNum(total - ready));
+        $('#md-days-progress-text').text(faNum(percent) + '٪');
+        $('#md-days-progress').attr('aria-valuenow', percent);
+        $('#md-days-progress-fill').css('width', percent + '%');
+        applyDayFilters();
+    }
+
     function updateManagerCounts(stats) {
         if (!stats) {
             return;
@@ -167,6 +219,7 @@
         $('#md-content-days').text(faNum(stats.content_days || 0));
         $('#md-calendar-days').text(stats.calendar_days ? faNum(stats.calendar_days) : '—');
         updateCounts();
+        updateDayOverview();
     }
 
     function destroyEditor() {
@@ -537,6 +590,47 @@
         });
     }
 
+    function generateMissingDays() {
+        var $button = $('#md-generate-days');
+        var planned = parseInt(cfg.calendarDays, 10) || 0;
+        var existing = $('#md-days-list tr').length;
+        if (challengeDirty) {
+            showNotice('ابتدا تغییرات تاریخ و تنظیمات چالش را ذخیره کنید، سپس روزها را بسازید.', true);
+            return;
+        }
+        if (!planned) {
+            showNotice('ابتدا تاریخ شروع و پایان چالش را ثبت و ذخیره کنید.', true);
+            return;
+        }
+        if (existing >= planned) {
+            showNotice('برای همه روزهای تقویمی، ردیف ساخته شده است.', false);
+            return;
+        }
+        if (!window.confirm('برای ' + faNum(planned - existing) + ' روز باقی‌مانده، پیش‌نویس خالی ساخته شود؟')) {
+            return;
+        }
+        $button.prop('disabled', true).addClass('is-busy');
+        ajax('md_challenge_generate_days', {}).done(function (response) {
+            if (!response || !response.success) {
+                showNotice(errorMessage(response), true);
+                return;
+            }
+            if (response.data.rows_html) {
+                $('#md-days-list').append(response.data.rows_html);
+            }
+            renumberRows();
+            toggleEmpty();
+            if (response.data.stats) {
+                updateManagerCounts(response.data.stats);
+            }
+            showNotice(response.data.message || 'پیش‌نویس روزها ساخته شد.', false);
+        }).fail(function (xhr) {
+            showNotice(errorMessage(xhr.responseJSON), true);
+        }).always(function () {
+            $button.prop('disabled', false).removeClass('is-busy');
+        });
+    }
+
     function deleteDay(dayId, $row) {
         if (!window.confirm(strings.confirmDelete || 'این روز حذف شود؟')) {
             return;
@@ -631,6 +725,7 @@
 
         updateCounts();
         toggleEmpty();
+        updateDayOverview();
 
         if ($.fn.sortable) {
             $('#md-days-list').sortable({
@@ -652,6 +747,13 @@
             event.preventDefault();
             openModal(0);
         });
+
+        $(document).on('click', '#md-generate-days', function (event) {
+            event.preventDefault();
+            generateMissingDays();
+        });
+
+        $(document).on('input change', '#md-day-search, #md-day-status-filter', applyDayFilters);
 
         $(document).on('click', '#md-days-list .md-edit-day', function (event) {
             event.preventDefault();
