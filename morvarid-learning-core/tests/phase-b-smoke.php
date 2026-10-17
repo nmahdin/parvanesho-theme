@@ -83,6 +83,11 @@ class DummyDb {
     public function get_col($query) {
         return array_map(function ($r) { return $r->member_id; }, $this->get_results($query));
     }
+    public function update($table, $data, $where, $formats = null, $where_formats = null) {
+        // Shared test fake: private answer visibility updates are no-ops
+        // until dedicated answer-persistence tests install AnswerDb.
+        return 0;
+    }
 }
 function check($ok, $message) {
     if (!$ok) { throw new RuntimeException($message); }
