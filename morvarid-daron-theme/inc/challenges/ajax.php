@@ -30,17 +30,38 @@ function md_challenge_render_day_row($day, $challenge_id) {
         $title = 'بدون عنوان';
     }
 
+    $unlock_date = md_challenge_day_unlock_date($day, $challenge_id);
+    $resources   = array();
+    if (absint(get_post_meta($day->ID, '_md_day_audio_id', true))) {
+        $resources[] = 'صوت';
+    }
+    if (absint(get_post_meta($day->ID, '_md_day_video_id', true)) || get_post_meta($day->ID, '_md_day_video_url', true)) {
+        $resources[] = 'ویدیو';
+    }
+    if (absint(get_post_meta($day->ID, '_md_day_file_id', true))) {
+        $resources[] = 'فایل';
+    }
+    if (trim((string) get_post_meta($day->ID, '_md_day_exercise_desc', true)) || trim((string) get_post_meta($day->ID, '_md_day_exercise_steps', true))) {
+        $resources[] = 'تمرین';
+    }
+
     ob_start();
     ?>
-    <tr class="md-day-row" data-day-id="<?php echo esc_attr($day->ID); ?>" data-order="<?php echo esc_attr($order); ?>">
+    <tr class="md-day-row" data-day-id="<?php echo esc_attr($day->ID); ?>" data-order="<?php echo esc_attr($order); ?>" data-content-state="<?php echo esc_attr($content_status['key']); ?>" data-publish-state="<?php echo esc_attr($publish_status); ?>">
         <td class="md-col-drag">
             <span class="md-drag-handle dashicons dashicons-menu" aria-hidden="true"></span>
         </td>
         <td class="md-col-number">
             <span class="md-day-number"><?php echo esc_html(md_fa_num($order)); ?></span>
+            <?php if ($unlock_date) : ?>
+                <small class="md-day-unlock-date" title="تاریخ بازشدن این روز"><?php echo esc_html(md_format_jalali($unlock_date)); ?></small>
+            <?php endif; ?>
         </td>
         <td class="md-col-title">
             <strong class="md-day-row-title"><?php echo esc_html($title); ?></strong>
+            <?php if ($resources) : ?>
+                <small class="md-day-resources"><?php echo esc_html(implode(' · ', $resources)); ?></small>
+            <?php endif; ?>
             <?php if ('' === trim(wp_strip_all_tags($day->post_content))) : ?>
                 <span class="md-row-hint">متن اصلی خالی است</span>
             <?php endif; ?>
@@ -416,6 +437,68 @@ function md_challenge_ajax_reorder_days() {
     ));
 }
 add_action('wp_ajax_md_challenge_reorder_days', 'md_challenge_ajax_reorder_days');
+
+/**
+ * Create missing day placeholders in one request without altering existing days.
+ *
+ * The saved challenge dates are authoritative; the editor must save date
+ * changes before invoking this action. Up to 120 calendar days are supported
+ * to avoid unexpectedly expensive requests on large date ranges.
+ */
+function md_challenge_ajax_generate_days() {
+    $challenge_id = md_challenge_verify_ajax_challenge();
+    $target       = md_challenge_calendar_days($challenge_id);
+
+    if ($target < 1 || $target > 120) {
+        wp_send_json_error(array('message' => 'ابتدا تاریخ شروع و پایان معتبر (حداکثر ۱۲۰ روز) را ذخیره کنید.'), 400);
+    }
+    $existing = md_challenge_days($challenge_id, true);
+    $count    = count($existing);
+    if ($count >= $target) {
+        wp_send_json_success(array(
+            'created'   => 0,
+            'rows_html' => '',
+            'stats'     => md_challenge_admin_stats($challenge_id),
+            'message'   => 'تمام روزهای تقویمی قبلاً ساخته شده‌اند.',
+        ));
+    }
+
+    $html    = '';
+    $created = 0;
+    $failed  = false;
+    for ($order = $count + 1; $order <= $target; $order++) {
+        $day_id = wp_insert_post(array(
+            'post_type'    => 'md_challenge_day',
+            'post_title'   => 'روز ' . md_fa_num($order),
+            'post_content' => '',
+            'post_status'  => 'draft',
+        ), true);
+
+        if (is_wp_error($day_id) || !$day_id) {
+            $failed = true;
+            break;
+        }
+
+        update_post_meta($day_id, '_md_challenge_id', $challenge_id);
+        update_post_meta($day_id, '_md_day_order', $order);
+        $html .= md_challenge_render_day_row(get_post($day_id), $challenge_id);
+        $created++;
+    }
+
+    md_challenge_sync_counts($challenge_id);
+    if (!$created && $failed) {
+        wp_send_json_error(array('message' => 'ساخت روزها ناموفق بود. دوباره تلاش کنید.'), 500);
+    }
+
+    wp_send_json_success(array(
+        'created'   => $created,
+        'rows_html' => $html,
+        'stats'     => md_challenge_admin_stats($challenge_id),
+        'message'   => $failed ? 'بخشی از روزها ساخته شدند؛ برای ادامه دوباره تلاش کنید.' : 'پیش‌نویس روزهای باقی‌مانده ساخته شد.',
+    ));
+}
+add_action('wp_ajax_md_challenge_generate_days', 'md_challenge_ajax_generate_days');
+
 
 /**
  * Create a draft challenge from the "new challenge" screen.
