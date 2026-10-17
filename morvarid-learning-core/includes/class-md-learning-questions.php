@@ -21,6 +21,8 @@ final class MD_Learning_Questions {
             MD_LEARNING_CORE_VERSION,
             true
         );
+        wp_register_style('md-learning-question-editor-style',
+            MD_LEARNING_CORE_URL . 'assets/questions.css', array(), MD_LEARNING_CORE_VERSION);
         register_block_type(self::BLOCK, array(
             'api_version' => 2,
             'title' => 'پرسش‌های آموزشی مروارید',
@@ -28,6 +30,7 @@ final class MD_Learning_Questions {
             'category' => 'widgets',
             'icon' => 'editor-help',
             'editor_script' => 'md-learning-question-editor',
+            'editor_style' => 'md-learning-question-editor-style',
             'attributes' => array(
                 'blockId' => array('type' => 'string', 'default' => ''),
                 'title' => array('type' => 'string', 'default' => 'مکثی برای خودشناسی'),
