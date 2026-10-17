@@ -749,3 +749,42 @@
     flex-basis:42px;
   }
 }
+
+/* Sidebar search: precise centering independent of generic widget buttons. */
+.md-widget-search .md-sidebar-search button[type="submit"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    box-sizing: border-box;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0 !important;
+    margin: 0;
+    border-radius: 10px;
+    line-height: 1;
+}
+.md-widget-search .md-sidebar-search button[type="submit"] svg {
+    display: block;
+    flex: 0 0 19px;
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    padding: 0;
+    transform: none;
+}
+.md-widget-search .md-sidebar-search input[type="search"] {
+    flex: 1 1 0;
+    min-width: 0;
+}
+@media (max-width: 640px) {
+    .md-widget-search .md-sidebar-search button[type="submit"] {
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+        min-height: 42px;
+        flex-basis: 42px;
+    }
+}
