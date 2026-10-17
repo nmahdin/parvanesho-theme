@@ -80,7 +80,7 @@ final class MD_Learning_Pages {
             </div>
             <button class="md-learning-button" type="submit">ثبت‌نام و دریافت کد ۸ رقمی</button>
         </form>
-        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url(MD_Learning_Schema::url('login')); ?>">با کد قبلی وارد شوید</a>.</p>
+        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('login')) : MD_Learning_Schema::url('login'))); ?>">با کد قبلی وارد شوید</a>.</p>
         <p class="md-learning-note">نام، راه بازیابی حساب نیست. کد و لینک را نزد خود نگه دارید؛ اگر هر دو را گم کنید، باید از مدیر کمک بگیرید.</p>
         <?php echo self::shell_end(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php
