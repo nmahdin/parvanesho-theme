@@ -216,12 +216,22 @@ final class MD_Learning_Schema {
     }
 
     public static function url($key) {
+        $slugs = array('register' => 'learning-register', 'login' => 'learning-login', 'dashboard' => 'learning-dashboard');
+        $shortcodes = array('register' => '[md_learning_register]', 'login' => '[md_learning_login]', 'dashboard' => '[md_learning_dashboard]');
+        if (!isset($slugs[$key])) $key = 'login';
         $pages = get_option(self::PAGE_OPTION, array());
         $page_id = is_array($pages) && isset($pages[$key]) ? absint($pages[$key]) : 0;
-        if ($page_id && get_post_status($page_id) === 'publish') {
+        // A previous page ID can now point to an unrelated WordPress page.
+        // Never direct a challenge visitor to a page without the target form.
+        if ($page_id && get_post_type($page_id) === 'page' && get_post_status($page_id) === 'publish'
+            && strpos((string) get_post_field('post_content', $page_id), $shortcodes[$key]) !== false) {
             return get_permalink($page_id);
         }
-        $slugs = array('register' => 'learning-register', 'login' => 'learning-login', 'dashboard' => 'learning-dashboard');
-        return home_url('/' . (isset($slugs[$key]) ? $slugs[$key] : 'learning-login') . '/');
+        $correct = get_page_by_path($slugs[$key], OBJECT, 'page');
+        if ($correct && $correct->post_status === 'publish'
+            && strpos((string) $correct->post_content, $shortcodes[$key]) !== false) {
+            return get_permalink($correct->ID);
+        }
+        return home_url('/' . $slugs[$key] . '/');
     }
 }
