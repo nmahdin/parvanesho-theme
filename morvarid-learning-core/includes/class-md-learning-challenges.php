@@ -67,6 +67,15 @@ final class MD_Learning_Challenges {
         return $member && (int) $member->ID === absint($member_id);
     }
 
+    public static function learner_id_for_member($member_id) {
+        global $wpdb;
+        $table = self::table();
+        return $member_id ? (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT learner_id FROM {$table} WHERE member_id = %d LIMIT 1",
+            absint($member_id)
+        )) : 0;
+    }
+
     public static function members_for_challenge($challenge_id) {
         global $wpdb;
         $table = self::table();
