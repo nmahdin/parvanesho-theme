@@ -183,7 +183,12 @@ final class MD_Learning_Courses {
      * to this published course, not draft/removed/reassigned lesson records.
      */
     public static function progress($learner_id, $course_id) {
-        if (!$learner_id || !self::is_enrolled($learner_id, $course_id)) {
+        // This helper can be called from other plugin code; protect reads
+        // as strictly as the public dashboard, except for WP administrators.
+        if (!$learner_id ||
+            (absint($learner_id) !== MD_Learning_Auth::current_learner_id()
+                && !current_user_can('manage_options'))
+            || !self::is_enrolled($learner_id, $course_id)) {
             return null;
         }
         $lessons = self::published_lessons($course_id);
@@ -294,8 +299,12 @@ final class MD_Learning_Courses {
         $course_id = isset($_POST['md_course_id']) ? absint($_POST['md_course_id']) : 0;
         $lesson_id = isset($_POST['md_lesson_id']) ? absint($_POST['md_lesson_id']) : 0;
         check_admin_referer('md_learning_lesson_progress_' . $course_id . '_' . $lesson_id);
-        $intent = isset($_POST['md_intent']) && $_POST['md_intent'] === 'complete';
-        $result = self::set_progress($learner_id, $course_id, $lesson_id, $intent);
+        $intent = isset($_POST['md_intent']) && is_string($_POST['md_intent'])
+            ? sanitize_key(wp_unslash($_POST['md_intent'])) : '';
+        if (!in_array($intent, array('complete', 'incomplete'), true)) {
+            wp_die('نوع عملیات پیشرفت معتبر نیست.', '', array('response' => 400));
+        }
+        $result = self::set_progress($learner_id, $course_id, $lesson_id, $intent === 'complete');
         if (is_wp_error($result)) {
             wp_die(esc_html($result->get_error_message()), '', array('response' => 403));
         }
