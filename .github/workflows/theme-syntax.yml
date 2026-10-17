@@ -20,6 +20,8 @@ jobs:
         run: find morvarid-daron-theme -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Test fully editable sidebar widgets and search icon centering
         run: php morvarid-daron-theme/tests/sidebar-widgets-smoke.php
+      - name: Test account-based comments without email and impersonation
+        run: php morvarid-daron-theme/tests/learning-comments-smoke.php
       - name: Lint learner plugin PHP
         run: find morvarid-learning-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Parse theme JavaScript
