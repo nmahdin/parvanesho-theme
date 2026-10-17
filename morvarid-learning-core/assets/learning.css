@@ -171,3 +171,25 @@
 @media(max-width:540px) {
   .md-learning-workspace .md-learning-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+/* 0.6.1 — full-width workspace; one navigation only. */
+.md-learning-workspace .md-learning-shell{width:min(100%,1420px);max-width:none}
+.md-learning-workspace-layout{display:block}
+.md-learning-workspace-main{width:100%;min-width:0}
+.md-learning-workspace-content{width:100%;min-height:290px}
+.md-learning-workspace-side,.md-learning-user-id{display:none!important}
+.md-learning-nav{position:relative;gap:5px}
+.md-learning-nav a{min-height:44px}
+@media(max-width:700px){
+ .md-learning-app{padding:16px 12px 35px}
+ .md-learning-workspace-hero{padding:17px;border-radius:16px;margin-bottom:12px}
+ .md-learning-workspace-hero h1{font-size:21px;margin:6px 0}
+ .md-learning-workspace-content{padding:13px;border-radius:15px}
+ .md-learning-nav{display:flex;overflow-x:auto;flex-wrap:nowrap;scroll-snap-type:x proximity;scrollbar-width:thin;padding:5px;margin-bottom:12px}
+ .md-learning-nav a{flex:0 0 auto;white-space:nowrap;scroll-snap-align:start;padding:8px 12px;font-size:12px}
+ .md-learning-kpis{gap:8px}
+ .md-learning-workspace .md-learning-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .md-learning-kpis>div{min-height:100px}
+ .md-learning-section-head h2{font-size:17px}
+ .md-learning-workspace-content .md-learning-challenge-grid{grid-template-columns:1fr;gap:9px}
+}
