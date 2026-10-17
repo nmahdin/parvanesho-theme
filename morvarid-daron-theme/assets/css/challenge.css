@@ -936,3 +936,58 @@ body.admin-bar .md-day-nav {
  .md-qa-item{padding:10px 11px}
  .md-qa-question{flex-wrap:wrap;gap:5px 8px}
 }
+
+
+/* 1.4.3: restore readable challenge proportions and refresh challenge cards. */
+.md-challenge-hero{padding:clamp(35px,5vw,68px) 0}
+.md-challenge-hero-copy h1{font-size:clamp(33px,3.8vw,49px);line-height:1.5;margin:10px 0 17px;font-weight:800}
+.md-challenge-summary{font-size:17px;line-height:2.05;max-width:960px}
+.md-challenge-meta{font-size:13px;gap:9px;margin-bottom:18px}
+.md-challenge-meta>span{padding:6px 12px}
+.md-challenge-auth-actions .btn{min-height:48px;font-size:14px;padding:11px 22px}
+.md-challenge-layout{gap:32px;padding-top:25px}
+.md-challenge-intro,.md-challenge-layout .md-challenge-intro{font-size:17px;line-height:2.1}
+.md-challenge-days{gap:18px;padding-top:24px}
+.md-day.md-day-accordion{border-radius:17px;box-shadow:0 8px 25px rgba(35,78,66,.06)}
+.md-day.md-day-accordion>.md-day-header{padding:17px 21px}
+.md-day-accordion>summary{min-height:72px;gap:13px}
+.md-day-accordion>summary h2,.md-day-accordion>summary h3{font-size:clamp(19px,1.9vw,24px);line-height:1.65;font-weight:800}
+.md-day.md-day-accordion .md-day-number{font-size:13px;padding:6px 12px}
+.md-day-body{padding:23px 27px 29px}
+.md-day-body .md-day-summary{font-size:16px;line-height:2}
+.md-day-body .md-day-content,.md-day-body .entry-content{font-size:17px;line-height:2.1}
+.md-day-body .md-day-extra{font-size:15px}
+.md-day-tips .md-day-tip h3,.md-day-tasks .md-day-exercise h3{font-size:18px}
+.md-day-tips .md-day-tip p,.md-day-tasks .md-day-exercise p{font-size:15px}
+.md-day-tips .md-day-tip .md-day-label{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.md-day-tips .md-day-tip .md-day-label:before{content:'✦';font-size:16px;line-height:1}
+.md-day-qa h3{font-size:19px}
+.md-qa-question strong,.md-qa-item .md-qa-answer{font-size:15px}
+.md-challenge-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.md-challenge-card{border:1px solid #d9e6d9;border-radius:24px;box-shadow:0 10px 32px rgba(24,69,50,.075);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.md-challenge-card:hover{transform:translateY(-5px);border-color:#a3c5ac;box-shadow:0 20px 45px rgba(24,69,50,.13)}
+.md-challenge-card-cover{aspect-ratio:16/8.5;position:relative}
+.md-challenge-card-cover:after{content:'';position:absolute;inset:55% 0 0;background:linear-gradient(transparent,rgba(29,61,53,.12));pointer-events:none}
+.md-challenge-card-body{padding:23px 26px 26px;gap:12px}
+.md-challenge-card-body h3{font-size:clamp(21px,2vw,26px);line-height:1.5;font-weight:800}
+.md-challenge-card-body p{font-size:15px;line-height:1.9}
+.md-challenge-card-meta{font-size:13px;border-top:1px solid #e4ebe3;padding-top:14px}
+.md-challenge-card-body>.text-link{display:inline-flex;align-self:flex-start;background:#edf5ed;border-radius:999px;padding:7px 15px;font-size:13px;margin-top:5px}
+.md-challenge-card-body>.text-link:hover{background:#d9e9dd}
+@media(min-width:1100px){.md-challenge-grid-section .md-challenge-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){
+.md-challenge-hero{padding:30px 0}
+.md-challenge-hero-copy h1{font-size:32px}
+.md-challenge-summary{font-size:16px}
+.md-challenge-meta{font-size:12px;gap:8px}
+.md-challenge-auth-actions .btn{font-size:13px;padding:11px 16px}
+.md-challenge-days{gap:13px}
+.md-day.md-day-accordion>.md-day-header{padding:13px 14px}
+.md-day-accordion>summary{min-height:63px}
+.md-day-accordion>summary h2,.md-day-accordion>summary h3{font-size:18px}
+.md-day-body{padding:17px 18px}
+.md-day-body .md-day-content,.md-day-body .entry-content{font-size:16px;line-height:2}
+.md-day-tips .md-day-tip h3,.md-day-tasks .md-day-exercise h3{font-size:17px}
+.md-challenge-grid{grid-template-columns:1fr;gap:17px}
+.md-challenge-card-body{padding:18px 19px 21px}
+}
