@@ -82,7 +82,7 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
                 break;
             case 'categories':
                 $taxonomies = array('category', 'md_academy_cat', 'md_resource_cat', 'md_challenge_cat');
-                md_sidebar_categories(in_array($i['taxonomy'], $taxonomies, true) ? $i['taxonomy'] : 'category', $title);
+                md_sidebar_categories(in_array($i['taxonomy'], $taxonomies, true) ? $i['taxonomy'] : 'category', $title, $count);
                 break;
             case 'challenge':
                 md_sidebar_challenge_promo($title);
