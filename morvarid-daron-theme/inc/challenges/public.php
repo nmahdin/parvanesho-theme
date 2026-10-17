@@ -66,14 +66,18 @@ function md_challenge_day_media_html($day) {
         }
     }
 
-    if ($file_id || $file_url) {
-        $file = $file_url ? $file_url : wp_get_attachment_url($file_id);
-        if ($file) {
-            $sections[] = '<div class="md-day-media-item md-day-file">'
-                . ($file_title ? '<h3>' . esc_html($file_title) . '</h3>' : '')
-                . '<a class="btn btn-light" href="' . esc_url($file) . '" download>دریافت فایل <span aria-hidden="true">↓</span></a>'
-                . '</div>';
+    foreach (md_challenge_day_items($day->ID, 'files') as $file_item) {
+        $attachment_id = absint($file_item['id'] ?? 0);
+        $url = esc_url_raw($file_item['url'] ?? '');
+        $file = $url ? $url : ($attachment_id ? wp_get_attachment_url($attachment_id) : '');
+        if (!$file) {
+            continue;
         }
+        $title = sanitize_text_field($file_item['title'] ?? '');
+        $sections[] = '<div class="md-day-media-item md-day-file">'
+            . ($title ? '<h3>' . esc_html($title) . '</h3>' : '')
+            . '<a class="btn btn-light" href="' . esc_url($file) . '" target="_blank" rel="noopener noreferrer">'
+            . 'دریافت فایل <span aria-hidden="true">↓</span></a></div>';
     }
 
     if (!$sections) {
@@ -90,57 +94,65 @@ function md_challenge_day_media_html($day) {
  * @return string
  */
 function md_challenge_day_tip_html($day) {
-    $title = sanitize_text_field(get_post_meta($day->ID, '_md_day_tip_title', true));
-    $tip   = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_tip', true));
-    if ('' === trim($tip)) {
+    $items = md_challenge_day_items($day->ID, 'tips');
+    if (!$items) {
         return '';
     }
-    $html  = '<aside class="md-day-tip">';
-    $html .= '<span class="md-day-label">نکته روز</span>';
-    if ($title) {
-        $html .= '<h3>' . esc_html($title) . '</h3>';
+    $html = '<section class="md-day-tips" aria-label="نکته‌های این روز">';
+    foreach ($items as $item) {
+        $title = sanitize_text_field($item['title'] ?? '');
+        $body = sanitize_textarea_field($item['text'] ?? '');
+        if ($title === '' && $body === '') {
+            continue;
+        }
+        $html .= '<aside class="md-day-tip">';
+        $html .= '<span class="md-day-label">نکته روز</span>';
+        if ($title !== '') {
+            $html .= '<h3>' . esc_html($title) . '</h3>';
+        }
+        if ($body !== '') {
+            $html .= wpautop(esc_html($body));
+        }
+        $html .= '</aside>';
     }
-    $html .= wpautop(esc_html($tip));
-    $html .= '</aside>';
-    return $html;
+    return $html . '</section>';
 }
 
-/**
- * Render the exercise block of a day.
- *
- * @param WP_Post $day Day post.
- * @return string
- */
+/** Render every independent practical task for this challenge day. */
 function md_challenge_day_exercise_html($day) {
-    $title = sanitize_text_field(get_post_meta($day->ID, '_md_day_exercise_title', true));
-    $desc  = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_exercise_desc', true));
-    $steps = sanitize_textarea_field(get_post_meta($day->ID, '_md_day_exercise_steps', true));
-
-    if ('' === trim($title) && '' === trim($desc) && '' === trim($steps)) {
+    $items = md_challenge_day_items($day->ID, 'tasks');
+    if (!$items) {
         return '';
     }
-
-    $html  = '<section class="md-day-exercise">';
-    $html .= '<span class="md-day-label">تمرین عملی</span>';
-    if ($title) {
-        $html .= '<h3>' . esc_html($title) . '</h3>';
-    }
-    if ($desc) {
-        $html .= wpautop(esc_html($desc));
-    }
-    if ($steps) {
-        $lines = preg_split('/\r\n|\r|\n/', $steps);
-        $lines = array_filter(array_map('trim', $lines));
-        if ($lines) {
-            $html .= '<ol class="md-exercise-steps">';
-            foreach ($lines as $line) {
-                $html .= '<li>' . esc_html($line) . '</li>';
-            }
-            $html .= '</ol>';
+    $html = '<section class="md-day-tasks" aria-label="کارها و تمرین‌های این روز">';
+    foreach ($items as $item) {
+        $title = sanitize_text_field($item['title'] ?? '');
+        $desc = sanitize_textarea_field($item['description'] ?? '');
+        $steps = sanitize_textarea_field($item['steps'] ?? '');
+        if ($title === '' && $desc === '' && $steps === '') {
+            continue;
         }
+        $html .= '<section class="md-day-exercise"><span class="md-day-label">تمرین عملی</span>';
+        if ($title !== '') {
+            $html .= '<h3>' . esc_html($title) . '</h3>';
+        }
+        if ($desc !== '') {
+            $html .= wpautop(esc_html($desc));
+        }
+        if ($steps !== '') {
+            $lines = preg_split('/\\r\\n|\\r|\\n/', $steps);
+            $lines = array_filter(array_map('trim', $lines));
+            if ($lines) {
+                $html .= '<ol class="md-exercise-steps">';
+                foreach ($lines as $line) {
+                    $html .= '<li>' . esc_html($line) . '</li>';
+                }
+                $html .= '</ol>';
+            }
+        }
+        $html .= '</section>';
     }
-    $html .= '</section>';
-    return $html;
+    return $html . '</section>';
 }
 
 /**
