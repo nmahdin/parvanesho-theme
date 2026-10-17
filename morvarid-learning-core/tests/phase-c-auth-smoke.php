@@ -28,6 +28,8 @@ $one = MD_Learning_Auth::nonce_learner_session(0, 'md_learning_profile_update');
 check_nonce(is_string($one) && strpos($one, 'md-learner-') === 0, 'profile nonce not learner-scoped');
 check_nonce($one === MD_Learning_Auth::nonce_learner_session(0, 'md_learning_signout_others'), 'same session must use same pseudonymous ID');
 check_nonce($one === MD_Learning_Auth::nonce_learner_session(0, 'md_learning_challenge_join_125'), 'challenge join not scoped');
+check_nonce($one === MD_Learning_Auth::nonce_learner_session(0, 'md_learning_course_join_300'), 'course enrollment nonce not scoped');
+check_nonce($one === MD_Learning_Auth::nonce_learner_session(0, 'md_learning_lesson_progress_300_400'), 'lesson completion nonce not scoped');
 check_nonce($one === MD_Learning_Auth::nonce_learner_session(0, 'md_challenge_entry_200_300'), 'answer save not scoped');
 check_nonce(MD_Learning_Auth::nonce_learner_session(0, 'md_learning_register') === 0, 'public registration nonce changed');
 check_nonce(MD_Learning_Auth::nonce_learner_session(0, 'other_wordpress_form') === 0, 'unrelated WordPress nonce changed');
