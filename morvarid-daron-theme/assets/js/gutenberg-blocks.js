@@ -1,5 +1,7 @@
 (function(wp){
  'use strict';
+ if(!wp||!wp.blocks||!wp.blockEditor||!wp.components||!wp.element){return;}
+ if(typeof wp.blocks.getBlockType==='function'&&wp.blocks.getBlockType('morvarid/hero')){return;}
  const e=wp.element.createElement, register=wp.blocks.registerBlockType;
  const Inspector=wp.blockEditor.InspectorControls;
  const {PanelBody,TextControl,TextareaControl,SelectControl,RangeControl,Placeholder}=wp.components;

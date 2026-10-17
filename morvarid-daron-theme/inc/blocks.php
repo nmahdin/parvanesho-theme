@@ -620,7 +620,7 @@ function md_register_extra_blocks() {
     wp_register_script(
         $script,
         MD_THEME_URI . '/assets/js/blocks.js',
-        array('wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-media'),
+        function_exists('md_editor_script_deps') ? md_editor_script_deps() : array('wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-media'),
         MD_THEME_VERSION,
         true
     );

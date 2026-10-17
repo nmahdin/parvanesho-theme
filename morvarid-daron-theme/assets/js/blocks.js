@@ -4,6 +4,15 @@
 (function (wp) {
     'use strict';
 
+    // Safety guard: the theme also prints this file inline as a fallback, so a
+    // second execution must never register the same block twice.
+    if (!wp || !wp.blocks || !wp.blockEditor || !wp.components || !wp.element) {
+        return;
+    }
+    if (typeof wp.blocks.getBlockType === 'function' && wp.blocks.getBlockType('morvarid/course-grid')) {
+        return;
+    }
+
     var el = wp.element.createElement;
     var register = wp.blocks.registerBlockType;
     var Inspector = wp.blockEditor.InspectorControls;
@@ -160,8 +169,8 @@
             ),
             el('div', { className: 'md-block-label' }, '◆ بلوک‌های قالب مروارید'),
             el('div', { className: 'md-block-preview-inner' },
-                ServerSideRender
-                    ? el(ServerSideRender, { block: name, attributes: props.attributes })
+                wp.serverSideRender
+                    ? el(wp.serverSideRender, { block: name, attributes: props.attributes })
                     : el('p', {}, 'پیش‌نمایش پس از ذخیره نمایش داده می‌شود.')
             )
         );
