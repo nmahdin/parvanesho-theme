@@ -58,6 +58,13 @@ check(strpos($out,'md_join_error=expired') !== false,'forged invalid challenge a
 
 MD_Learning_Auth::$current = 1;
 ob_start();
+MD_Learning_Challenges::render_join(100);
+$already_member_form = ob_get_clean();
+check($already_member_form === '', 'member should never see the join form again');
+check(MD_Learning_Challenges::current_member(100) !== null, 'existing challenge membership not recognized');
+
+MD_Learning_Auth::$current = 1;
+ob_start();
 MD_Learning_Challenges::render_join(101);
 $html = ob_get_clean();
 check(strpos($html, 'action="md_learning_challenge_join"') === false,
