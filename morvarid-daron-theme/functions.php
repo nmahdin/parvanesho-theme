@@ -11,6 +11,7 @@ require_once MD_THEME_DIR . '/inc/helpers.php';
 require_once MD_THEME_DIR . '/inc/dates.php';
 require_once MD_THEME_DIR . '/inc/media.php';
 require_once MD_THEME_DIR . '/inc/forms.php';
+require_once MD_THEME_DIR . '/inc/comments-learning.php';
 require_once MD_THEME_DIR . '/inc/blocks.php';
 require_once MD_THEME_DIR . '/inc/resource-blocks.php';
 require_once MD_THEME_DIR . '/inc/sidebars.php';
