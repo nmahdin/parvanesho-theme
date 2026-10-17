@@ -64,8 +64,10 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         $i = wp_parse_args((array) $instance, $defaults);
         $title = apply_filters('widget_title', (string) $i['title'], $i, $this->id_base);
         $count = max(1, min(12, absint($i['count'])));
-        // Existing built-in theme cards already produce their own .md-widget
-        // wrapper. Don't wrap them a second time: this preserves styling.
+        // Reuse the theme's escaped card renderers, then move their existing
+        // section markup into WordPress's widget wrapper (correct widget ID
+        // and classes, no nested card padding).
+        ob_start();
         switch ($type) {
             case 'search':
                 $allowed = array('', 'post', 'md_course', 'md_lesson', 'md_podcast', 'md_resource', 'md_challenge');
@@ -114,6 +116,22 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
                 ));
                 break;
         }
+        $markup = trim(ob_get_clean());
+        if ($markup === '') {
+            return;
+        }
+        $modifier = '';
+        if (preg_match('/^<section class="md-widget (md-widget-[a-z0-9_-]+)">/i', $markup, $match)) {
+            $modifier = $match[1];
+            $markup = substr($markup, strlen($match[0]));
+            $markup = preg_replace('/<\\/section>\\s*$/', '', $markup, 1);
+        }
+        $before = isset($args['before_widget']) ? $args['before_widget'] : '<section class="md-widget">';
+        if ($modifier) {
+            $before = preg_replace('/class="/', 'class="' . esc_attr($modifier) . ' ', $before, 1);
+        }
+        echo $before . $markup . (isset($args['after_widget']) ? $args['after_widget'] : '</section>');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- existing theme renderers escape data
     }
 
     public function update($new, $old) {
