@@ -50,7 +50,7 @@ function md_home_page_edit_url() {
 /**
  * Serialize one dynamic block into post content.
  *
- * @param string $name  Block name without the morvarid/ prefix.
+ * @param string $name  Full block name, e.g. morvarid/hero.
  * @param array  $attrs Block attributes.
  * @return string
  */
@@ -253,10 +253,57 @@ function md_ensure_posts_page() {
 }
 
 /**
- * Create the «خانه» page and make it the static front page.
+ * Version of the automatic homepage setup.
  *
- * An existing static front page is never replaced: the editor's setup always
- * wins. The page is created once and can then be edited like any other page.
+ * Bump it when the setup has to run once more on sites that already went
+ * through an older version (the option stores the last version that ran).
+ *
+ * @return int
+ */
+function md_home_setup_version() {
+    return 2;
+}
+
+/**
+ * Whether a page already carries the theme homepage blocks.
+ *
+ * @param int $page_id Page ID.
+ * @return bool
+ */
+function md_home_page_has_blocks($page_id) {
+    $content = (string) get_post_field('post_content', $page_id);
+    return false !== strpos($content, '<!-- wp:morvarid/');
+}
+
+/**
+ * Whether content is effectively empty.
+ *
+ * A page saved in Gutenberg can contain empty block scaffolding while showing
+ * nothing, so comments and tags are ignored before the check.
+ *
+ * @param string $content Post content.
+ * @return bool
+ */
+function md_home_content_is_blank($content) {
+    $content = preg_replace('/<!--.*?-->/s', '', (string) $content);
+    return '' === trim(wp_strip_all_tags($content));
+}
+
+/**
+ * Remember that the homepage setup is complete.
+ */
+function md_home_mark_done() {
+    update_option('md_home_page_created', md_home_setup_version());
+}
+
+/**
+ * Guarantee a block-driven homepage.
+ *
+ * - A front page that already contains theme blocks is left alone.
+ * - An empty front page (including an empty Gutenberg canvas) receives the
+ *   default layout, so the existing URL keeps working.
+ * - Otherwise a «خانه» page with the full layout is created and used as the
+ *   front page; an older front page with real content stays untouched.
  *
  * @return int Page ID, or 0 on failure.
  */
@@ -266,26 +313,31 @@ function md_create_home_page() {
         md_ensure_posts_page();
     }
 
-    $existing = md_home_page_id();
-    if ($existing) {
-        // A front page that is still empty gets the default layout once.
-        if ('' === trim((string) get_post_field('post_content', $existing))) {
-            wp_update_post(
-                array(
-                    'ID'           => $existing,
-                    'post_content' => md_home_default_content(),
-                )
-            );
-        }
-        update_option('md_home_page_created', 1);
-        return $existing;
+    $front_id = md_home_page_id();
+
+    if ($front_id && md_home_page_has_blocks($front_id)) {
+        md_home_mark_done();
+        return $front_id;
     }
 
-    $page = get_page_by_path('home');
+    if ($front_id && md_home_content_is_blank(get_post_field('post_content', $front_id))) {
+        wp_update_post(
+            array(
+                'ID'           => $front_id,
+                'post_content' => md_home_default_content(),
+            )
+        );
+        md_home_mark_done();
+        set_transient('md_home_page_notice', 1, 60);
+        return $front_id;
+    }
+
+    $page         = get_page_by_path('home');
     $is_blog_page = $page instanceof WP_Post && (int) get_option('page_for_posts') === (int) $page->ID;
-    if ($page instanceof WP_Post && 'trash' !== $page->post_status && !$is_blog_page) {
+
+    if ($page instanceof WP_Post && 'publish' === $page->post_status && !$is_blog_page) {
         $page_id = (int) $page->ID;
-        if ('' === trim((string) $page->post_content)) {
+        if (!md_home_page_has_blocks($page_id) && md_home_content_is_blank($page->post_content)) {
             wp_update_post(
                 array(
                     'ID'           => $page_id,
@@ -312,7 +364,7 @@ function md_create_home_page() {
 
     update_option('show_on_front', 'page');
     update_option('page_on_front', (int) $page_id);
-    update_option('md_home_page_created', 1);
+    md_home_mark_done();
     set_transient('md_home_page_notice', 1, 60);
 
     return (int) $page_id;
@@ -333,7 +385,7 @@ add_action(
  * the owner would have nothing to edit.
  */
 function md_maybe_create_home_page() {
-    if (get_option('md_home_page_created')) {
+    if ((int) get_option('md_home_page_created') >= md_home_setup_version()) {
         return;
     }
     if (!current_user_can('manage_options')) {
@@ -359,7 +411,29 @@ function md_home_page_notice() {
         return;
     }
 
-    echo '<div class="notice notice-success is-dismissible"><p><strong>صفحه اصلی آماده است.</strong> همهٔ بخش‌های آن بلوک گوتنبرگ‌اند. <a href="'
-        . esc_url((string) get_edit_post_link($page_id)) . '">ویرایش صفحه اصلی</a> — عنوان، متن، پیوند، تعداد و پس‌زمینهٔ هر بخش را از همان برگه تغییر دهید.</p></div>';
+    echo '<div class="notice notice-success is-dismissible"><p><strong>صفحه اصلی بلوکی آماده است.</strong> همهٔ بخش‌های آن بلوک گوتنبرگ‌اند. <a href="'
+        . esc_url((string) get_edit_post_link($page_id)) . '">ویرایش صفحه اصلی</a> — عنوان، متن، پیوند، تعداد و پس‌زمینهٔ هر بخش را از همان برگه تغییر دهید. '
+        . 'اگر پیش‌تر برگهٔ دیگری صفحه اصلی بود، حذف نشده و در «برگه‌ها» باقی است. <a href="'
+        . esc_url(admin_url('options-reading.php')) . '">تنظیمات خواندن</a></p></div>';
 }
 add_action('admin_notices', 'md_home_page_notice');
+
+/**
+ * Manual "build the homepage" action used from the theme settings page.
+ */
+function md_handle_build_home() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('دسترسی کافی ندارید.', 'morvarid-daron'));
+    }
+
+    check_admin_referer('md_build_home');
+
+    $page_id = md_create_home_page();
+    $target  = $page_id
+        ? admin_url('post.php?post=' . (int) $page_id . '&action=edit')
+        : admin_url('themes.php');
+
+    wp_safe_redirect($target);
+    exit;
+}
+add_action('admin_post_md_build_home', 'md_handle_build_home');

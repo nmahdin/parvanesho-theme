@@ -11,9 +11,11 @@
 
 get_header();
 
-$md_home_id = function_exists('md_home_page_id') ? md_home_page_id() : 0;
+$md_home_id      = function_exists('md_home_page_id') ? md_home_page_id() : 0;
+$md_home_content = $md_home_id ? (string) get_post_field('post_content', $md_home_id) : '';
+$md_home_blank   = '' === trim(wp_strip_all_tags((string) preg_replace('/<!--.*?-->/s', '', $md_home_content)));
 
-if ($md_home_id && '' !== trim((string) get_post_field('post_content', $md_home_id))) {
+if ($md_home_id && !$md_home_blank) {
     $md_home_query = new WP_Query(
         array(
             'page_id'        => $md_home_id,
