@@ -12,7 +12,7 @@ function sanitize_text_field($value) { return trim(strip_tags((string) $value));
 function wp_is_post_revision($id) { return false; }
 function wp_is_post_autosave($id) { return false; }
 function parse_blocks($content) { return json_decode((string) $content, true) ?: array(); }
-function serialize_blocks($blocks) { return json_encode($blocks); }
+function serialize_blocks($blocks) { return json_encode($blocks, JSON_UNESCAPED_SLASHES); }
 function get_post_field($field, $id) { return $GLOBALS['posts'][$id]->post_content; }
 function wp_update_post($updates, $wp_error = false) {
     $GLOBALS['posts'][$updates['ID']]->post_content = $updates['post_content'];
@@ -35,7 +35,7 @@ $blocks = array(
     array('blockName' => MD_Learning_Questions::BLOCK, 'attrs' => $attrs, 'innerBlocks' => array()),
 );
 $GLOBALS['posts'][500] = (object) array('ID' => 500, 'post_type' => 'md_resource',
-    'post_status' => 'publish', 'post_content' => json_encode($blocks));
+    'post_status' => 'publish', 'post_content' => json_encode($blocks, JSON_UNESCAPED_SLASHES));
 MD_Learning_Questions::normalize_post(500, $GLOBALS['posts'][500], true);
 $fixed = parse_blocks($GLOBALS['posts'][500]->post_content);
 check($fixed[1]['attrs']['blockId'] === $originalBlock, 'original block ID not retained');
