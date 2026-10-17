@@ -11,6 +11,22 @@ while (have_posts()) :
     the_post();
 
     $challenge_id   = get_the_ID();
+    // The account entry points are part of the challenge itself. This avoids
+    // broken WordPress account page mappings and always retains context.
+    $md_account_mode = isset($_GET['md_account_mode']) && is_string($_GET['md_account_mode'])
+        ? sanitize_key(wp_unslash($_GET['md_account_mode'])) : '';
+    if (in_array($md_account_mode, array('login', 'register'), true)
+        && class_exists('MD_Learning_Pages')) {
+        echo '<main id="main" class="md-challenge-account-entry container" dir="rtl">';
+        echo '<p class="md-challenge-account-back"><a class="text-link" href="' . esc_url(get_permalink($challenge_id)) . '">← بازگشت به چالش ' . esc_html(get_the_title($challenge_id)) . '</a></p>';
+        if ($md_account_mode === 'login') {
+            echo MD_Learning_Pages::login_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        } else {
+            echo MD_Learning_Pages::register_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+        echo '</main>';
+        continue;
+    }
     // Phase B: central session is the ONLY participant credential when the
     // learning plugin is active. Old challenge-only codes/URLs are obsolete.
     if (function_exists('md_learning_current_challenge_member')) {
