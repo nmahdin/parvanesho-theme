@@ -23,14 +23,31 @@ final class MD_Learning_Response_Admin {
     }
 
     public static function menu() {
-        self::$hook = add_submenu_page(
-            'md-learning-learners',
-            'پاسخ‌های آموزشی یادگیرندگان',
-            'پاسخ‌های آموزشی',
-            self::CAPABILITY,
-            self::MENU_SLUG,
-            array(__CLASS__, 'render')
-        );
+        if (!current_user_can(self::CAPABILITY)) {
+            return;
+        }
+        if (current_user_can('manage_options')) {
+            self::$hook = add_submenu_page(
+                'md-learning-learners',
+                'پاسخ‌های آموزشی یادگیرندگان',
+                'پاسخ‌های آموزشی',
+                self::CAPABILITY,
+                self::MENU_SLUG,
+                array(__CLASS__, 'render')
+            );
+        } else {
+            // An explicitly authorized mentor has the viewing capability,
+            // but not access to the administrators-only Learners parent menu.
+            self::$hook = add_menu_page(
+                'پاسخ‌های آموزشی یادگیرندگان',
+                'پاسخ‌های آموزشی',
+                self::CAPABILITY,
+                self::MENU_SLUG,
+                array(__CLASS__, 'render'),
+                'dashicons-visibility',
+                28
+            );
+        }
     }
 
     public static function assets($hook) {
