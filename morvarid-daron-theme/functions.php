@@ -12,6 +12,7 @@ require_once MD_THEME_DIR . '/inc/dates.php';
 require_once MD_THEME_DIR . '/inc/media.php';
 require_once MD_THEME_DIR . '/inc/forms.php';
 require_once MD_THEME_DIR . '/inc/blocks.php';
+require_once MD_THEME_DIR . '/inc/resource-blocks.php';
 require_once MD_THEME_DIR . '/inc/sidebars.php';
 require_once MD_THEME_DIR . '/inc/social.php';
 require_once MD_THEME_DIR . '/inc/post-types.php';
