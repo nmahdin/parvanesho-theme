@@ -118,7 +118,9 @@ final class MD_Learning_Response_Admin {
      */
     public static function where($filters) {
         global $wpdb;
-        $clauses = array();
+        // Never disclose even response metadata from a block whose author
+        // disabled administrator viewing in the Gutenberg editor.
+        $clauses = array('r.manager_visible = 1');
         $values = array();
         if (!empty($filters['md_status'])) {
             $clauses[] = 'r.status = %s';
@@ -219,7 +221,7 @@ final class MD_Learning_Response_Admin {
                 r.updated_at, r.submitted_at,
                 l.display_name, l.status AS learner_status,
                 p.post_title AS content_title, p.post_status AS content_status
-                {$from} WHERE r.id = %d LIMIT 1", $answer_id
+                {$from} WHERE r.id = %d AND r.manager_visible = 1 LIMIT 1", $answer_id
         ));
         return $row ?: null;
     }
