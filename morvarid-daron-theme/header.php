@@ -26,8 +26,9 @@ if (function_exists('md_learning_current_learner_id') && class_exists('MD_Learni
 <header class="site-header">
     <div class="container header-inner">
         <a class="brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="<?php echo esc_attr($header_title); ?>">
-            <?php if (has_custom_logo()) : ?>
-                <?php echo wp_get_attachment_image(get_theme_mod('custom_logo'), 'medium', false, array('class'=>'brand-logo')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            <?php $logo_id = absint(md_theme_option('header_logo_id', get_theme_mod('custom_logo'))); ?>
+            <?php if ($logo_id && wp_get_attachment_image($logo_id, 'medium', false, array('class'=>'brand-logo'))) : ?>
+                <?php echo wp_get_attachment_image($logo_id, 'medium', false, array('class'=>'brand-logo')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             <?php else : ?>
                 <span class="brand-icon" aria-hidden="true">◈</span>
             <?php endif; ?>
