@@ -11,6 +11,18 @@ while (have_posts()) :
     the_post();
 
     $challenge_id   = get_the_ID();
+    // Personal dashboards require both the private member ID and its 256-bit key.
+    // They never expose another member's answers on the public challenge page.
+    if (isset($_GET['md_member']) || isset($_GET['md_key'])) {
+        $member = md_challenge_member_from_request($challenge_id);
+        if (!$member) {
+            status_header(403);
+            echo '<main class="container md-member-access-error" dir="rtl"><h1>لینک اختصاصی معتبر نیست</h1><p>این لینک اشتباه یا غیرفعال شده است. از لینک معتبر خود استفاده کنید.</p></main>';
+        } else {
+            md_challenge_render_member_dashboard($challenge_id, $member);
+        }
+        continue;
+    }
     $start          = md_challenge_start($challenge_id);
     $end            = md_challenge_end($challenge_id);
     $stats          = md_challenge_stats($challenge_id);
@@ -108,6 +120,10 @@ while (have_posts()) :
                     </section>
                 <?php endif; ?>
 
+                <?php if (isset($_GET['md_enroll_result']) && 'check-email' === sanitize_key(wp_unslash($_GET['md_enroll_result']))) : ?>
+                    <p class="md-enroll-message" role="status">اگر با این ایمیل قبلاً ثبت‌نام کرده باشید، لینک خصوصی به ایمیل شما ارسال شده است. صندوق هرزنامه را هم بررسی کنید.</p>
+                <?php endif; ?>
+                <?php md_challenge_registration_form($challenge_id); ?>
                 <?php md_challenge_render_day_nav($days, $challenge_id); ?>
 
                 <div class="md-challenge-days" id="md-days">
