@@ -280,6 +280,12 @@ final class MD_Learning_Auth {
         return is_array($value) ? $value : null;
     }
 
+    public static function requested_challenge() {
+        $raw = isset($_POST['md_challenge']) ? $_POST['md_challenge'] : (isset($_GET['md_challenge']) ? $_GET['md_challenge'] : 0);
+        $id = absint($raw);
+        return $id && get_post_type($id) === 'md_challenge' && get_post_status($id) === 'publish' ? $id : 0;
+    }
+
     public static function register() {
         $name = isset($_POST['md_name']) && is_string($_POST['md_name']) ? sanitize_text_field(wp_unslash($_POST['md_name'])) : '';
         check_admin_referer('md_learning_register');
@@ -293,8 +299,9 @@ final class MD_Learning_Auth {
         if (empty($_POST['md_consent'])) {
             wp_die('برای ثبت‌نام، موافقت با ذخیره نام و پاسخ‌ها لازم است.', '', array('response' => 400));
         }
+        $challenge_id = self::requested_challenge();
         if (self::current_learner_id()) {
-            wp_safe_redirect(MD_Learning_Schema::url('dashboard'));
+            wp_safe_redirect($challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard'));
             exit;
         }
         $created = self::create_learner($name);
@@ -306,12 +313,17 @@ final class MD_Learning_Auth {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
         }
         self::store_receipt($session, $created);
-        wp_safe_redirect(MD_Learning_Schema::url('dashboard'));
+        $destination = MD_Learning_Schema::url('dashboard');
+        if ($challenge_id) {
+            $destination = add_query_arg('md_challenge', $challenge_id, $destination);
+        }
+        wp_safe_redirect($destination);
         exit;
     }
 
     public static function login() {
         check_admin_referer('md_learning_login');
+        $challenge_id = self::requested_challenge();
         if (!self::https_allowed()) {
             wp_die('برای ورود، ابتدا HTTPS سایت را فعال کنید.', '', array('response' => 403));
         }
@@ -319,14 +331,15 @@ final class MD_Learning_Auth {
         $learner = self::find_by_code($raw);
         if (!$learner) {
             // Intentionally no attempt counter and no account lockout.
-            wp_safe_redirect(add_query_arg('md_learning_error', 'invalid', MD_Learning_Schema::url('login')));
+            $dest = add_query_arg('md_learning_error', 'invalid', MD_Learning_Schema::url('login'));
+            wp_safe_redirect($challenge_id ? add_query_arg('md_challenge', $challenge_id, $dest) : $dest);
             exit;
         }
         $session = self::create_session($learner->id);
         if (is_wp_error($session)) {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
         }
-        wp_safe_redirect(MD_Learning_Schema::url('dashboard'));
+        wp_safe_redirect($challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard'));
         exit;
     }
 
