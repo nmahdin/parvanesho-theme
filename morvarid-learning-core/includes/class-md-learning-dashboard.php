@@ -268,6 +268,11 @@ final class MD_Learning_Dashboard {
     private static function profile($learner) {
         ?>
         <h2>اطلاعات پروفایل من</h2>
+        <form class="md-learning-profile-logout" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <input type="hidden" name="action" value="md_learning_logout">
+            <?php wp_nonce_field('md_learning_logout'); ?>
+            <button type="submit" class="md-learning-button md-learning-logout">خروج از حساب</button>
+        </form>
         <p class="md-learning-muted">این نام برای نمایش پروفایل شما استفاده می‌شود. ویرایش آن، اطلاعات ورودتان را تغییر نمی‌دهد.</p>
         <div class="md-learning-profile-meta">
             <span>تاریخ عضویت</span><strong><?php echo self::escaped_date($learner->created_at); ?></strong>
