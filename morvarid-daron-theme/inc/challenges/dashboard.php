@@ -46,7 +46,10 @@ function md_challenge_admin_participants_page() {
         <?php elseif ('md_challenge' !== get_post_type($challenge_id) || !current_user_can('edit_post', $challenge_id)) : ?>
             <p>چالش پیدا نشد یا اجازه دسترسی ندارید.</p>
         <?php else :
-            $members = md_challenge_participants($challenge_id);
+            $central = class_exists('MD_Learning_Challenges');
+            $members = $central
+                ? MD_Learning_Challenges::members_for_challenge($challenge_id)
+                : md_challenge_participants($challenge_id);
             $days = md_challenge_days($challenge_id);
             $total = count($days);
             $selected_id = isset($_GET['member_id']) ? absint($_GET['member_id']) : 0;
@@ -69,6 +72,20 @@ function md_challenge_admin_participants_page() {
             </div>
             <section class="md-admin-create-member">
                 <h2>ثبت شرکت‌کننده توسط مدیر</h2>
+                <?php if ($central) : ?>
+                    <p>برای این چالش، از شناسهٔ پروفایل مرکزی یادگیرنده استفاده کنید. ابتدا در بخش
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=md-learning-learners')); ?>">یادگیرندگان</a>
+                    پروفایل بسازید و کد اصلی را تحویل دهید.</p>
+                    <?php if (current_user_can('manage_options')) : ?>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <input type="hidden" name="action" value="md_challenge_admin_create_member">
+                        <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
+                        <?php wp_nonce_field('md_challenge_admin_create_member_' . $challenge_id); ?>
+                        <label>شماره شناسهٔ یادگیرنده (بدون L-) <input type="number" name="learner_id" min="1" required></label>
+                        <button class="button button-primary" type="submit">افزودن پروفایل به چالش</button>
+                    </form>
+                    <?php else : ?><p>افزودن عضو به این شیوه فقط برای مدیر کل سایت فعال است.</p><?php endif; ?>
+                <?php else : ?>
                 <p>نام را وارد کنید تا کد ۸ رقمی و لینک اختصاصی ساخته شود. سپس کد یا لینک را خارج از سایت در اختیار شرکت‌کننده بگذارید.</p>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <input type="hidden" name="action" value="md_challenge_admin_create_member">
@@ -77,11 +94,12 @@ function md_challenge_admin_participants_page() {
                     <label>نام شرکت‌کننده <input type="text" name="member_name" maxlength="120" required></label>
                     <button class="button button-primary" type="submit">ساخت کد و لینک جدید</button>
                 </form>
+                <?php endif; ?>
             </section>
             <?php if (!$members) : ?><p class="notice notice-info inline">هنوز کسی در این چالش ثبت‌نام نکرده است.</p><?php endif; ?>
             <div class="md-participants-table-wrap">
                 <table class="widefat striped md-participants-table">
-                    <thead><tr><th>نام</th><th>کد ورود ۸ رقمی</th><th>ثبت‌نام</th><th>پیشرفت</th><th>آخرین فعالیت</th><th>لینک اختصاصی (محرمانه)</th><th>جزئیات</th></tr></thead>
+                    <thead><tr><th>نام</th><th><?php echo $central ? 'شناسه یادگیرنده' : 'کد ورود ۸ رقمی'; ?></th><th>ثبت‌نام</th><th>پیشرفت</th><th>آخرین فعالیت</th><th><?php echo $central ? 'دسترسی' : 'لینک اختصاصی (محرمانه)'; ?></th><th>جزئیات</th></tr></thead>
                     <tbody>
                     <?php foreach ($members as $member) :
                         $entries = md_challenge_member_entries($member->ID);
@@ -91,16 +109,16 @@ function md_challenge_admin_participants_page() {
                                 $done++;
                             }
                         }
-                        $link = md_challenge_member_link($member);
+                        $link = $central ? '' : md_challenge_member_link($member);
                         $last = get_post_meta($member->ID, '_md_member_last_activity', true);
                         ?>
                         <tr>
                             <td><strong><?php echo esc_html($member->post_title); ?></strong></td>
-                            <td><strong class="md-member-admin-code" dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true) ?: '—'); ?></strong></td>
+                            <td><strong class="md-member-admin-code" dir="ltr"><?php echo esc_html($central ? 'L-' . MD_Learning_Challenges::learner_id_for_member($member->ID) : (get_post_meta($member->ID, '_md_member_code', true) ?: '—')); ?></strong></td>
                             <td><?php echo esc_html(md_format_jalali(substr($member->post_date, 0, 10), 'short')); ?></td>
                             <td><?php echo esc_html(md_fa_num($done) . ' / ' . md_fa_num($total)); ?></td>
                             <td><?php echo esc_html($last ? $last : '—'); ?></td>
-                            <td><?php if ($link) : ?><input class="md-member-admin-url" type="text" dir="ltr" readonly onclick="this.select()" value="<?php echo esc_attr($link); ?>" aria-label="لینک خصوصی <?php echo esc_attr($member->post_title); ?>"><?php else : ?>غیرفعال<?php endif; ?></td>
+                            <td><?php if ($central) : ?>ورود با پروفایل مرکزی<?php elseif ($link) : ?><input class="md-member-admin-url" type="text" dir="ltr" readonly onclick="this.select()" value="<?php echo esc_attr($link); ?>" aria-label="لینک خصوصی <?php echo esc_attr($member->post_title); ?>"><?php else : ?>غیرفعال<?php endif; ?></td>
                             <td><a class="button" href="<?php echo esc_url(add_query_arg('member_id', $member->ID, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail'); ?>">پاسخ‌ها</a></td>
                         </tr>
                     <?php endforeach; ?>
@@ -133,6 +151,7 @@ function md_challenge_admin_participants_page() {
                             <?php else : ?><p>هنوز تمرین یا پاسخی ثبت نشده است.</p><?php endif; ?>
                         </details>
                     <?php endforeach; ?>
+                    <?php if (!$central) : ?>
                     <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('کد و لینک قبلی باطل شوند و مقادیر جدید صادر شوند؟');">
                         <input type="hidden" name="action" value="md_challenge_rotate_member_access">
                         <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
@@ -140,12 +159,22 @@ function md_challenge_admin_participants_page() {
                         <?php wp_nonce_field('md_challenge_rotate_member_' . $selected->ID); ?>
                         <button type="submit" class="button button-secondary">صدور کد و لینک جدید</button>
                     </form>
-                    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('لینک و کد این شرکت‌کننده غیرفعال شود؟');">
+                    <?php endif; ?>
+                    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('<?php echo $central ? 'وضعیت عضویت این فرد در همین چالش تغییر کند؟' : 'لینک و کد این شرکت‌کننده غیرفعال شود؟'; ?>');">
                         <input type="hidden" name="action" value="md_challenge_revoke_member">
                         <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
                         <input type="hidden" name="member_id" value="<?php echo esc_attr($selected->ID); ?>">
                         <?php wp_nonce_field('md_challenge_revoke_member_' . $selected->ID); ?>
-                        <?php if (!get_post_meta($selected->ID, '_md_member_revoked', true)) : ?><button type="submit" class="button">غیرفعال کردن لینک این شرکت‌کننده</button><?php else : ?><p>لینک شرکت‌کننده غیرفعال است.</p><?php endif; ?>
+                        <?php if ($central) : ?>
+                            <?php if (get_post_meta($selected->ID, '_md_member_revoked', true)) : ?>
+                                <input type="hidden" name="md_reactivate" value="1">
+                                <button type="submit" class="button">فعال‌سازی مجدد عضویت چالش</button>
+                            <?php else : ?>
+                                <button type="submit" class="button">غیرفعال‌کردن عضویت در این چالش</button>
+                            <?php endif; ?>
+                        <?php elseif (!get_post_meta($selected->ID, '_md_member_revoked', true)) : ?>
+                            <button type="submit" class="button">غیرفعال کردن لینک این شرکت‌کننده</button>
+                        <?php else : ?><p>لینک شرکت‌کننده غیرفعال است.</p><?php endif; ?>
                     </form>
                 </section>
             <?php endif; ?>
@@ -164,6 +193,18 @@ function md_challenge_admin_create_member() {
         wp_die('اجازه مدیریت این چالش را ندارید.', '', array('response' => 403));
     }
     check_admin_referer('md_challenge_admin_create_member_' . $challenge_id);
+    if (class_exists('MD_Learning_Challenges')) {
+        if (!current_user_can('manage_options')) {
+            wp_die('فقط مدیر کل می‌تواند پروفایل مرکزی را به چالش اضافه کند.', '', array('response' => 403));
+        }
+        $learner_id = isset($_POST['learner_id']) ? absint($_POST['learner_id']) : 0;
+        $member = MD_Learning_Challenges::enroll($challenge_id, $learner_id);
+        if (is_wp_error($member)) {
+            wp_die(esc_html($member->get_error_message()), '', array('response' => 409));
+        }
+        wp_safe_redirect(add_query_arg('member_id', $member->ID, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail');
+        exit;
+    }
     $name = isset($_POST['member_name']) && is_string($_POST['member_name']) ? sanitize_text_field(wp_unslash($_POST['member_name'])) : '';
     if (!$name || strlen($name) > 360) {
         wp_die('نام شرکت‌کننده معتبر نیست.', '', array('response' => 400));
@@ -191,6 +232,9 @@ add_action('admin_post_md_challenge_admin_create_member', 'md_challenge_admin_cr
  * codes immediately stop working, and progress records are preserved.
  */
 function md_challenge_rotate_member_access() {
+    if (class_exists('MD_Learning_Challenges')) {
+        wp_die('کدهای قبلی چالش غیرفعال‌اند. کد اصلی را در بخش یادگیرندگان مدیریت کنید.', '', array('response' => 410));
+    }
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
     $member_id = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
     if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge'
@@ -222,7 +266,11 @@ function md_challenge_revoke_member() {
         wp_die('دسترسی مجاز نیست.', '', array('response' => 403));
     }
     check_admin_referer('md_challenge_revoke_member_' . $member_id);
-    update_post_meta($member_id, '_md_member_revoked', 1);
+    if (class_exists('MD_Learning_Challenges') && !empty($_POST['md_reactivate'])) {
+        delete_post_meta($member_id, '_md_member_revoked');
+    } else {
+        update_post_meta($member_id, '_md_member_revoked', 1);
+    }
     wp_safe_redirect(add_query_arg('member_id', $member_id, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail');
     exit;
 }
