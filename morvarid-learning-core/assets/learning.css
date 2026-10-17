@@ -193,3 +193,10 @@
  .md-learning-section-head h2{font-size:17px}
  .md-learning-workspace-content .md-learning-challenge-grid{grid-template-columns:1fr;gap:9px}
 }
+
+/* Keep guidance visually inside login and registration cards. */
+.md-learning-form .md-learning-form-notes{border-top:1px solid #deeadf;padding-top:13px;display:grid;gap:6px}
+.md-learning-form .md-learning-form-notes .md-learning-note{margin:0;max-width:none;text-align:right;font-size:13px}
+.md-learning-profile-logout{margin:12px 0 20px}
+.md-learning-profile-logout .md-learning-logout{background:#fff4f1!important;color:#994236!important;border:1px solid #e4c5bd!important}
+.md-learning-profile-logout .md-learning-logout:hover{background:#f9e9e4!important}
