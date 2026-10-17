@@ -563,3 +563,16 @@ body.md-modal-open {
     .md-days-kpi strong { font-size: 19px; }
     .md-days-controls .md-generate-days { flex: 1 1 100%; }
 }
+
+
+/* Reliable, JavaScript-independent edit form at the end of the admin screen. */
+.md-day-fallback-notice { padding: 12px 16px; background: #eff8f3; border-right: 3px solid #3b8b65; line-height: 1.9; border-radius: 9px; margin-top: 18px; }
+.md-direct-day-panel { max-width: 1140px; margin: 32px auto 50px; padding: clamp(20px,3vw,35px); background: #fff; border: 1px solid #dce7df; border-radius: 16px; box-shadow: 0 10px 30px rgba(26,64,45,.05); scroll-margin-top: 40px; }
+.md-direct-day-panel h2 { font-size: 22px; color: #245742; margin-top: 0; }
+.md-direct-day-panel > p { color: #63766a; }
+.md-direct-day-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0 26px; }
+.md-direct-day-fields label { display: grid; gap: 7px; color: #345745; font-weight: 600; }
+.md-direct-day-fields label.md-wide { grid-column: 1/-1; }
+.md-direct-day-fields input, .md-direct-day-fields textarea, .md-direct-day-fields select { box-sizing: border-box; width: 100%; max-width: 100%; border-radius: 9px; padding: 9px 12px; }
+.md-direct-day-panel .button { margin-inline-end: 10px; }
+@media (max-width: 760px) { .md-direct-day-fields { grid-template-columns: 1fr; } }
