@@ -241,8 +241,51 @@ function md_design_block_render($attributes, $content, $block) {
   if ($image_id && wp_attachment_is_image($image_id)) {
    $media = '<div class="md-gb-hero-media md-home-portrait">'.wp_get_attachment_image($image_id,'large',false,['loading'=>'eager','decoding'=>'async']).'</div>';
   }
-  $copy = '<div class="md-gb-hero-copy"><span class="md-gb-eyebrow">'.$eyebrow.'</span><'.$heading.'>'.$title.'</'.$heading.'><p>'.$subtitle.'</p>'.($buttons?'<div class="md-gb-hero-actions">'.$buttons.'</div>':'').'</div>';
+  $quote = trim((string)($attributes['quote'] ?? ''));
+  $quote_html = $quote!=='' ? '<blockquote class="md-home-hero-quote">'.esc_html($quote).'</blockquote>' : '';
+  $copy = '<div class="md-gb-hero-copy"><span class="md-gb-eyebrow">'.$eyebrow.'</span><'.$heading.'>'.$title.'</'.$heading.'><p>'.$subtitle.'</p>'.$quote_html.($buttons?'<div class="md-gb-hero-actions">'.$buttons.'</div>':'').'</div>';
   return '<section class="md-gb-hero'.($media?' md-gb-hero-split':'').'"><div class="container">'.$copy.$media.'</div></section>';
+ }
+ if ($name === 'morvarid/welcome') {
+  $body = trim((string)($attributes['body'] ?? ''));
+  return '<section class="md-home-welcome"><div class="container md-home-narrow">'
+    .'<span class="md-home-welcome-symbol" aria-hidden="true">✦</span>'
+    .'<h2>'.$title.'</h2>'
+    .($body!==''?'<p>'.nl2br(esc_html($body)).'</p>':'')
+    .'</div></section>';
+ }
+ if ($name === 'morvarid/story') {
+  $body = trim((string)($attributes['body'] ?? ''));
+  $image = absint($attributes['imageId'] ?? 0);
+  if (!$image && !empty($attributes['useHomePhoto'])) {
+    $image = absint(md_theme_option('home_person_image_id',0));
+  }
+  $image_html = $image && wp_attachment_is_image($image)
+    ? '<figure class="md-home-story-photo">'.wp_get_attachment_image($image,'large',false,array('loading'=>'lazy','decoding'=>'async')).'</figure>'
+    : '';
+  return '<section class="md-home-story-section"><div class="container"><div class="md-home-story'.($image_html?' md-home-story-split':'').'">'
+    .'<div class="md-home-story-copy"><h2>'.$title.'</h2>'
+    .($body!==''?'<p>'.nl2br(esc_html($body)).'</p>':'')
+    .'</div>'.$image_html.'</div></div></section>';
+ }
+ if ($name === 'morvarid/values') {
+  $items = isset($attributes['items']) && is_array($attributes['items']) ? array_slice($attributes['items'],0,8) : array();
+  $subtitle = trim((string)($attributes['subtitle'] ?? ''));
+  $out = '<section class="md-home-values-section"><div class="container"><div class="md-home-values-panel">'
+    .'<div class="md-home-values-heading"><h2>'.$title.'</h2>'
+    .($subtitle!==''?'<p>'.esc_html($subtitle).'</p>':'').'</div><div class="md-home-values-list">';
+  $count=0;
+  foreach($items as $item) {
+   if (!is_array($item)) continue;
+   $item_title=trim((string)($item['title']??''));
+   $item_body=trim((string)($item['text']??''));
+   if ($item_title==='' && $item_body==='') continue;
+   ++$count;
+   $out.='<article class="md-home-value"><span class="md-home-value-symbol" aria-hidden="true">'.esc_html((string)$count).'</span>'
+     .'<div>'.($item_title!==''?'<h3>'.esc_html($item_title).'</h3>':'')
+     .($item_body!==''?'<p>'.esc_html($item_body).'</p>':'').'</div></article>';
+  }
+  return $out.'</div></div></div></section>';
  }
  if ($name === 'morvarid/content-grid') {
   $allowed=['post','md_course','md_lesson','md_podcast','md_service','md_resource'];
@@ -302,7 +345,14 @@ add_action('init', function() {
  $script='md-design-editor';
  wp_register_script($script,get_template_directory_uri().'/assets/js/gutenberg-blocks.js',md_editor_script_deps(),MD_THEME_VERSION,true);
  $blocks=[
-  'hero'=>['eyebrow'=>'مروارید درون','title'=>'جایی برای کشف خود','subtitle'=>'رشد، آگاهی و ارتباط عمیق‌تر','buttonLabel'=>'شروع کنید','buttonUrl'=>'','secondaryLabel'=>'','secondaryUrl'=>'','imageId'=>0,'artQuote'=>''],
+  'hero'=>['eyebrow'=>'مروارید درون','title'=>'جایی برای کشف خود','subtitle'=>'رشد، آگاهی و ارتباط عمیق‌تر','buttonLabel'=>'شروع کنید','buttonUrl'=>'','secondaryLabel'=>'','secondaryUrl'=>'','imageId'=>0,'artQuote'=>'','quote'=>''],
+  'welcome'=>['title'=>'به مروارید درون خوش آمدید','body'=>'فضایی برای مکث، گفت‌وگو و کشف مسیرهای تازه.'],
+  'story'=>['title'=>'اینجا چگونه همراهت هستیم؟','body'=>'با شنیدن، پرسیدن و همراهی؛ بدون قضاوت و نسخه‌های آماده.','imageId'=>0,'useHomePhoto'=>false],
+  'values'=>['title'=>'ارزش‌های مسیر ما','subtitle'=>'پایه‌های گفت‌وگو و یادگیری','items'=>[
+    ['title'=>'شنیدن و احترام','text'=>'فرصتی برای شنیدن نگاه‌های متفاوت.'],
+    ['title'=>'کشف توانمندی','text'=>'دیدن ظرفیت‌هایی که شاید کمتر به آن‌ها توجه شده است.'],
+    ['title'=>'انتخاب آگاهانه','text'=>'پیدا کردن گام‌های عملی متناسب با زندگی خود.'],
+  ]],
   'content-grid'=>['title'=>'تازه‌ترین مطالب','subtitle'=>'','postType'=>'post','count'=>3,'columns'=>3,'categorySlug'=>'','linkLabel'=>'','linkUrl'=>'','background'=>''],
   'action'=>['title'=>'برای گفت‌وگو آماده‌ای؟','subtitle'=>'با یک قدم کوچک شروع کن','buttonLabel'=>'رزرو جلسه','buttonUrl'=>''],
   'download'=>['title'=>'کاربرگ آموزشی','description'=>'فایل کمکی برای یادگیری','fileUrl'=>'','buttonLabel'=>'دریافت فایل'],
