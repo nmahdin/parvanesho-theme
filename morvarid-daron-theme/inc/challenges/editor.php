@@ -91,6 +91,15 @@ function md_challenge_render_plain_day_form() {
                 <label>شرح تمرین <textarea name="exercise_desc" rows="3"><?php echo esc_textarea($day ? get_post_meta($day->ID, '_md_day_exercise_desc', true) : ''); ?></textarea></label>
                 <label class="md-wide">مراحل تمرین (هر مرحله در یک خط) <textarea name="exercise_steps" rows="3"><?php echo esc_textarea($day ? get_post_meta($day->ID, '_md_day_exercise_steps', true) : ''); ?></textarea></label>
                 <label class="md-wide">پرسش‌های شرکت‌کننده (هر سؤال در یک خط) <textarea name="day_questions" rows="4"><?php echo esc_textarea($day ? get_post_meta($day->ID, '_md_day_questions', true) : ''); ?></textarea></label>
+                <label>لینک فایل صوتی (نشانی مستقیم فایل)
+                    <input type="url" name="audio_url" placeholder="https://..." value="<?php echo esc_attr($day ? get_post_meta($day->ID, '_md_day_audio_url', true) : ''); ?>">
+                </label>
+                <label>لینک ویدیو (فایل یا آپارات و موارد مشابه)
+                    <input type="url" name="video_url" placeholder="https://..." value="<?php echo esc_attr($day ? get_post_meta($day->ID, '_md_day_video_url', true) : ''); ?>">
+                </label>
+                <label class="md-wide">لینک فایل یا کاربرگ (PDF و موارد مشابه)
+                    <input type="url" name="file_url" placeholder="https://..." value="<?php echo esc_attr($day ? get_post_meta($day->ID, '_md_day_file_url', true) : ''); ?>">
+                </label>
                 <label>وضعیت
                     <select name="day_status">
                         <option value="draft" <?php selected($day ? $day->post_status : 'draft', 'draft'); ?>>پیش‌نویس</option>
@@ -147,6 +156,18 @@ function md_challenge_direct_save_day() {
             foreach ($keys as $input => $meta) {
                 $value = isset($_POST[$input]) ? sanitize_textarea_field(wp_unslash($_POST[$input])) : '';
                 update_post_meta($id, $meta, $value);
+            }
+            foreach (array(
+                'audio_url' => '_md_day_audio_url',
+                'video_url' => '_md_day_video_url',
+                'file_url' => '_md_day_file_url',
+            ) as $input => $meta) {
+                $url = isset($_POST[$input]) && is_string($_POST[$input]) ? esc_url_raw(wp_unslash($_POST[$input])) : '';
+                if ($url) {
+                    update_post_meta($id, $meta, $url);
+                } else {
+                    delete_post_meta($id, $meta);
+                }
             }
             md_challenge_sync_counts($challenge_id);
         }
