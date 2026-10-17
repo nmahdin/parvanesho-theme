@@ -233,3 +233,35 @@
 
 /* The offscreen antispam field must never create a 10,000px mobile canvas. */
 .md-learning-app .md-learning-trap{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;left:auto!important}
+
+
+/* Copyable onboarding credentials, securely adjacent to their input field. */
+.md-learning-copy-row{display:flex;align-items:stretch;gap:9px;max-width:100%;min-width:0;margin:6px 0 16px}
+.md-learning-copy-row input{flex:1 1 auto;min-width:0;max-width:100%;border-radius:15px!important;margin:0!important;direction:ltr;text-align:left}
+.md-learning-copy-button{flex:0 0 auto;min-width:94px;border:0!important;border-radius:999px!important;background:#357557;color:white;font:inherit;font-size:13px;font-weight:700;cursor:pointer;padding:10px 15px;box-shadow:none!important;transition:background .15s}
+.md-learning-copy-button:hover{background:#24583f}
+.md-learning-copy-button:focus-visible{outline:3px solid #80b895;outline-offset:2px}
+.md-learning-nav{border-radius:26px!important;overflow:visible!important}
+.md-learning-nav a{border-radius:999px!important}
+@media(max-width:700px){
+.md-learning-nav{display:grid!important;grid-template-columns:1fr!important;overflow:visible!important;scroll-snap-type:none!important;gap:7px!important;padding:10px!important;border-radius:24px!important}
+.md-learning-nav a{width:100%;max-width:100%;display:flex!important;justify-content:flex-start!important;flex:initial!important;white-space:normal!important;scroll-snap-align:none!important;border-radius:999px!important;padding:12px 17px!important;font-size:13px!important}
+.md-learning-copy-row{gap:6px}
+.md-learning-copy-button{min-width:76px;font-size:12px;padding:9px 10px}
+}
+/* A distinctive calm editorial progress card, not a generic dashboard tile. */
+.md-learning-workspace .md-learning-challenge-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,285px),1fr));gap:18px}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card){
+position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:26px!important;
+border:1px solid #eadfcb!important;border-radius:29px!important;
+background:linear-gradient(148deg,#fffaf0 0%,#ffffff 66%,#f0f8ef 100%)!important;
+box-shadow:0 12px 32px rgba(72,84,50,.055)!important}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)::before{
+content:'✦';position:absolute;inset-block-start:5px;inset-inline-end:19px;color:#c7a982;font-size:49px;opacity:.23;z-index:-1}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>h3{font-size:21px;line-height:1.65;color:#2b5e4a;margin:0 0 8px;padding-inline-end:25px}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>p{margin:0;color:#6b7566;font-size:13px;line-height:1.9}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>.md-learning-challenge-progress{height:11px;border-radius:999px;background:#e5e8d8;overflow:hidden;margin:7px 0}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>.md-learning-challenge-progress span{background:linear-gradient(90deg,#418963,#c5ad80);border-radius:inherit}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>a:last-child{display:inline-flex;align-self:flex-start;align-items:center;margin-top:auto;padding:11px 20px;border-radius:999px;background:#315e48;color:white!important;text-decoration:none!important;font-size:13px}
+.md-learning-workspace .md-learning-challenge-card:not(.md-learning-courses-grid .md-learning-challenge-card)>a:last-child:hover{background:#234c39}
+.md-learning-app button,.md-learning-app .md-learning-button,.md-learning-app .button{border-radius:999px!important;box-shadow:none!important;transform:none!important}
