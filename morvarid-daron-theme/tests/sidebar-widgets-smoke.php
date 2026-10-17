@@ -77,10 +77,10 @@ $layout = $GLOBALS['test_sidebar_layouts'];
 $instances = $GLOBALS['test_settings']['widget_md_sidebar_card'];
 checkit(count($layout['md-magazine-sidebar']) === 6, 'magazine defaults are not individual widgets');
 checkit(count($layout['md-challenge-sidebar']) === 5, 'challenge defaults missing');
-checkit(count($layout['md-academy-sidebar']) === 1, 'existing academy widgets should stay untouched');
+checkit(count($layout['md-academy-sidebar']) === 2, 'existing academy widget or migrated family card lost');
 checkit($layout['md-academy-sidebar'][0] === 'block-2', 'existing Gutenberg widget must stay first');
 checkit($layout['inactive_widgets'] === array('text-8'), 'inactive user widget was altered');
-foreach (array('md-magazine-sidebar','md-challenge-sidebar') as $id) {
+foreach (array('md-magazine-sidebar','md-academy-sidebar','md-challenge-sidebar') as $id) {
     $last = end($layout[$id]);
     preg_match('/^md_sidebar_card-([0-9]+)$/', $last, $match);
     checkit(isset($match[1]) && $instances[(int)$match[1]]['type'] === 'family',
