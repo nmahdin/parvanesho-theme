@@ -763,8 +763,8 @@ function md_register_extra_blocks() {
         register_block_type(
             'morvarid/' . $slug,
             array(
-                'api_version'     => 2,
-                'editor_script'   => $script,
+                'api_version'          => 2,
+                'editor_script_handles' => array($script),
                 'attributes'      => $config['attributes'],
                 'render_callback' => $config['render'],
                 'supports'        => array(

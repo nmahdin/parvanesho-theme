@@ -128,7 +128,7 @@ add_action('admin_init',function(){
 });
 function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));foreach(['telegram_url','bale_url','instagram_url'] as $k)$out[$k]=esc_url_raw($input[$k]??'');return $out;}
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
-function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';$needs_home=!md_home_page_id()||!md_home_page_has_blocks(md_home_page_id());$build_link=$needs_home?' <a class="button" href="'.esc_url(wp_nonce_url(admin_url('admin-post.php?action=md_build_home'),'md_build_home')).'">ساخت صفحه اصلی بلوکی</a>':'';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود. '.$home_link.$build_link.'</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
+function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;$home_link=md_home_page_edit_url()?'<a href="'.esc_url(md_home_page_edit_url()).'">ویرایش برگهٔ خانه</a>':'';$needs_home=!md_home_page_id()||!md_home_page_has_blocks(md_home_page_id());$build_link=$needs_home?' <a class="button" href="'.esc_url(wp_nonce_url(admin_url('admin-post.php?action=md_build_home'),'md_build_home')).'">ساخت صفحه اصلی بلوکی</a>':'';$registered=class_exists('WP_Block_Type_Registry')?WP_Block_Type_Registry::get_instance()->get_all_registered():[];$theme_blocks=0;foreach($registered as $block_name=>$block_type){if(0===strpos($block_name,'morvarid/'))$theme_blocks++;}$script_ok=file_exists(MD_THEME_DIR.'/assets/js/blocks.js');$status='<p class="description">وضعیت: بلوک‌های ثبت‌شدهٔ قالب: <strong>'.absint($theme_blocks).'</strong> — فایل اسکریپت ویرایشگر: '.($script_ok?'موجود':'<strong>یافت نشد</strong>').' — نسخهٔ قالب: '.esc_html(MD_THEME_VERSION).'</p>';echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، تلگرام و اینستاگرام. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><p>صفحه اصلی یک برگهٔ معمولی است و همهٔ بخش‌هایش با بلوک‌های گوتنبرگ ویرایش می‌شود. '.$home_link.$build_link.'</p>'.$status.'<form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
 add_action('wp_enqueue_scripts',function(){ $c=md_theme_option('primary_color','#326d62');wp_add_inline_style('md-main',':root{--md-accent:'.esc_attr($c).';} .md-search-button,.md-academy-pill.is-active{background:var(--md-accent)}');},20);
 function md_pretty_search($only_posts=true){$action=home_url('/');$id=wp_unique_id('md-search-');return '<form role="search" method="get" class="md-pretty-search" action="'.esc_url($action).'"><label class="screen-reader-text" for="'.esc_attr($id).'">جستجو در مجله</label><span class="md-search-icon" aria-hidden="true">⌕</span><input id="'.esc_attr($id).'" type="search" name="s" placeholder="در مجله جستجو کنید…" value="'.esc_attr(get_search_query()).'" />'.($only_posts?'<input type="hidden" name="post_type" value="post">':'').'<button class="md-search-button" type="submit">جستجو ←</button></form>';}
 add_filter('get_search_form',function($form){if(is_home()||is_singular('post')||is_category()||is_tag())return md_pretty_search();return $form;});
@@ -226,10 +226,23 @@ add_action('init', function() {
   'accordion'=>['title'=>'پرسش‌های متداول','items'=>[['q'=>'پرسش اول','a'=>'پاسخ پرسش اول']],'openFirst'=>false,'body'=>''],
  ];
  foreach($blocks as $slug=>$fields){$attributes=[];foreach($fields as $field=>$default)$attributes[$field]=['type'=>(is_int($default)?'number':(is_bool($default)?'boolean':(is_array($default)?'array':'string'))),'default'=>$default];
- register_block_type('morvarid/'.$slug,['api_version'=>2,'editor_script'=>$script,'attributes'=>$attributes,'render_callback'=>'md_design_block_render']);}
+ register_block_type('morvarid/'.$slug,['api_version'=>2,'editor_script_handles'=>[$script],'attributes'=>$attributes,'render_callback'=>'md_design_block_render']);}
 });
 add_action('enqueue_block_assets', function(){wp_enqueue_style('md-gutenberg-shared',get_template_directory_uri().'/assets/css/gutenberg-blocks.css',[], MD_THEME_VERSION);wp_enqueue_style('md-forms',get_template_directory_uri().'/assets/css/forms.css',['md-gutenberg-shared'], MD_THEME_VERSION);});
 // Safety net: the block scripts are declared as editor_script handles too, but
 // enqueueing them here guarantees the inserter sees every theme block even if a
 // caching or security plugin strips the extra editor handles.
 add_action('enqueue_block_editor_assets', function(){foreach(['md-design-editor','md-blocks-editor'] as $handle){if(wp_script_is($handle,'registered'))wp_enqueue_script($handle);}});
+// Second net: enqueue the same handles on the post editor screens, before the
+// block editor boots, so a stripped editor_script handle can never hide blocks.
+add_action('admin_enqueue_scripts', function(){
+ if(!function_exists('get_current_screen'))return;
+ $screen=get_current_screen();
+ if(!$screen||!in_array($screen->base,['post','post-new'],true))return;
+ $md_deps=['wp-blocks','wp-element','wp-components','wp-block-editor','wp-server-side-render','wp-media'];
+ $md_scripts=['md-design-editor'=>'gutenberg-blocks.js','md-blocks-editor'=>'blocks.js'];
+ foreach($md_scripts as $md_handle=>$md_file){
+  if(wp_script_is($md_handle,'registered')){wp_enqueue_script($md_handle);}
+  else{wp_enqueue_script($md_handle.'-direct',MD_THEME_URI.'/assets/js/'.$md_file,$md_deps,MD_THEME_VERSION,true);}
+ }
+});

@@ -3,7 +3,7 @@ Contributors: morvarid-daron
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: rtl-language-support, custom-colors, custom-logo, custom-menu, featured-images, blog, education, three-columns
@@ -77,6 +77,11 @@ Morvarid Daron یک قالب کامل و خودبسنده است:
 در صفحهٔ چالش، کادر «روزهای چالش» را پیدا کنید و «افزودن روز جدید» را بزنید. اگر چالش هنوز ذخیره نشده باشد، با اولین کلیک یک پیش‌نویس از همان اطلاعات ساخته می‌شود و پنجرهٔ افزودن روز باز می‌ماند.
 
 == Changelog ==
+
+= 1.3.2 =
+* ثبت بلوک‌ها با `editor_script_handles` سازگار با نسخه‌های تازهٔ وردپرس.
+* دو مسیر مستقل برای بارگذاری اسکریپت بلوک‌ها در ویرایشگر (enqueue_block_editor_assets و admin_enqueue_scripts) تا هیچ افزونه/فیلتری نتواند بلوک‌ها را از ویرایشگر حذف کند.
+* نمایش وضعیت در «تنظیمات مروارید»: تعداد بلوک‌های ثبت‌شده، وجود فایل اسکریپت و نسخهٔ قالب.
 
 = 1.3.1 =
 * رفع مهم: اگر سایت از قبل صفحه اصلی ثابت داشت، نسخهٔ ۱.۳.۰ آن را دست‌نخورده رها می‌کرد و برگهٔ «خانه» ساخته نمی‌شد؛ حالا چیدمان بلوکی تضمین می‌شود و صفحهٔ قبلی هم حذف نمی‌شود.
