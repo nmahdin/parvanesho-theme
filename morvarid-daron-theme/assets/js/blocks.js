@@ -346,7 +346,6 @@
                 type: 'array',
                 default: [
                     { icon: '▤', title: 'مجله رشد', text: 'مقاله، داستان و راهکارهای کاربردی', url: '' },
-                    { icon: '❀', title: 'کوچینگ فردی', text: 'همراهی در مسیر شناخت و تغییر', url: '' },
                     { icon: '✦', title: 'آکادمی آموزشی', text: 'دوره و کارگاه برای رشد آگاهانه', url: '' }
                 ]
             }
@@ -545,7 +544,7 @@
             slug: 'features',
             title: 'کارت‌های معرفی',
             icon: 'grid-view',
-            description: 'ردیف کارت‌های معرفی (مجله، کوچینگ، آکادمی و…) با نماد، عنوان، توضیح و پیوند.',
+            description: 'ردیف کارت‌های معرفی (مجله، آکادمی و…) با نماد، عنوان، توضیح و پیوند.',
             fields: function (props) {
                 return [
                     featuresEditor(props),
