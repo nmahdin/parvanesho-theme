@@ -156,6 +156,10 @@ function md_challenge_member_rate_limit($action) {
 
 /** Registration and login via eight-digit code for either challenge mode. */
 function md_challenge_registration_form($challenge_id) {
+    if (function_exists('md_learning_current_challenge_member')) {
+        MD_Learning_Challenges::render_join($challenge_id);
+        return;
+    }
     if (get_post_status($challenge_id) !== 'publish') {
         return;
     }
@@ -194,6 +198,9 @@ function md_challenge_registration_form($challenge_id) {
 }
 
 function md_challenge_register_member() {
+    if (function_exists('md_learning_current_challenge_member')) {
+        wp_die('ثبت‌نام قدیمی چالش غیرفعال است؛ از پروفایل یکپارچه استفاده کنید.', '', array('response' => 410));
+    }
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
     if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge' || get_post_status($challenge_id) !== 'publish') {
         wp_die('چالش برای ثبت‌نام در دسترس نیست.', '', array('response' => 400));
@@ -232,6 +239,9 @@ add_action('admin_post_nopriv_md_challenge_register_member', 'md_challenge_regis
 
 /** Code-only login: deliberately no attempt counter or lockout. */
 function md_challenge_login_code() {
+    if (function_exists('md_learning_current_challenge_member')) {
+        wp_die('ورود با کد مخصوص چالش جای خود را به ورود با کد مرکزی داده است.', '', array('response' => 410));
+    }
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
     if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge' || get_post_status($challenge_id) !== 'publish') {
         wp_die('چالش موجود نیست.', '', array('response' => 400));
@@ -291,8 +301,16 @@ function md_challenge_save_member_entry() {
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
     $member_id = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
     $day_id = isset($_POST['day_id']) ? absint($_POST['day_id']) : 0;
-    $token = isset($_POST['md_key']) && is_string($_POST['md_key']) ? sanitize_text_field(wp_unslash($_POST['md_key'])) : '';
-    $member = md_challenge_check_member($challenge_id, $member_id, $token);
+    if (function_exists('md_learning_current_challenge_member')) {
+        // Never trust member_id from the form; compare against server session.
+        $member = md_learning_current_challenge_member($challenge_id);
+        if (!$member || (int) $member->ID !== $member_id) {
+            wp_die('این پاسخ متعلق به پروفایل فعلی شما نیست.', '', array('response' => 403));
+        }
+    } else {
+        $token = isset($_POST['md_key']) && is_string($_POST['md_key']) ? sanitize_text_field(wp_unslash($_POST['md_key'])) : '';
+        $member = md_challenge_check_member($challenge_id, $member_id, $token);
+    }
     if (!$member || get_post_status($challenge_id) !== 'publish') {
         wp_die('لینک خصوصی نامعتبر یا غیرفعال است.', '', array('response' => 403));
     }
@@ -332,7 +350,9 @@ function md_challenge_save_member_entry() {
     update_post_meta($entry_id, '_md_task_done', $completed);
     update_post_meta($entry_id, '_md_answer_updated', current_time('mysql'));
     update_post_meta($member_id, '_md_member_last_activity', current_time('mysql'));
-    wp_safe_redirect(add_query_arg('md_saved', $day_id, md_challenge_member_link($member)) . '#member-day-' . $day_id);
+    $return_url = function_exists('md_learning_current_challenge_member')
+        ? get_permalink($challenge_id) : md_challenge_member_link($member);
+    wp_safe_redirect(add_query_arg('md_saved', $day_id, $return_url) . '#member-day-' . $day_id);
     exit;
 }
 add_action('admin_post_md_challenge_save_member_entry', 'md_challenge_save_member_entry');
@@ -349,16 +369,22 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
     }
     $total = count($days);
     $percent = $total ? (int) round($completed * 100 / $total) : 0;
-    $token = (string) get_post_meta($member->ID, '_md_member_key', true);
+    $central = function_exists('md_learning_current_challenge_member');
+    $token = $central ? '' : (string) get_post_meta($member->ID, '_md_member_key', true);
     ?>
     <main class="md-member-page container" dir="rtl">
-        <nav class="md-member-breadcrumb"><a href="<?php echo esc_url(get_permalink($challenge_id)); ?>">معرفی چالش</a> / داشبورد شخصی</nav>
+        <nav class="md-member-breadcrumb"><a href="<?php echo esc_url(get_post_type_archive_link('md_challenge')); ?>">همه چالش‌ها</a>
+        <?php if ($central) : ?> / <a href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">داشبورد یادگیری من</a><?php endif; ?>
+        / چالش من</nav>
         <header class="md-member-hero">
             <span class="eyebrow">مسیر اختصاصی من</span>
             <h1><?php echo esc_html($member->post_title); ?>، به چالش «<?php echo esc_html(get_the_title($challenge_id)); ?>» خوش آمدید</h1>
-            <p>پاسخ‌های این صفحه خصوصی هستند. این لینک را برای دیگران ارسال نکنید.</p>
+            <p>پاسخ‌ها و پیشرفت شما فقط با پروفایل اختصاصی‌تان نمایش داده می‌شوند.</p>
             <div class="md-member-progress"><strong><?php echo esc_html(md_fa_num($completed)); ?> از <?php echo esc_html(md_fa_num($total)); ?> روز تکمیل‌شده</strong><span><?php echo esc_html(md_fa_num($percent)); ?>٪</span></div>
             <div class="md-member-progress-track"><span style="width:<?php echo esc_attr($percent); ?>%"></span></div>
+            <?php if ($central) : ?>
+                <p><a class="btn btn-light" href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">بازگشت به داشبورد یکپارچه</a></p>
+            <?php else : ?>
             <div class="md-member-code-display">
                 <span>کد ورود ۸ رقمی شما</span>
                 <strong dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true)); ?></strong>
@@ -367,6 +393,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
             <label class="md-member-link-label">لینک خصوصی شما
                 <input type="text" readonly onclick="this.select()" value="<?php echo esc_attr(md_challenge_member_link($member)); ?>">
             </label>
+            <?php endif; ?>
         </header>
         <section class="md-member-days">
             <h2>گام‌های من</h2>
@@ -397,7 +424,9 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                         <input type="hidden" name="action" value="md_challenge_save_member_entry">
                         <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
                         <input type="hidden" name="member_id" value="<?php echo esc_attr($member->ID); ?>">
-                        <input type="hidden" name="md_key" value="<?php echo esc_attr($token); ?>">
+                        <?php if (!$central) : ?>
+                            <input type="hidden" name="md_key" value="<?php echo esc_attr($token); ?>">
+                        <?php endif; ?>
                         <input type="hidden" name="day_id" value="<?php echo esc_attr($day->ID); ?>">
                         <?php wp_nonce_field('md_challenge_entry_' . $member->ID . '_' . $day->ID); ?>
                         <?php foreach ($prompts as $i => $prompt) : ?>
