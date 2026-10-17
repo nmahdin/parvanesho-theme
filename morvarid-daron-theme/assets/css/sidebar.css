@@ -683,3 +683,17 @@
     border-color: #fff;
     color: var(--green, #28594b);
 }
+
+/* 1.4.0 — platform-colored buttons inside the family card. */
+.md-widget-newsletter .md-social-family{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:20px}
+.md-widget-newsletter .md-social-family .md-social-link{display:flex;align-items:center;justify-content:flex-start;min-height:46px;gap:9px;padding:9px 12px;border-radius:12px;color:#fff!important;font-weight:700;font-size:12px;border:1px solid transparent;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.md-widget-newsletter .md-social-family .md-social-link svg{width:20px;height:20px;flex-shrink:0}
+.md-widget-newsletter .md-social-family .md-social-telegram{background:#229ed9;border-color:#229ed9}
+.md-widget-newsletter .md-social-family .md-social-instagram{background:#c13584;border-color:#c13584}
+.md-widget-newsletter .md-social-family .md-social-bale{background:#20a783;border-color:#20a783}
+.md-widget-newsletter .md-social-family .md-social-eitaa{background:#df842b;border-color:#df842b}
+.md-widget-newsletter .md-social-family .md-social-link:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.md-widget-newsletter .md-social-family .md-social-link:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media(max-width:1140px){.md-widget-newsletter .md-social-family{grid-template-columns:1fr}}
+@media(max-width:720px){.md-widget-newsletter .md-social-family{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:370px){.md-widget-newsletter .md-social-family{grid-template-columns:1fr}}
