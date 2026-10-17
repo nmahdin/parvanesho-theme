@@ -4,13 +4,13 @@
 
 The active WordPress theme is in `morvarid-daron-theme/`.
 
-## Unified learner identity — Phases A + B + C + D
+## Unified learner identity — Phases A + B + C + D + E
 
 A new **separately installable WordPress plugin** is in
 [`morvarid-learning-core/`](./morvarid-learning-core/README.md).
 
 This plugin is **not automatically installed by updating the theme**.
-To use Phases A–D, copy the `morvarid-learning-core` directory to
+To use Phases A–E, copy the `morvarid-learning-core` directory to
 `wp-content/plugins/`, activate **Morvarid Learning Core**, and open:
 
 - `/learning-register/` — create learner identity with name only.
@@ -29,7 +29,12 @@ Version 0.4.0 adds a real dynamic Gutenberg question block for existing
 resource, podcast and lesson editors: reflective mode or per-learner private
 draft/final answers, stable block/question IDs, server-side save/ownership
 validation and a private personal-answers dashboard tab. No additional theme
-upgrade is required for Phase D; upgrade the standalone plugin. Update the
+upgrade is required for Phase D; upgrade the standalone plugin.
+Version 0.5.0 (Phase E) adds private, filtered educational-response
+reporting, audited answer detail views, a dedicated capability restricted to
+explicitly authorized WordPress staff, and a per-question-block manager
+visibility switch. Upgrade only the standalone plugin for Phase E; theme
+v1.3.8 remains unchanged. Update the
 WordPress theme **and** the separate plugin together. The original challenge-only
 codes and bearer links are intentionally retired when the plugin is active;
 old challenge participant records are left untouched but not transferred.
