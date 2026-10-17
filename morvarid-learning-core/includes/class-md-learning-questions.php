@@ -68,7 +68,7 @@ final class MD_Learning_Questions {
             return array();
         }
         $out = array();
-        foreach (array_slice($questions, 0, 100) as $question) {
+        foreach ($questions as $question) {
             if (!is_array($question) || !isset($question['id'], $question['text'])
                 || !self::valid_uuid($question['id'])) {
                 continue;
