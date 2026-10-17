@@ -65,8 +65,8 @@ add_action('widgets_init', 'md_register_sidebars');
  */
 function md_sidebar_context() {
     if (
-        is_singular(array('md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
-        is_post_type_archive(array('md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
+        is_singular(array('md_academy_item', 'md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
+        is_post_type_archive(array('md_academy_item', 'md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
         is_tax('md_academy_cat') || is_tax('md_resource_cat')
     ) {
         return 'academy';
