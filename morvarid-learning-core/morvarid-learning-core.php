@@ -67,3 +67,21 @@ function md_learning_is_authenticated() {
 function md_learning_current_challenge_member($challenge_id) {
     return MD_Learning_Challenges::current_member(absint($challenge_id));
 }
+
+/**
+ * Independent learner sessions are not WordPress logged-in cookies.
+ * Never allow public/shared page caches to serve anonymous HTML to a learner.
+ */
+add_action('plugins_loaded', function () {
+    if (!empty($_COOKIE[MD_Learning_Auth::COOKIE])) {
+        if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+        if (!defined('DONOTCACHEOBJECT')) define('DONOTCACHEOBJECT', true);
+    }
+}, 0);
+add_action('template_redirect', function () {
+    if (!empty($_COOKIE[MD_Learning_Auth::COOKIE])) {
+        nocache_headers();
+        header('Cache-Control: private, no-store, no-cache, max-age=0, must-revalidate', true);
+        header('Vary: Cookie', false);
+    }
+}, 0);
