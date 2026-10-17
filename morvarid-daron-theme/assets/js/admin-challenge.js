@@ -305,6 +305,128 @@
         return items;
     }
 
+    var repeatableLabels = {
+        tips: { label: 'نکته', fields: [
+            { key: 'title', label: 'عنوان نکته', tag: 'input' },
+            { key: 'text', label: 'متن نکته', tag: 'textarea' }
+        ] },
+        tasks: { label: 'کار', fields: [
+            { key: 'title', label: 'عنوان کار یا تمرین', tag: 'input' },
+            { key: 'description', label: 'شرح کار', tag: 'textarea' },
+            { key: 'steps', label: 'مراحل انجام (هر مرحله در یک خط)', tag: 'textarea' }
+        ] },
+        files: { label: 'فایل', fields: [
+            { key: 'title', label: 'عنوان فایل', tag: 'input' },
+            { key: 'url', label: 'آدرس فایل (اختیاری در صورت انتخاب از رسانه)', tag: 'input' }
+        ] }
+    };
+
+    function repeatableList(kind) {
+        return $('#md-day-' + kind + '-list');
+    }
+
+    function repeatRow(kind, data) {
+        var spec = repeatableLabels[kind];
+        if (!spec) return $();
+        data = data || {};
+        var $row = $('<div class="md-repeat-row" />').attr('data-kind', kind);
+        var $head = $('<div class="md-repeat-head" />');
+        $head.append($('<strong />').text(spec.label));
+        var $actions = $('<div class="md-repeat-actions" />');
+        $actions.append($('<button type="button" class="button md-repeat-up" aria-label="انتقال به بالا">↑</button>'));
+        $actions.append($('<button type="button" class="button md-repeat-down" aria-label="انتقال به پایین">↓</button>'));
+        $actions.append($('<button type="button" class="button md-repeat-remove" aria-label="حذف مورد">حذف</button>'));
+        $head.append($actions);
+        $row.append($head);
+        spec.fields.forEach(function (field) {
+            var $label = $('<label class="md-repeat-field" />');
+            $label.append($('<span />').text(field.label));
+            var $field = field.tag === 'textarea'
+                ? $('<textarea rows="3" class="widefat" />')
+                : $('<input type="text" class="widefat" />');
+            $field.addClass('md-repeat-' + field.key).val(data[field.key] || '');
+            if (field.key === 'url') $field.attr({ type: 'url', dir: 'ltr', placeholder: 'https://…' });
+            $label.append($field);
+            $row.append($label);
+        });
+        if (kind === 'files') {
+            var id = parseInt(data.id, 10) || 0;
+            $row.append($('<input type="hidden" class="md-repeat-id" />').val(id));
+            var $media = $('<div class="md-repeat-media" />');
+            $media.append($('<button type="button" class="button md-repeat-pick" />').text('انتخاب از رسانه‌ها'));
+            $media.append($('<span class="md-repeat-media-name" />').text(data.name || (id ? 'فایل انتخاب‌شده' : '')));
+            $row.append($media);
+        }
+        return $row;
+    }
+
+    function addRepeat(kind, data) {
+        var $list = repeatableList(kind);
+        if (!$list.length || $list.children().length >= 30) {
+            showError('برای هر بخش حداکثر ۳۰ مورد قابل ثبت است.');
+            return;
+        }
+        $list.append(repeatRow(kind, data));
+        dayDirty = true;
+    }
+
+    function setRepeat(kind, items) {
+        repeatableList(kind).empty();
+        (Array.isArray(items) ? items : []).forEach(function (item) {
+            addRepeat(kind, item);
+        });
+    }
+
+    function collectRepeat(kind) {
+        var out = [];
+        repeatableList(kind).children('.md-repeat-row').each(function () {
+            var $row = $(this);
+            if (kind === 'tips') {
+                out.push({ title: $row.find('.md-repeat-title').val() || '',
+                    text: $row.find('.md-repeat-text').val() || '' });
+            } else if (kind === 'tasks') {
+                out.push({ title: $row.find('.md-repeat-title').val() || '',
+                    description: $row.find('.md-repeat-description').val() || '',
+                    steps: $row.find('.md-repeat-steps').val() || '' });
+            } else if (kind === 'files') {
+                out.push({ id: parseInt($row.find('.md-repeat-id').val(), 10) || 0,
+                    title: $row.find('.md-repeat-title').val() || '',
+                    url: $row.find('.md-repeat-url').val() || '' });
+            }
+        });
+        return out;
+    }
+
+    function pickRepeatFiles($row) {
+        if (!window.wp || !wp.media) {
+            showError('کتابخانه رسانه وردپرس در دسترس نیست؛ می‌توانید نشانی فایل را وارد کنید.');
+            return;
+        }
+        var frame = wp.media({
+            title: 'انتخاب فایل‌های روز چالش',
+            button: { text: 'افزودن فایل‌های انتخاب‌شده' },
+            multiple: true
+        });
+        frame.on('select', function () {
+            var selected = frame.state().get('selection').toJSON();
+            if (!selected.length) return;
+            selected.forEach(function (file, index) {
+                var data = { id: file.id, url: '', title: file.title || file.filename || '',
+                    name: file.filename || file.title || '' };
+                if (index === 0) {
+                    $row.find('.md-repeat-id').val(data.id);
+                    $row.find('.md-repeat-title').val(data.title);
+                    $row.find('.md-repeat-url').val('');
+                    $row.find('.md-repeat-media-name').text(data.name);
+                } else {
+                    addRepeat('files', data);
+                }
+            });
+            dayDirty = true;
+        });
+        frame.open();
+    }
+
     function setMedia(kind, id, name) {
         $('#md-day-' + kind + '-id').val(id || 0);
         $('#md-day-' + kind + '-name').text(name || '');
@@ -343,20 +465,16 @@
         $('#md-day-title').val('');
         $('#md-day-summary').val('');
         $('#md-day-extra').val('');
-        $('#md-day-tip-title').val('');
-        $('#md-day-tip').val('');
-        $('#md-day-exercise-title').val('');
-        $('#md-day-exercise-desc').val('');
-        $('#md-day-exercise-steps').val('');
         $('#md-day-audio-title').val('');
         $('#md-day-video-url').val('');
         $('#md-day-video-title').val('');
-        $('#md-day-file-title').val('');
         $('#md-day-status').val('draft');
         $('#md-qa-list').empty();
         setMedia('audio', 0, '');
         setMedia('video', 0, '');
-        setMedia('file', 0, '');
+        setRepeat('tips', []);
+        setRepeat('tasks', []);
+        setRepeat('files', []);
         clearError();
         dayDirty = false;
     }
@@ -368,19 +486,15 @@
         $('#md-day-title').val(day.title || '');
         $('#md-day-summary').val(day.summary || '');
         $('#md-day-extra').val(day.extra || '');
-        $('#md-day-tip-title').val(day.tip_title || '');
-        $('#md-day-tip').val(day.tip || '');
-        $('#md-day-exercise-title').val(day.exercise_title || '');
-        $('#md-day-exercise-desc').val(day.exercise_desc || '');
-        $('#md-day-exercise-steps').val(day.exercise_steps || '');
+        setRepeat('tips', day.tips || []);
+        setRepeat('tasks', day.tasks || []);
+        setRepeat('files', day.files || []);
         $('#md-day-audio-title').val(day.audio_title || '');
         $('#md-day-video-url').val(day.video_url || '');
         $('#md-day-video-title').val(day.video_title || '');
-        $('#md-day-file-title').val(day.file_title || '');
         $('#md-day-status').val(day.status === 'publish' ? 'publish' : 'draft');
         setMedia('audio', day.audio_id || 0, day.audio_name || '');
         setMedia('video', day.video_id || 0, day.video_name || '');
-        setMedia('file', day.file_id || 0, day.file_name || '');
 
         $('#md-qa-list').empty();
         if (day.qa && day.qa.length) {
@@ -562,18 +676,14 @@
             summary: $('#md-day-summary').val(),
             content: content,
             extra: $('#md-day-extra').val(),
-            tip_title: $('#md-day-tip-title').val(),
-            tip: $('#md-day-tip').val(),
-            exercise_title: $('#md-day-exercise-title').val(),
-            exercise_desc: $('#md-day-exercise-desc').val(),
-            exercise_steps: $('#md-day-exercise-steps').val(),
+            tips: JSON.stringify(collectRepeat('tips')),
+            tasks: JSON.stringify(collectRepeat('tasks')),
+            files: JSON.stringify(collectRepeat('files')),
             audio_id: $('#md-day-audio-id').val() || 0,
             audio_title: $('#md-day-audio-title').val(),
             video_id: $('#md-day-video-id').val() || 0,
             video_url: $('#md-day-video-url').val(),
             video_title: $('#md-day-video-title').val(),
-            file_id: $('#md-day-file-id').val() || 0,
-            file_title: $('#md-day-file-title').val(),
             qa: JSON.stringify(collectQa()),
             status: status
         }).done(function (response) {
@@ -803,6 +913,32 @@
 
         $('#md-add-qa').on('click', function () {
             appendQa('', '');
+        });
+
+        $(document).on('click', '#md-day-modal .md-repeat-add', function (event) {
+            event.preventDefault();
+            var kind = $(this).data('kind');
+            addRepeat(kind, {});
+            repeatableList(kind).children('.md-repeat-row').last().find('input[type=text]').first().trigger('focus');
+        });
+        $(document).on('click', '#md-day-modal .md-repeat-remove', function (event) {
+            event.preventDefault();
+            $(this).closest('.md-repeat-row').remove();
+            dayDirty = true;
+        });
+        $(document).on('click', '#md-day-modal .md-repeat-up, #md-day-modal .md-repeat-down', function (event) {
+            event.preventDefault();
+            var $row = $(this).closest('.md-repeat-row');
+            var up = $(this).hasClass('md-repeat-up');
+            var $adjacent = up ? $row.prev('.md-repeat-row') : $row.next('.md-repeat-row');
+            if ($adjacent.length) {
+                up ? $row.insertBefore($adjacent) : $row.insertAfter($adjacent);
+                dayDirty = true;
+            }
+        });
+        $(document).on('click', '#md-day-files-list .md-repeat-pick', function (event) {
+            event.preventDefault();
+            pickRepeatFiles($(this).closest('.md-repeat-row'));
         });
 
         $(document).on('click', '#md-qa-list .md-qa-remove', function (event) {
