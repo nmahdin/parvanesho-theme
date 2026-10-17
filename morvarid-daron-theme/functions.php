@@ -236,12 +236,10 @@ function md_design_block_render($attributes, $content, $block) {
   }
   $heading = is_front_page() ? 'h1' : 'h2';
   $image_id = absint($attributes['imageId'] ?? 0);
-  $art_quote = trim((string)($attributes['artQuote'] ?? ''));
+  if (!$image_id) $image_id = absint(md_theme_option('home_person_image_id',0));
   $media = '';
-  if ($image_id) {
-   $media = '<div class="md-gb-hero-media">'.wp_get_attachment_image($image_id,'large',false,['loading'=>'eager']).'</div>';
-  } elseif ($art_quote) {
-   $media = '<div class="md-gb-hero-media"><div class="hero-art" role="img" aria-label="'.esc_attr($art_quote).'"><span class="art-ring">◌</span><span class="art-pearl">●</span><div class="art-quote">'.esc_html($art_quote).'</div></div></div>';
+  if ($image_id && wp_attachment_is_image($image_id)) {
+   $media = '<div class="md-gb-hero-media md-home-portrait">'.wp_get_attachment_image($image_id,'large',false,['loading'=>'eager','decoding'=>'async']).'</div>';
   }
   $copy = '<div class="md-gb-hero-copy"><span class="md-gb-eyebrow">'.$eyebrow.'</span><'.$heading.'>'.$title.'</'.$heading.'><p>'.$subtitle.'</p>'.($buttons?'<div class="md-gb-hero-actions">'.$buttons.'</div>':'').'</div>';
   return '<section class="md-gb-hero'.($media?' md-gb-hero-split':'').'"><div class="container">'.$copy.$media.'</div></section>';
