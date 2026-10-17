@@ -4,13 +4,13 @@ if (!defined('ABSPATH')) {
 }
 
 final class MD_Learning_Schema {
-    const VERSION = '0.5.0';
+    const VERSION = '0.6.0';
     const VERSION_OPTION = 'md_learning_core_schema_version';
     const PAGE_OPTION = 'md_learning_core_pages';
 
     public static function table($name) {
         global $wpdb;
-        $allowed = array('learners', 'links', 'sessions', 'challenges', 'responses', 'audit_events');
+        $allowed = array('learners', 'links', 'sessions', 'challenges', 'responses', 'audit_events', 'enrollments', 'lesson_progress');
         if (!in_array($name, $allowed, true)) {
             return '';
         }
@@ -49,6 +49,8 @@ final class MD_Learning_Schema {
         $challenges = self::table('challenges');
         $responses = self::table('responses');
         $audit = self::table('audit_events');
+        $enrollments = self::table('enrollments');
+        $lesson_progress = self::table('lesson_progress');
 
         dbDelta("CREATE TABLE {$learners} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -134,6 +136,36 @@ final class MD_Learning_Schema {
             KEY actor_time (actor_user_id,created_at),
             KEY response_time (response_id,created_at),
             KEY learner_id (learner_id)
+        ) {$charset};");
+
+        // Learner-owned course enrollment, independent of WP users and billing.
+        dbDelta("CREATE TABLE {$enrollments} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            learner_id bigint(20) unsigned NOT NULL,
+            course_id bigint(20) unsigned NOT NULL,
+            status varchar(12) NOT NULL DEFAULT 'active',
+            enrolled_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY learner_course (learner_id,course_id),
+            KEY course_status (course_id,status),
+            KEY learner_status (learner_id,status)
+        ) {$charset};");
+
+        // A lesson is tracked within its real parent course. Reassignment to
+        // another course does not carry progress across automatically.
+        dbDelta("CREATE TABLE {$lesson_progress} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            learner_id bigint(20) unsigned NOT NULL,
+            course_id bigint(20) unsigned NOT NULL,
+            lesson_id bigint(20) unsigned NOT NULL,
+            status varchar(16) NOT NULL DEFAULT 'incomplete',
+            completed_at datetime DEFAULT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY learner_course_lesson (learner_id,course_id,lesson_id),
+            KEY learner_course (learner_id,course_id),
+            KEY course_lesson (course_id,lesson_id)
         ) {$charset};");
     }
 
