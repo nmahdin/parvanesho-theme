@@ -23,6 +23,10 @@ final class MD_Learning_Auth {
         add_action('admin_post_nopriv_md_learning_logout', array(__CLASS__, 'logout'));
         add_action('admin_post_md_learning_logout', array(__CLASS__, 'logout'));
         add_action('template_redirect', array(__CLASS__, 'exchange_link'), 0);
+        // WordPress treats all logged-out visitors as user ID 0 when
+        // generating nonces. Bind sensitive learner/challenge nonces to the
+        // authenticated central session instead of the shared guest nonce.
+        add_filter('nonce_user_logged_out', array(__CLASS__, 'nonce_learner_session'), 10, 2);
     }
 
     public static function hash_secret($purpose, $secret) {
@@ -224,6 +228,22 @@ final class MD_Learning_Auth {
         self::$cached_id = (int) $learner_id;
         // Flash receipts are short-lived and rendered once, never placed in a URL.
         return self::hash_secret('session', $token);
+    }
+
+    public static function nonce_learner_session($guest_id, $action) {
+        if (!is_string($action) || !preg_match(
+            '/^(?:md_learning_(?:profile_update|rotate_self|revoke_session|signout_others|logout|challenge_join_[0-9]+)|md_challenge_entry_[0-9]+_[0-9]+)$/D',
+            $action
+        )) {
+            return $guest_id;
+        }
+        $hash = self::current_session_hash();
+        if (!$hash || !self::current_learner_id()) {
+            return $guest_id;
+        }
+        // The pseudonymous WordPress nonce user value is unique per central
+        // session, without exposing or storing the raw bearer token.
+        return 'md-learner-' . $hash;
     }
 
     public static function current_session_hash() {
