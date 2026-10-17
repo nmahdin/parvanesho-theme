@@ -146,3 +146,16 @@
 .md-learning-signout-others { margin-top: 15px; }
 @media (max-width: 900px) { .md-learning-workspace-layout { grid-template-columns: 1fr; } .md-learning-workspace-side { position: static; display: none; } }
 @media (max-width: 640px) { .md-learning-workspace-hero { flex-direction: column; align-items: stretch; } .md-learning-user-id { align-self: flex-start; } .md-learning-kpis { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; } .md-learning-kpis > div { padding: 10px; min-height: 112px; } .md-learning-kpis strong { font-size: 21px; } .md-learning-kpis .dashicons { font-size: 18px; } .md-learning-nav { gap: 3px; } .md-learning-nav a { font-size: 11px; padding: 7px 6px; flex: 1 1 30%; } .md-learning-profile-meta { grid-template-columns: 1fr; gap: 5px; } .md-learning-profile-meta strong { margin-bottom: 10px; } .md-learning-session { align-items: flex-start; flex-direction: column; } .md-learning-activity-list > li { flex-wrap: wrap; } .md-learning-activity-list time { padding-inline-start: 36px; } }
+
+/* Phase D — learner-owned educational response history */
+.md-learning-kpis { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.md-learning-answer-history { display: grid; gap: 12px; margin: 14px 0 30px; }
+.md-learning-answer-card { padding: 18px 20px; border: 1px solid #e0eae0; border-radius: 14px; background: #fcfdfb; }
+.md-learning-answer-heading { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; justify-content: space-between; margin-bottom: 13px; }
+.md-learning-answer-heading a { font-size: 13px; font-weight: 700; color: #326c4d; text-decoration: none; }
+.md-learning-answer-heading a:hover { text-decoration: underline; }
+.md-learning-answer-badge { background: #e7f3e7; padding: 4px 9px; border-radius: 30px; color: #3d7b53; font-size: 11px; }
+.md-learning-answer-card > strong { font-size: 14px; color: #285b42; line-height: 2; }
+.md-learning-answer-card > p { line-height: 2; font-size: 13px; color: #516d59; margin: 9px 0 12px; white-space: normal; overflow-wrap: anywhere; }
+.md-learning-answer-card > small { color: #748676; font-size: 11px; }
+@media (max-width:640px) { .md-learning-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } }
