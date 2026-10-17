@@ -72,9 +72,6 @@ function md_home_default_content() {
         ? get_permalink((int) get_option('page_for_posts'))
         : home_url('/');
 
-    $services_url = get_post_type_archive_link('md_service');
-    $services_url = $services_url ? $services_url : home_url('/services/');
-
     $courses_url = get_post_type_archive_link('md_course');
     $courses_url = $courses_url ? $courses_url : home_url('/academy/courses/');
 
@@ -102,12 +99,6 @@ function md_home_default_content() {
                         'url'   => $blog_url,
                     ),
                     array(
-                        'icon'  => '❀',
-                        'title' => 'کوچینگ فردی',
-                        'text'  => 'همراهی در مسیر شناخت و تغییر',
-                        'url'   => $services_url,
-                    ),
-                    array(
                         'icon'  => '✦',
                         'title' => 'آکادمی آموزشی',
                         'text'  => 'دوره و کارگاه برای رشد آگاهانه',
@@ -125,16 +116,6 @@ function md_home_default_content() {
                 'count'     => 3,
                 'columns'   => 3,
                 'linkLabel' => 'همه مطالب',
-            )
-        ),
-        md_home_block(
-            'morvarid/service-grid',
-            array(
-                'title'      => 'کوچینگ مروارید درون',
-                'subtitle'   => 'فضایی امن برای گفت‌وگو، روشن‌شدن انتخاب‌ها و حرکت به سمت اهداف',
-                'count'      => 3,
-                'linkLabel'  => 'همه خدمات',
-                'background' => 'warm',
             )
         ),
         md_home_block(
