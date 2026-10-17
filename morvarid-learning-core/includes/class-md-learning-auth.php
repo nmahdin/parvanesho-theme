@@ -365,6 +365,15 @@ final class MD_Learning_Auth {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
         }
         self::store_receipt($session, $created);
+        // An explicit challenge signup consent includes joining that challenge.
+        // Keep the onboarding receipt on the dashboard if membership fails.
+        if ($challenge_id && class_exists('MD_Learning_Challenges')) {
+            $membership = MD_Learning_Challenges::enroll($challenge_id, $created['learner_id']);
+            if (!is_wp_error($membership)) {
+                wp_safe_redirect(add_query_arg('md_joined', '1', get_permalink($challenge_id)) . '#md-member-days', 303);
+                exit;
+            }
+        }
         $destination = MD_Learning_Schema::url('dashboard');
         if ($challenge_id) {
             $destination = add_query_arg('md_challenge', $challenge_id, $destination);
