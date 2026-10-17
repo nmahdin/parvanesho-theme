@@ -332,6 +332,16 @@ function md_challenge_save_member_entry() {
     }
     $notes = isset($_POST['member_notes']) && is_string($_POST['member_notes']) ? md_challenge_limit_response(wp_unslash($_POST['member_notes']), 5000) : '';
     $completed = !empty($_POST['task_done']) ? 1 : 0;
+    $checked_tasks = array();
+    $valid_tasks = array_values(array_filter(md_challenge_day_items($day_id, 'tasks'), function ($item) {
+        return trim((string) ($item['title'] ?? '') . (string) ($item['description'] ?? '') . (string) ($item['steps'] ?? '')) !== '';
+    }));
+    $selected = isset($_POST['md_checked_tasks']) && is_array($_POST['md_checked_tasks']) ? $_POST['md_checked_tasks'] : array();
+    foreach ($selected as $key) {
+        if (is_scalar($key) && ctype_digit((string) $key) && (int) $key < count($valid_tasks)) {
+            $checked_tasks[(int) $key] = 1;
+        }
+    }
     $entry = isset($entries[$day_id]) ? $entries[$day_id] : null;
     if (!$entry) {
         $entry_id = wp_insert_post(array('post_type' => 'md_challenge_entry', 'post_status' => 'private',
@@ -348,6 +358,7 @@ function md_challenge_save_member_entry() {
     update_post_meta($entry_id, '_md_answers', $answers);
     update_post_meta($entry_id, '_md_member_notes', $notes);
     update_post_meta($entry_id, '_md_task_done', $completed);
+    update_post_meta($entry_id, '_md_tasks_checked', $checked_tasks);
     update_post_meta($entry_id, '_md_answer_updated', current_time('mysql'));
     update_post_meta($member_id, '_md_member_last_activity', current_time('mysql'));
     $return_url = function_exists('md_learning_current_challenge_member')
@@ -357,6 +368,40 @@ function md_challenge_save_member_entry() {
 }
 add_action('admin_post_md_challenge_save_member_entry', 'md_challenge_save_member_entry');
 add_action('admin_post_nopriv_md_challenge_save_member_entry', 'md_challenge_save_member_entry');
+
+
+/** Participant-only form inside the standard challenge day layout. */
+function md_challenge_member_render_day_form($day, $challenge_id, $state) {
+    $entry = $state['entry'] ?? null;
+    $answers = $entry ? get_post_meta($entry->ID, '_md_answers', true) : array();
+    if (!is_array($answers)) $answers = array();
+    $notes = $entry ? (string) get_post_meta($entry->ID, '_md_member_notes', true) : '';
+    $prompts = md_challenge_day_prompts($day);
+    ?>
+    <form id="<?php echo esc_attr($state['form_id']); ?>" class="md-member-day-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+        <input type="hidden" name="action" value="md_challenge_save_member_entry">
+        <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
+        <input type="hidden" name="member_id" value="<?php echo esc_attr($state['member_id']); ?>">
+        <?php if (empty($state['central'])) : ?>
+            <input type="hidden" name="md_key" value="<?php echo esc_attr($state['token']); ?>">
+        <?php endif; ?>
+        <input type="hidden" name="day_id" value="<?php echo esc_attr($day->ID); ?>">
+        <?php wp_nonce_field('md_challenge_entry_' . $state['member_id'] . '_' . $day->ID); ?>
+        <?php if ($prompts) : ?><h3>پاسخ‌های من به پرسش‌های این روز</h3><?php endif; ?>
+        <?php foreach ($prompts as $i => $prompt) : ?>
+            <label class="md-member-answer-field"><strong><span class="md-member-question-index">پرسش <?php echo esc_html(md_fa_num($i + 1)); ?></span> <?php echo esc_html($prompt); ?></strong>
+                <textarea name="answers[<?php echo esc_attr($i); ?>]" rows="3" maxlength="4000"><?php echo esc_textarea(isset($answers[$i]) ? $answers[$i] : ''); ?></textarea>
+            </label>
+        <?php endforeach; ?>
+        <label><strong>یادداشت و گزارش فعالیت من</strong><textarea name="member_notes" rows="4" maxlength="5000"><?php echo esc_textarea($notes); ?></textarea></label>
+        <label class="md-member-check"><input type="checkbox" name="task_done" value="1" <?php checked(!empty($state['done'])); ?>> این روز را تکمیل کرده‌ام.</label>
+        <button type="submit" class="btn btn-primary">ذخیره پاسخ‌ها و فعالیت‌ها</button>
+        <?php if (isset($_GET['md_saved']) && absint($_GET['md_saved']) === (int) $day->ID) : ?>
+            <span class="md-member-saved" role="status">پاسخ‌ها و کارهای شما ذخیره شد.</span>
+        <?php endif; ?>
+    </form>
+    <?php
+}
 
 function md_challenge_render_member_dashboard($challenge_id, $member) {
     $days = md_challenge_days($challenge_id);
@@ -417,42 +462,19 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
             <?php foreach ($days as $day) :
                 $opened = md_challenge_member_can_open_day($day, $challenge_id, $entries, $days);
                 $entry = isset($entries[$day->ID]) ? $entries[$day->ID] : null;
-                $is_done = $entry && get_post_meta($entry->ID, '_md_task_done', true);
-                $answers = $entry ? get_post_meta($entry->ID, '_md_answers', true) : array();
-                if (!is_array($answers)) { $answers = array(); }
-                $notes = $entry ? (string) get_post_meta($entry->ID, '_md_member_notes', true) : '';
-                $prompts = md_challenge_day_prompts($day);
-                ?>
-                <details id="member-day-<?php echo esc_attr($day->ID); ?>" class="md-member-day md-day-accordion <?php echo $is_done ? 'is-done' : ''; ?>" <?php echo isset($_GET['md_saved']) && absint($_GET['md_saved']) === (int) $day->ID ? 'open' : ''; ?>>
-                    <summary class="md-member-day-head">
-                        <span>روز <?php echo esc_html(md_fa_num(md_challenge_day_order($day->ID))); ?></span>
-                        <h3><?php echo esc_html($opened ? $day->post_title : (md_challenge_show_locked_title($challenge_id) ? $day->post_title : 'روز قفل‌شده')); ?></h3>
-                        <strong><?php echo $is_done ? 'انجام‌شده ✓' : ($opened ? 'آماده انجام' : 'قفل'); ?></strong>
-                        <span class="md-day-chevron" aria-hidden="true"></span>
-                    </summary>
-                    <div class="md-member-day-body">
-                    <?php if (!$opened) : ?>
-                        <p>این مرحله هنوز برای شما در دسترس نیست. پس از تکمیل مرحله پیشین یا رسیدن زمان انتشار باز می‌شود.</p>
-                    <?php else : ?>
-                    <div class="md-member-day-content entry-content"><?php echo apply_filters('the_content', $day->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-                    <?php echo md_challenge_day_tip_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo md_challenge_day_exercise_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo md_challenge_day_media_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo md_challenge_day_qa_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <form class="md-member-day-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
-                        <input type="hidden" name="action" value="md_challenge_save_member_entry">
-                        <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
-                        <input type="hidden" name="member_id" value="<?php echo esc_attr($member->ID); ?>">
-                        <?php if (!$central) : ?>
-                            <input type="hidden" name="md_key" value="<?php echo esc_attr($token); ?>">
-                        <?php endif; ?>
-                        <input type="hidden" name="day_id" value="<?php echo esc_attr($day->ID); ?>">
-                        <?php wp_nonce_field('md_challenge_entry_' . $member->ID . '_' . $day->ID); ?>
-                        <?php foreach ($prompts as $i => $prompt) : ?>
-                            <label class="md-member-answer-field"><strong><span class="md-member-question-index">پرسش <?php echo esc_html(md_fa_num($i + 1)); ?></span><?php echo esc_html($prompt); ?></strong>
-                                <textarea name="answers[<?php echo esc_attr($i); ?>]" rows="3" maxlength="4000"><?php echo esc_textarea(isset($answers[$i]) ? $answers[$i] : ''); ?></textarea>
-                            </label>
-                        <?php endforeach; ?>
+                $tasks = $entry ? get_post_meta($entry->ID, '_md_tasks_checked', true) : array();
+                $member_state = array(
+                    'opened' => $opened,
+                    'done' => $entry && get_post_meta($entry->ID, '_md_task_done', true),
+                    'tasks' => is_array($tasks) ? $tasks : array(),
+                    'form_id' => 'md-member-entry-' . $day->ID,
+                    'member_id' => $member->ID,
+                    'central' => $central,
+                    'token' => $token,
+                    'entry' => $entry,
+                );
+                md_challenge_render_day($day, $challenge_id, $member_state);
+            endforeach; ?>
                         <label><strong>یادداشت و گزارش تمرین من</strong>
                             <textarea name="member_notes" rows="4" maxlength="5000"><?php echo esc_textarea($notes); ?></textarea>
                         </label>
