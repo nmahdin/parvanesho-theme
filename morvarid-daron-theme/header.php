@@ -16,11 +16,11 @@ $booking_url = md_theme_option('header_booking_url', md_booking_url());
 $show_booking = md_theme_option('header_booking_show', '1') === '1';
 $show_profile = md_theme_option('header_profile_show', '1') === '1';
 $profile_url = '';
-$profile_label = 'ورود / پروفایل';
+$profile_label = 'ورود / ثبت نام';
 if (function_exists('md_learning_current_learner_id') && class_exists('MD_Learning_Schema')) {
     $logged_in = md_learning_current_learner_id() > 0;
     $profile_url = MD_Learning_Schema::url($logged_in ? 'dashboard' : 'login');
-    $profile_label = $logged_in ? 'پروفایل من' : 'ورود / پروفایل';
+    $profile_label = $logged_in ? 'پروفایل' : 'ورود / ثبت نام';
 }
 ?>
 <header class="site-header">
@@ -45,7 +45,7 @@ if (function_exists('md_learning_current_learner_id') && class_exists('MD_Learni
                 <a class="btn btn-primary header-cta" href="<?php echo esc_url($booking_url); ?>"><?php echo esc_html($booking_label); ?> ↖</a>
             <?php endif; ?>
             <?php if ($show_profile && $profile_url) : ?>
-                <a class="md-header-profile" href="<?php echo esc_url($profile_url); ?>" aria-label="<?php echo esc_attr($profile_label); ?>">
+                <a class="btn btn-primary header-cta md-header-profile" href="<?php echo esc_url($profile_url); ?>" aria-label="<?php echo esc_attr($profile_label); ?>">
                     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="8" r="4"/><path d="M4.5 21v-2.5a7.5 7.5 0 0 1 15 0V21"/>
                     </svg>
