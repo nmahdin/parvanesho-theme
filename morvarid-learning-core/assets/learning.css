@@ -208,3 +208,22 @@
 .md-learning-workspace-side>a,.md-learning-side-logout button,.md-learning-settings-form .md-learning-button,.md-learning-profile-logout .md-learning-button{border-radius:999px!important}
 .md-learning-section-head,.md-learning-settings-form,.md-learning-profile-meta{overflow-wrap:anywhere}
 @media(max-width:650px){.md-learning-workspace-hero,.md-learning-workspace-content,.md-learning-workspace-side,.md-learning-settings-panel,.md-learning-profile-meta,.md-learning-overview>div{border-radius:21px!important}}
+
+/* Registration and login: constrain everything to the phone viewport. */
+.md-learning-app,.md-learning-app *{box-sizing:border-box}
+.md-learning-app{width:100%;max-width:100%;min-width:0;overflow-x:clip}
+.md-learning-app .md-learning-shell{max-width:100%;min-width:0}
+.md-learning-app .md-learning-form{max-width:100%;min-width:0}
+.md-learning-app .md-learning-form input,.md-learning-app .md-learning-form textarea,.md-learning-app .md-learning-form button{max-width:100%;min-width:0}
+.md-learning-app .md-learning-form .md-learning-check{min-width:0;max-width:100%;align-items:flex-start;overflow-wrap:anywhere}
+.md-learning-app .md-learning-form .md-learning-check input{flex:0 0 auto;width:20px;height:20px}
+.md-learning-app .md-learning-form .md-learning-check span,.md-learning-app .md-learning-form-notes,.md-learning-app .md-learning-form .md-learning-note{min-width:0;overflow-wrap:anywhere}
+@media(max-width:650px){
+.md-learning-app{padding:12px 0!important}
+.md-learning-app .md-learning-shell{width:100%!important;padding:0 12px!important}
+.md-learning-app .md-learning-heading{width:100%;max-width:100%;padding:0 4px}
+.md-learning-app .md-learning-heading h1{font-size:clamp(20px,6vw,27px)!important;line-height:1.55}
+.md-learning-app .md-learning-form{width:100%!important;padding:18px 15px!important;margin-inline:0!important;border-radius:19px!important}
+.md-learning-app .md-learning-form .md-learning-button{width:100%;white-space:normal;overflow-wrap:anywhere}
+.md-learning-app .md-learning-form input[type=text],.md-learning-app .md-learning-form input[type=password]{width:100%;font-size:16px!important}
+}
