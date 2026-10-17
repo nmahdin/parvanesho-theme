@@ -97,7 +97,7 @@ function md_challenge_admin_participants_page() {
                         <tr>
                             <td><strong><?php echo esc_html($member->post_title); ?></strong></td>
                             <td><strong class="md-member-admin-code" dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true) ?: '—'); ?></strong></td>
-                            <td><?php echo esc_html(md_format_jalali($member->post_date, 'short')); ?></td>
+                            <td><?php echo esc_html(md_format_jalali(substr($member->post_date, 0, 10), 'short')); ?></td>
                             <td><?php echo esc_html(md_fa_num($done) . ' / ' . md_fa_num($total)); ?></td>
                             <td><?php echo esc_html($last ? $last : '—'); ?></td>
                             <td><?php if ($link) : ?><input class="md-member-admin-url" type="text" dir="ltr" readonly onclick="this.select()" value="<?php echo esc_attr($link); ?>" aria-label="لینک خصوصی <?php echo esc_attr($member->post_title); ?>"><?php else : ?>غیرفعال<?php endif; ?></td>
