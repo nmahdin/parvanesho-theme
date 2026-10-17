@@ -4,13 +4,13 @@ if (!defined('ABSPATH')) {
 }
 
 final class MD_Learning_Schema {
-    const VERSION = '0.4.0';
+    const VERSION = '0.5.0';
     const VERSION_OPTION = 'md_learning_core_schema_version';
     const PAGE_OPTION = 'md_learning_core_pages';
 
     public static function table($name) {
         global $wpdb;
-        $allowed = array('learners', 'links', 'sessions', 'challenges', 'responses');
+        $allowed = array('learners', 'links', 'sessions', 'challenges', 'responses', 'audit_events');
         if (!in_array($name, $allowed, true)) {
             return '';
         }
@@ -20,7 +20,15 @@ final class MD_Learning_Schema {
     public static function activate() {
         self::install_tables();
         self::create_pages();
+        self::grant_admin_capability();
         update_option(self::VERSION_OPTION, self::VERSION, false);
+    }
+
+    public static function grant_admin_capability() {
+        $role = get_role('administrator');
+        if ($role && !$role->has_cap('md_view_learning_responses')) {
+            $role->add_cap('md_view_learning_responses');
+        }
     }
 
     public static function maybe_upgrade() {
@@ -40,6 +48,7 @@ final class MD_Learning_Schema {
         $sessions = self::table('sessions');
         $challenges = self::table('challenges');
         $responses = self::table('responses');
+        $audit = self::table('audit_events');
 
         dbDelta("CREATE TABLE {$learners} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -110,6 +119,20 @@ final class MD_Learning_Schema {
             KEY learner_content (learner_id,content_id),
             KEY content_block (content_id,block_id),
             KEY status (status)
+        ) {$charset};");
+
+        // Audit metadata: never store answers, access codes, or link tokens.
+        dbDelta("CREATE TABLE {$audit} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            actor_user_id bigint(20) unsigned NOT NULL,
+            learner_id bigint(20) unsigned NOT NULL,
+            response_id bigint(20) unsigned NOT NULL,
+            event_type varchar(40) NOT NULL,
+            created_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            KEY actor_time (actor_user_id,created_at),
+            KEY response_time (response_id,created_at),
+            KEY learner_id (learner_id)
         ) {$charset};");
     }
 
