@@ -50,7 +50,8 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
             'post_type' => 'post', 'taxonomy' => 'category', 'count' => 5,
             'body' => 'از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.',
             'button_text' => 'عضویت در خبرنامه ←', 'button_url' => '',
-            'show_socials' => 1,
+            'show_socials' => 1, 'network_urls' => null,
+            'placeholder' => 'عبارت مورد نظر…',
         );
     }
 
@@ -69,7 +70,7 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
             case 'search':
                 $allowed = array('', 'post', 'md_course', 'md_lesson', 'md_podcast', 'md_resource', 'md_challenge');
                 $post_type = in_array($i['post_type'], $allowed, true) ? $i['post_type'] : '';
-                md_sidebar_search($post_type, $title);
+                md_sidebar_search($post_type, $title, $i['placeholder']);
                 break;
             case 'author':
                 if (is_singular('post')) {
@@ -109,6 +110,7 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
                     'button_text' => $i['button_text'],
                     'button_url' => $i['button_url'],
                     'show_socials' => $i['show_socials'],
+                    'network_urls' => $i['network_urls'],
                 ));
                 break;
         }
@@ -124,6 +126,13 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         $v['body'] = sanitize_textarea_field(wp_unslash($new['body'] ?? ''));
         $v['button_text'] = sanitize_text_field(wp_unslash($new['button_text'] ?? ''));
         $v['button_url'] = esc_url_raw(wp_unslash($new['button_url'] ?? ''), array('https', 'http'));
+        $v['placeholder'] = sanitize_text_field(wp_unslash($new['placeholder'] ?? 'عبارت مورد نظر…'));
+        $v['network_urls'] = array();
+        foreach (md_social_networks() as $key => $_network) {
+            $v['network_urls'][$key] = esc_url_raw(
+                wp_unslash($new['network_urls'][$key] ?? ''), array('https', 'http')
+            );
+        }
         $v['show_socials'] = !empty($new['show_socials']) ? 1 : 0;
         $v['count'] = max(1, min(12, absint($new['count'] ?? 5)));
         $allowed = array('', 'post', 'md_course', 'md_lesson', 'md_podcast', 'md_resource', 'md_challenge');
@@ -157,6 +166,7 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         $i = wp_parse_args((array) $instance, self::defaults($type));
         $this->form_select('type', 'نوع کارت', self::types(), $type);
         $this->form_input('title', 'عنوان کارت (برای بعضی کارت‌ها اختیاری)', $i['title']);
+        $this->form_input('placeholder', 'متن داخل فیلد جستجو', $i['placeholder']);
         $this->form_select('post_type', 'محدوده جستجو', array(
             ''=>'کل سایت', 'post'=>'مجله', 'md_course'=>'دوره‌ها', 'md_lesson'=>'درس‌ها',
             'md_podcast'=>'پادکست‌ها', 'md_resource'=>'منابع آموزشی', 'md_challenge'=>'چالش‌ها',
@@ -174,7 +184,18 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         echo '<p><label><input type="checkbox" name="' . esc_attr($this->get_field_name('show_socials')) .
             '" value="1" ' . checked(!empty($i['show_socials']), true, false) .
             '> نمایش کانال‌ها در کارت خانواده</label></p>';
-        echo '<p class="description">فیلدهای مربوط به نوع کارت انتخابی استفاده می‌شوند. ترتیب کارت‌ها و محل نمایش آن‌ها را از فهرست ابزارک‌ها تغییر دهید.</p>';
+        echo '<p><strong>لینک شبکه‌های اجتماعی همین کارت</strong></p>';
+        echo '<p class="description">هر آدرس را از داخل ابزارک تغییر دهید. خالی‌گذاشتن لینک، آن شبکه را فقط در همین باکس پنهان می‌کند.</p>';
+        foreach (md_social_networks() as $key => $network) {
+            $links = is_array($i['network_urls']) ? $i['network_urls'] : null;
+            $url = $links === null ? md_social_url($key) : ($links[$key] ?? '');
+            echo '<p><label for="' . esc_attr($this->get_field_id('network_' . $key)) . '">'
+                . esc_html('آدرس ' . $network['label']) . '</label><input type="url" class="widefat" id="'
+                . esc_attr($this->get_field_id('network_' . $key)) . '" name="'
+                . esc_attr($this->get_field_name('network_urls')) . '[' . esc_attr($key)
+                . ']" value="' . esc_attr($url) . '" placeholder="https://"></p>';
+        }
+        echo '<p class="description">ترتیب، افزودن و حذف کارت‌ها را از بخش ابزارک‌ها تغییر دهید. فقط فیلدهای نوع کارت انتخاب‌شده در نمای سایت استفاده می‌شوند.</p>';
     }
 }
 
