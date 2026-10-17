@@ -31,7 +31,7 @@ function md_register_content_types() {
         register_post_type('md_course', array_merge($common, array(
             'labels'       => md_post_type_labels('دوره', 'دوره‌ها', 'آکادمی'),
             'menu_icon'    => 'dashicons-welcome-learn-more',
-            'menu_position'=> 25,
+            'show_in_menu' => 'edit.php?post_type=md_academy_item',
             'has_archive'  => 'academy/courses',
             'rewrite'      => array('slug' => 'academy/courses', 'with_front' => false),
             'taxonomies'   => array('md_academy_cat'),
@@ -42,7 +42,7 @@ function md_register_content_types() {
         register_post_type('md_lesson', array_merge($common, array(
             'labels'       => md_post_type_labels('جلسه', 'جلسه‌ها', 'جلسه‌ها'),
             'menu_icon'    => 'dashicons-video-alt3',
-            'show_in_menu' => 'edit.php?post_type=md_course',
+            'show_in_menu' => false,
             'has_archive'  => 'academy/lessons',
             'rewrite'      => array('slug' => 'academy/lessons', 'with_front' => false),
             'taxonomies'   => array('md_academy_cat'),
@@ -53,7 +53,7 @@ function md_register_content_types() {
         register_post_type('md_podcast', array_merge($common, array(
             'labels'       => md_post_type_labels('پادکست', 'پادکست‌ها', 'پادکست‌ها'),
             'menu_icon'    => 'dashicons-microphone',
-            'show_in_menu' => 'edit.php?post_type=md_course',
+            'show_in_menu' => false,
             'has_archive'  => 'academy/podcasts',
             'rewrite'      => array('slug' => 'academy/podcasts', 'with_front' => false),
             'taxonomies'   => array('md_academy_cat'),
