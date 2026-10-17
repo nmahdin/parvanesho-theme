@@ -76,6 +76,81 @@
         );
     }
 
+    function backgroundField(props) {
+        return el(SelectControl, {
+            label: 'پس‌زمینهٔ بخش',
+            value: props.attributes.background || '',
+            options: [
+                { label: 'بدون پس‌زمینه', value: '' },
+                { label: 'کرم', value: 'cream' },
+                { label: 'هلویی روشن', value: 'warm' },
+                { label: 'سبز روشن', value: 'mint' }
+            ],
+            onChange: function (value) { props.setAttributes({ background: value }); }
+        });
+    }
+
+    function linkFields(props) {
+        return [
+            field(props, 'linkLabel', 'متن پیوند «همه…» (اختیاری)'),
+            field(props, 'linkUrl', 'نشانی پیوند (خالی = آرشیو خودکار)'),
+            backgroundField(props)
+        ];
+    }
+
+    function updateFeature(props, index, key, value) {
+        var items = (props.attributes.items || []).slice();
+        var patch = {};
+        patch[key] = value;
+        items[index] = Object.assign({}, items[index], patch);
+        props.setAttributes({ items: items });
+    }
+
+    function featuresEditor(props) {
+        var items = props.attributes.items || [];
+        var rows = items.map(function (item, index) {
+            return el('div', { key: 'feature-' + index, className: 'md-feature-row' },
+                el(TextControl, {
+                    label: 'نماد کارت ' + (index + 1),
+                    value: item.icon || '',
+                    onChange: function (value) { updateFeature(props, index, 'icon', value); }
+                }),
+                el(TextControl, {
+                    label: 'عنوان',
+                    value: item.title || '',
+                    onChange: function (value) { updateFeature(props, index, 'title', value); }
+                }),
+                el(TextControl, {
+                    label: 'توضیح',
+                    value: item.text || '',
+                    onChange: function (value) { updateFeature(props, index, 'text', value); }
+                }),
+                el(TextControl, {
+                    label: 'پیوند',
+                    value: item.url || '',
+                    onChange: function (value) { updateFeature(props, index, 'url', value); }
+                }),
+                el(Button, {
+                    variant: 'link',
+                    isDestructive: true,
+                    onClick: function () {
+                        props.setAttributes({ items: items.filter(function (row, i) { return i !== index; }) });
+                    }
+                }, 'حذف این کارت')
+            );
+        });
+
+        rows.push(el(Button, {
+            key: 'add-feature',
+            variant: 'secondary',
+            onClick: function () {
+                props.setAttributes({ items: items.concat([{ icon: '✦', title: '', text: '', url: '' }]) });
+            }
+        }, '+ افزودن کارت'));
+
+        return el('div', { className: 'md-features-editor' }, rows);
+    }
+
     function preview(name, props, definition) {
         return el('div', wp.blockEditor.useBlockProps({ className: 'md-block-editor-preview' }),
             el(Inspector, {},
@@ -192,13 +267,19 @@
             count: { type: 'number', default: 3 },
             columns: { type: 'number', default: 3 },
             category: { type: 'string', default: '' },
-            level: { type: 'string', default: '' }
+            level: { type: 'string', default: '' },
+            linkLabel: { type: 'string', default: '' },
+            linkUrl: { type: 'string', default: '' },
+            background: { type: 'string', default: '' }
         },
         'challenge-grid': {
             title: { type: 'string', default: 'چالش‌های مروارید درون' },
             subtitle: { type: 'string', default: '' },
             count: { type: 'number', default: 3 },
-            status: { type: 'string', default: 'all' }
+            status: { type: 'string', default: 'all' },
+            linkLabel: { type: 'string', default: '' },
+            linkUrl: { type: 'string', default: '' },
+            background: { type: 'string', default: '' }
         },
         'challenge-days': {
             title: { type: 'string', default: 'روزهای چالش' },
@@ -226,12 +307,44 @@
             title: { type: 'string', default: 'تمرین‌ها و منابع رایگان' },
             subtitle: { type: 'string', default: '' },
             count: { type: 'number', default: 3 },
-            kind: { type: 'string', default: '' }
+            kind: { type: 'string', default: '' },
+            linkLabel: { type: 'string', default: '' },
+            linkUrl: { type: 'string', default: '' },
+            background: { type: 'string', default: '' }
         },
         'service-grid': {
             title: { type: 'string', default: 'خدمات کوچینگ' },
             subtitle: { type: 'string', default: '' },
-            count: { type: 'number', default: 3 }
+            count: { type: 'number', default: 3 },
+            linkLabel: { type: 'string', default: '' },
+            linkUrl: { type: 'string', default: '' },
+            background: { type: 'string', default: '' }
+        },
+        'features': {
+            background: { type: 'string', default: '' },
+            items: {
+                type: 'array',
+                default: [
+                    { icon: '▤', title: 'مجله رشد', text: 'مقاله، داستان و راهکارهای کاربردی', url: '' },
+                    { icon: '❀', title: 'کوچینگ فردی', text: 'همراهی در مسیر شناخت و تغییر', url: '' },
+                    { icon: '✦', title: 'آکادمی آموزشی', text: 'دوره و کارگاه برای رشد آگاهانه', url: '' }
+                ]
+            }
+        },
+        'media-grid': {
+            title: { type: 'string', default: 'کتابخانه ویدیو و پادکست' },
+            subtitle: { type: 'string', default: 'محتوای چندرسانه‌ای و جلسه‌های آموزشی' },
+            count: { type: 'number', default: 3 },
+            linkLabel: { type: 'string', default: 'همه پادکست‌ها' },
+            linkUrl: { type: 'string', default: '' },
+            background: { type: 'string', default: '' }
+        },
+        'newsletter': {
+            eyebrow: { type: 'string', default: 'همراه مسیر رشد' },
+            title: { type: 'string', default: 'عضو خانواده مروارید درون شوید' },
+            text: { type: 'string', default: '' },
+            buttonLabel: { type: 'string', default: 'عضویت در خبرنامه' },
+            buttonUrl: { type: 'string', default: '' }
         },
         'request-form': {
             title: { type: 'string', default: 'درخواست جلسه' },
@@ -287,7 +400,7 @@
                         ],
                         onChange: function (value) { props.setAttributes({ level: value }); }
                     })
-                ];
+                ].concat(linkFields(props));
             }
         },
         {
@@ -312,11 +425,12 @@
                         options: [
                             { label: 'همه چالش‌ها', value: 'all' },
                             { label: 'در حال برگزاری', value: 'active' },
+                            { label: 'شروع‌نشده و در حال برگزاری', value: 'current' },
                             { label: 'پیش‌رو', value: 'upcoming' }
                         ],
                         onChange: function (value) { props.setAttributes({ status: value }); }
                     })
-                ];
+                ].concat(linkFields(props));
             }
         },
         {
@@ -404,7 +518,7 @@
                         ],
                         onChange: function (value) { props.setAttributes({ kind: value }); }
                     })
-                ];
+                ].concat(linkFields(props));
             }
         },
         {
@@ -423,6 +537,56 @@
                         max: 12,
                         onChange: function (value) { props.setAttributes({ count: value }); }
                     })
+                ].concat(linkFields(props));
+            }
+        },
+        {
+            slug: 'features',
+            title: 'کارت‌های معرفی',
+            icon: 'grid-view',
+            description: 'ردیف کارت‌های معرفی (مجله، کوچینگ، آکادمی و…) با نماد، عنوان، توضیح و پیوند.',
+            fields: function (props) {
+                return [
+                    featuresEditor(props),
+                    backgroundField(props)
+                ];
+            }
+        },
+        {
+            slug: 'media-grid',
+            title: 'کتابخانه ویدیو و پادکست',
+            icon: 'format-video',
+            description: 'آخرین جلسه‌ها و پادکست‌ها در یک شبکه.',
+            fields: function (props) {
+                return [
+                    field(props, 'title', 'عنوان بخش'),
+                    field(props, 'subtitle', 'توضیح کوتاه'),
+                    el(RangeControl, {
+                        label: 'تعداد آیتم',
+                        value: props.attributes.count,
+                        min: 1,
+                        max: 12,
+                        onChange: function (value) { props.setAttributes({ count: value }); }
+                    })
+                ].concat(linkFields(props));
+            }
+        },
+        {
+            slug: 'newsletter',
+            title: 'دعوت به خبرنامه',
+            icon: 'email',
+            description: 'نوار عضویت در خبرنامه با متن و دکمهٔ دلخواه.',
+            fields: function (props) {
+                return [
+                    field(props, 'eyebrow', 'برچسب بالای عنوان'),
+                    field(props, 'title', 'عنوان'),
+                    el(TextareaControl, {
+                        label: 'توضیح',
+                        value: props.attributes.text || '',
+                        onChange: function (value) { props.setAttributes({ text: value }); }
+                    }),
+                    field(props, 'buttonLabel', 'متن دکمه'),
+                    field(props, 'buttonUrl', 'نشانی دکمه')
                 ];
             }
         },

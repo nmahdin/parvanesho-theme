@@ -1,24 +1,36 @@
 <?php
-// A static homepage with Gutenberg blocks overrides the built-in legacy homepage.
-$md_front_id=(int)get_option('page_on_front');
-if(get_option('show_on_front')==='page' && $md_front_id && trim(get_post_field('post_content',$md_front_id))!=='') {
- get_header();echo '<main id="main" class="md-flex-home">';
- $md_front=get_post($md_front_id);
- if($md_front instanceof WP_Post){global $post;$md_old_post=$post;$post=$md_front;setup_postdata($post);the_content();wp_reset_postdata();$post=$md_old_post;}
- echo '</main>';get_footer();return;
+/**
+ * Front page.
+ *
+ * When a static front page with content exists, its blocks are the homepage:
+ * every element (hero, sections, cards, newsletter) is edited in Gutenberg on
+ * that page. Otherwise the built-in fallback layout keeps the site complete.
+ *
+ * @package Morvarid_Daron
+ */
+
+get_header();
+
+$md_home_id = function_exists('md_home_page_id') ? md_home_page_id() : 0;
+
+if ($md_home_id && '' !== trim((string) get_post_field('post_content', $md_home_id))) {
+    $md_home_query = new WP_Query(
+        array(
+            'page_id'        => $md_home_id,
+            'post_type'      => 'page',
+            'posts_per_page' => 1,
+        )
+    );
+
+    echo '<main id="main" class="md-flex-home">';
+    while ($md_home_query->have_posts()) {
+        $md_home_query->the_post();
+        the_content();
+    }
+    echo '</main>';
+    wp_reset_postdata();
+} else {
+    get_template_part('template-parts/home', 'fallback');
 }
-?>
-<?php get_header(); ?>
-<main id="main">
-<section class="hero"><div class="container hero-grid"><div class="hero-copy"><div class="eyebrow">✧ رشد، آگاهی، ارتباط</div><h1><?php echo esc_html(get_theme_mod('md_hero_title','جایی برای کشف خود، فهم نوجوان و ساختن رابطه‌ای عمیق‌تر')); ?></h1><p><?php echo esc_html(get_theme_mod('md_hero_text','فضایی برای آگاهی، رشد و همراهی والدین و نوجوانان در مسیر گفت‌وگو و رابطه‌ای عمیق‌تر.')); ?></p><div class="hero-actions"><a class="btn btn-primary" href="<?php echo esc_url(get_theme_mod('md_parent_url','/category/parents/')); ?>">من والد هستم ←</a><a class="btn btn-light" href="<?php echo esc_url(get_theme_mod('md_teen_url','/category/teens/')); ?>">من نوجوان هستم ←</a></div></div><div class="hero-image"><?php $img=absint(get_theme_mod('md_hero_image')); if($img){echo wp_get_attachment_image($img,'large',false,['loading'=>'eager']);}else{echo '<div class="hero-art" role="img" aria-label="جایی برای گفت‌وگو و درک متقابل"><span class="art-ring">◌</span><span class="art-pearl">●</span><div class="art-quote">هر گفت‌وگوی خوب،<br>آغاز یک کشف تازه است.</div></div>';} ?></div></div></section>
-<section class="pillars"><div class="container three-col"><a class="pillar" href="#magazine"><span class="pillar-icon">▤</span><div><h2>مجله رشد</h2><p>مقاله، داستان و راهکارهای کاربردی</p></div></a><a class="pillar" href="#coaching"><span class="pillar-icon">❀</span><div><h2>کوچینگ فردی</h2><p>همراهی در مسیر شناخت و تغییر</p></div></a><a class="pillar" href="#academy"><span class="pillar-icon">✦</span><div><h2>آکادمی آموزشی</h2><p>دوره و کارگاه برای رشد آگاهانه</p></div></a></div></section>
-<section id="magazine" class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">از تجربه تا آگاهی</span><h2>مجله مروارید درون</h2><p>خواندنی‌هایی برای شناخت، درک بیشتر و رابطه‌ای عمیق‌تر</p></div><a class="text-link" href="<?php echo esc_url(get_option('page_for_posts')?get_permalink(get_option('page_for_posts')):home_url('/?post_type=post')); ?>">همه مطالب ←</a></div><div class="three-col card-grid"><?php $q=new WP_Query(['post_type'=>'post','posts_per_page'=>3,'ignore_sticky_posts'=>true]);if($q->have_posts()){while($q->have_posts()){$q->the_post();md_card(get_the_ID(),'مجله');}wp_reset_postdata();}else{echo '<p class="empty-note">مقالات شما پس از انتشار از پیشخوان وردپرس اینجا نمایش داده می‌شوند.</p>';} ?></div></div></section>
-<section id="coaching" class="section section-warm"><div class="container"><div class="section-head"><div><span class="eyebrow">گفت‌وگویی برای کشف</span><h2>کوچینگ مروارید درون</h2><p>فضایی امن برای گفت‌وگو، روشن‌شدن انتخاب‌ها و حرکت به سمت اهداف</p></div></div><div class="three-col card-grid"><?php $q=new WP_Query(['post_type'=>'md_service','posts_per_page'=>3]);if($q->have_posts()){while($q->have_posts()){$q->the_post();md_card(get_the_ID(),'خدمات کوچینگ');}wp_reset_postdata();}else{foreach(['جلسه آشنایی','کوچینگ والدین','کوچینگ رشد فردی'] as $i=>$title){echo '<article class="service-card"><span class="service-symbol">'.esc_html(['✧','❀','◈'][$i]).'</span><h3>'.esc_html($title).'</h3><p>این خدمت را از بخش خدمات در پیشخوان وردپرس معرفی کنید.</p><a class="btn btn-primary" href="'.esc_url(md_booking_url()).'">درخواست جلسه ←</a></article>';}} ?></div></div></section>
-<section id="academy" class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">یادگیری برای زندگی</span><h2>آکادمی مروارید درون</h2><p>کارگاه‌ها، دوره‌ها و وبینارهای آموزشی</p></div><a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_course') ?: home_url('/#academy')); ?>">همه دوره‌ها ←</a></div><div class="three-col card-grid"><?php $q=new WP_Query(['post_type'=>'md_course','posts_per_page'=>3]);if($q->have_posts()){while($q->have_posts()){$q->the_post();md_card(get_the_ID(),'آکادمی');}wp_reset_postdata();}else{echo '<p class="empty-note">با ثبت دوره در پیشخوان، کارت‌های دوره به‌صورت خودکار ظاهر می‌شوند.</p>';} ?></div></div></section>
-<?php $md_challenges=md_challenge_query(['posts_per_page'=>3,'orderby'=>'meta_value','order'=>'ASC','meta_query'=>[['key'=>'_md_end_date','value'=>md_today(),'compare'=>'>=','type'=>'DATE']]]); if($md_challenges->have_posts()): ?>
-<section id="challenges" class="section section-warm"><div class="container"><div class="section-head"><div><span class="eyebrow">همراهی گام‌به‌گام</span><h2>چالش‌های مروارید درون</h2><p>چالش‌های چندروزه برای ساختن عادت‌های تازه و قدم‌های کوچک و پیوسته</p></div><a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_challenge') ?: home_url('/#challenges')); ?>">همه چالش‌ها ←</a></div><div class="three-col card-grid md-challenge-grid"><?php while($md_challenges->have_posts()):$md_challenges->the_post();md_challenge_render_card(get_the_ID());endwhile;wp_reset_postdata(); ?></div></div></section>
-<?php endif; ?>
-<section id="resources" class="section section-mint"><div class="container"><div class="section-head"><div><span class="eyebrow">از دانستن تا عمل</span><h2>تمرین‌ها و منابع رایگان</h2><p>ابزارهایی کوچک برای قدم‌های واقعی</p></div><a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_resource') ?: home_url('/#resources')); ?>">همه منابع ←</a></div><div class="three-col card-grid"><?php $q=new WP_Query(['post_type'=>'md_resource','posts_per_page'=>3]);if($q->have_posts()){while($q->have_posts()){$q->the_post();md_card(get_the_ID(),'منابع رایگان');}wp_reset_postdata();}else{echo '<p class="empty-note">تمرین‌ها و فایل‌های رایگان شما اینجا نمایش داده می‌شوند.</p>';} ?></div></div></section>
-<section id="academy-media" class="section section-mint"><div class="container"><div class="section-head"><div><span class="eyebrow">ببین، بشنو، تمرین کن</span><h2>کتابخانه ویدیو و پادکست</h2><p>محتوای چندرسانه‌ای و جلسه‌های آموزشی در مسیر یادگیری</p></div><a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_podcast') ?: home_url('/#academy-media')); ?>">همه پادکست‌ها ←</a></div><div class="three-col card-grid"><?php $mq=new WP_Query(['post_type'=>['md_lesson','md_podcast'],'posts_per_page'=>3,'post_status'=>'publish']);if($mq->have_posts()){while($mq->have_posts()){$mq->the_post();$type=get_post_type();$kind=get_post_meta(get_the_ID(),'_md_media_kind',true);md_card(get_the_ID(),$type==='md_podcast'?'🎧 پادکست':($kind==='audio'?'🎧 جلسه صوتی':'▶ جلسه ویدیویی'));}wp_reset_postdata();}else{echo '<p class="empty-note">جلسه‌ها و پادکست‌های تازه‌ای که در پیشخوان منتشر می‌کنید، اینجا نشان داده خواهند شد.</p>';} ?></div></div></section>
-<section class="newsletter section"><div class="container newsletter-inner"><div><span class="eyebrow">همراه مسیر رشد</span><h2>عضو خانواده مروارید درون شوید</h2><p>از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.</p></div><a class="btn btn-primary" href="<?php echo esc_url(get_theme_mod('md_newsletter_url','/newsletter/')); ?>">عضویت در خبرنامه ←</a></div></section>
-</main><?php get_footer(); ?>
+
+get_footer();

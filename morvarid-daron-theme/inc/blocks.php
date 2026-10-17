@@ -19,12 +19,17 @@ if (!defined('ABSPATH')) {
  * @param string $subtitle Optional lead paragraph.
  * @return string
  */
-function md_block_heading($title, $subtitle = '') {
-    if ('' === trim((string) $title) && '' === trim((string) $subtitle)) {
+function md_block_heading($title, $subtitle = '', $link_label = '', $link_url = '') {
+    $title      = trim((string) $title);
+    $subtitle   = trim((string) $subtitle);
+    $link_label = trim((string) $link_label);
+    $link_url   = trim((string) $link_url);
+
+    if ('' === $title && '' === $subtitle && ('' === $link_label || '' === $link_url)) {
         return '';
     }
 
-    $html = '<div class="md-gb-section-head">';
+    $html  = '<div class="md-gb-section-head"><div class="md-gb-section-copy">';
     if ($title) {
         $html .= '<h2>' . esc_html($title) . '</h2>';
     }
@@ -33,7 +38,40 @@ function md_block_heading($title, $subtitle = '') {
     }
     $html .= '</div>';
 
+    if ($link_label && $link_url) {
+        $html .= '<a class="text-link md-gb-section-link" href="' . esc_url($link_url) . '">' . esc_html($link_label) . ' ←</a>';
+    }
+
+    $html .= '</div>';
+
     return $html;
+}
+
+/**
+ * Background class of a section block.
+ *
+ * @param array $attributes Block attributes.
+ * @return string
+ */
+function md_block_bg_class($attributes) {
+    $allowed = array('cream' => 'md-gb-bg-cream', 'warm' => 'md-gb-bg-warm', 'mint' => 'md-gb-bg-mint');
+    $bg      = isset($attributes['background']) ? sanitize_key($attributes['background']) : '';
+
+    return isset($allowed[$bg]) ? ' ' . $allowed[$bg] : '';
+}
+
+/**
+ * Wrap section content in the shared full-width band + container.
+ *
+ * @param array  $attributes Block attributes (for the background).
+ * @param string $inner      Inner HTML.
+ * @param string $extra      Extra classes.
+ * @return string
+ */
+function md_block_section($attributes, $inner, $extra = '') {
+    $classes = trim('md-gb-grid-section ' . $extra . md_block_bg_class($attributes));
+
+    return '<section class="' . esc_attr($classes) . '"><div class="container">' . $inner . '</div></section>';
 }
 
 /**
@@ -76,7 +114,7 @@ function md_block_card_grid($args, $columns = 3, $label = 'مروارید درو
 function md_block_course_grid($attributes) {
     $attributes = wp_parse_args(
         $attributes,
-        array('title' => 'دوره‌های آکادمی', 'subtitle' => '', 'count' => 3, 'columns' => 3, 'category' => '', 'level' => '')
+        array('title' => 'دوره‌های آکادمی', 'subtitle' => '', 'count' => 3, 'columns' => 3, 'category' => '', 'level' => '', 'linkLabel' => '', 'linkUrl' => '', 'background' => '')
     );
 
     $args = array(
@@ -104,10 +142,16 @@ function md_block_course_grid($attributes) {
         );
     }
 
-    return '<section class="md-gb-grid-section container">'
-        . md_block_heading($attributes['title'], $attributes['subtitle'])
+    $link_url = esc_url($attributes['linkUrl']);
+    if (!$link_url) {
+        $link_url = (string) get_post_type_archive_link('md_course');
+    }
+
+    return md_block_section(
+        $attributes,
+        md_block_heading($attributes['title'], $attributes['subtitle'], $attributes['linkLabel'], $link_url)
         . md_block_card_grid($args, $attributes['columns'], 'آکادمی مروارید', 'هنوز دوره‌ای ثبت نشده است.')
-        . '</section>';
+    );
 }
 
 /* ---------------------------------------------------------- challenge grid */
@@ -121,7 +165,7 @@ function md_block_course_grid($attributes) {
 function md_block_challenge_grid($attributes) {
     $attributes = wp_parse_args(
         $attributes,
-        array('title' => 'چالش‌های مروارید درون', 'subtitle' => '', 'count' => 3, 'status' => 'all')
+        array('title' => 'چالش‌های مروارید درون', 'subtitle' => '', 'count' => 3, 'status' => 'all', 'linkLabel' => '', 'linkUrl' => '', 'background' => '')
     );
 
     $args = array(
@@ -139,13 +183,21 @@ function md_block_challenge_grid($attributes) {
             array('key' => '_md_start_date', 'value' => $today, 'compare' => '<=', 'type' => 'DATE'),
             array('key' => '_md_end_date', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
         );
+    } elseif ('current' === $attributes['status']) {
+        // Everything that has not finished yet, including future challenges.
+        $args['meta_query'] = array(
+            array('key' => '_md_end_date', 'value' => $today, 'compare' => '>=', 'type' => 'DATE'),
+        );
     }
 
     $query = md_challenge_query($args);
 
+    $link_url = esc_url($attributes['linkUrl']);
+    if (!$link_url) {
+        $link_url = (string) get_post_type_archive_link('md_challenge');
+    }
+
     ob_start();
-    echo '<section class="md-gb-grid-section container md-challenge-grid-section">';
-    echo md_block_heading($attributes['title'], $attributes['subtitle']); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo '<div class="md-gb-grid md-gb-cols-3 md-challenge-grid">';
     if ($query->have_posts()) {
         while ($query->have_posts()) {
@@ -156,9 +208,13 @@ function md_block_challenge_grid($attributes) {
     } else {
         echo '<p class="md-gb-empty">چالشی با این شرایط پیدا نشد.</p>';
     }
-    echo '</div></section>';
+    echo '</div>';
 
-    return ob_get_clean();
+    return md_block_section(
+        $attributes,
+        md_block_heading($attributes['title'], $attributes['subtitle'], $attributes['linkLabel'], $link_url) . ob_get_clean(),
+        'md-challenge-grid-section'
+    );
 }
 
 /* ---------------------------------------------------------- challenge days */
@@ -354,7 +410,7 @@ function md_block_lesson_list($attributes) {
 function md_block_resource_grid($attributes) {
     $attributes = wp_parse_args(
         $attributes,
-        array('title' => 'تمرین‌ها و منابع رایگان', 'subtitle' => '', 'count' => 3, 'kind' => '')
+        array('title' => 'تمرین‌ها و منابع رایگان', 'subtitle' => '', 'count' => 3, 'kind' => '', 'linkLabel' => '', 'linkUrl' => '', 'background' => '')
     );
 
     $args = array(
@@ -368,10 +424,16 @@ function md_block_resource_grid($attributes) {
         );
     }
 
-    return '<section class="md-gb-grid-section container">'
-        . md_block_heading($attributes['title'], $attributes['subtitle'])
+    $link_url = esc_url($attributes['linkUrl']);
+    if (!$link_url) {
+        $link_url = (string) get_post_type_archive_link('md_resource');
+    }
+
+    return md_block_section(
+        $attributes,
+        md_block_heading($attributes['title'], $attributes['subtitle'], $attributes['linkLabel'], $link_url)
         . md_block_card_grid($args, 3, 'منابع رایگان', 'هنوز منبعی ثبت نشده است.')
-        . '</section>';
+    );
 }
 
 /* ------------------------------------------------------------- service grid */
@@ -385,7 +447,7 @@ function md_block_resource_grid($attributes) {
 function md_block_service_grid($attributes) {
     $attributes = wp_parse_args(
         $attributes,
-        array('title' => 'خدمات کوچینگ', 'subtitle' => '', 'count' => 3)
+        array('title' => 'خدمات کوچینگ', 'subtitle' => '', 'count' => 3, 'linkLabel' => '', 'linkUrl' => '', 'background' => '')
     );
 
     $args = array(
@@ -393,10 +455,158 @@ function md_block_service_grid($attributes) {
         'posts_per_page' => max(1, min(12, (int) $attributes['count'])),
     );
 
-    return '<section class="md-gb-grid-section container">'
-        . md_block_heading($attributes['title'], $attributes['subtitle'])
+    $link_url = esc_url($attributes['linkUrl']);
+    if (!$link_url) {
+        $link_url = (string) get_post_type_archive_link('md_service');
+    }
+
+    return md_block_section(
+        $attributes,
+        md_block_heading($attributes['title'], $attributes['subtitle'], $attributes['linkLabel'], $link_url)
         . md_block_card_grid($args, 3, 'کوچینگ مروارید', 'هنوز خدمتی ثبت نشده است.')
-        . '</section>';
+    );
+}
+
+/* ---------------------------------------------------------------- features */
+
+/**
+ * Render the three (or more) highlight cards.
+ *
+ * @param array $attributes Block attributes.
+ * @return string
+ */
+function md_block_features($attributes) {
+    $attributes = wp_parse_args(
+        $attributes,
+        array('items' => array(), 'background' => '')
+    );
+
+    $items = is_array($attributes['items']) ? $attributes['items'] : array();
+    $cards = '';
+
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        $icon  = isset($item['icon']) ? sanitize_text_field($item['icon']) : '';
+        $title = isset($item['title']) ? sanitize_text_field($item['title']) : '';
+        $text  = isset($item['text']) ? sanitize_text_field($item['text']) : '';
+        $url   = isset($item['url']) ? esc_url_raw($item['url']) : '';
+
+        if ('' === $title && '' === $text) {
+            continue;
+        }
+
+        $inner = ($icon ? '<span class="pillar-icon" aria-hidden="true">' . esc_html($icon) . '</span>' : '')
+            . '<div>'
+            . ($title ? '<h2>' . esc_html($title) . '</h2>' : '')
+            . ($text ? '<p>' . esc_html($text) . '</p>' : '')
+            . '</div>';
+
+        $cards .= $url
+            ? '<a class="pillar" href="' . esc_url($url) . '">' . $inner . '</a>'
+            : '<div class="pillar">' . $inner . '</div>';
+    }
+
+    if ('' === $cards) {
+        return '';
+    }
+
+    return md_block_section(
+        $attributes,
+        '<div class="three-col md-gb-features">' . $cards . '</div>',
+        'md-gb-pillars-section'
+    );
+}
+
+/* --------------------------------------------------------------- media grid */
+
+/**
+ * Render the latest lessons and podcasts together.
+ *
+ * @param array $attributes Block attributes.
+ * @return string
+ */
+function md_block_media_grid($attributes) {
+    $attributes = wp_parse_args(
+        $attributes,
+        array(
+            'title'      => 'کتابخانه ویدیو و پادکست',
+            'subtitle'   => '',
+            'count'      => 3,
+            'linkLabel'  => '',
+            'linkUrl'    => '',
+            'background' => '',
+        )
+    );
+
+    $query = new WP_Query(
+        array(
+            'post_type'           => array('md_lesson', 'md_podcast'),
+            'post_status'         => 'publish',
+            'posts_per_page'      => max(1, min(12, (int) $attributes['count'])),
+            'ignore_sticky_posts' => true,
+        )
+    );
+
+    $link_url = esc_url($attributes['linkUrl']);
+    if (!$link_url) {
+        $link_url = (string) get_post_type_archive_link('md_podcast');
+    }
+
+    ob_start();
+    echo '<div class="md-gb-grid md-gb-cols-3">';
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $type  = get_post_type();
+            $kind  = get_post_meta(get_the_ID(), '_md_media_kind', true);
+            $label = ('md_podcast' === $type) ? '🎧 پادکست' : ('audio' === $kind ? '🎧 جلسه صوتی' : '▶ جلسه ویدیویی');
+            md_card(get_the_ID(), $label);
+        }
+        wp_reset_postdata();
+    } else {
+        echo '<p class="md-gb-empty">جلسه‌ها و پادکست‌های تازه‌ای که منتشر می‌کنید اینجا نمایش داده می‌شوند.</p>';
+    }
+    echo '</div>';
+
+    return md_block_section(
+        $attributes,
+        md_block_heading($attributes['title'], $attributes['subtitle'], $attributes['linkLabel'], $link_url) . ob_get_clean(),
+        'md-gb-media-section'
+    );
+}
+
+/* --------------------------------------------------------------- newsletter */
+
+/**
+ * Render the newsletter call to action.
+ *
+ * @param array $attributes Block attributes.
+ * @return string
+ */
+function md_block_newsletter($attributes) {
+    $attributes = wp_parse_args(
+        $attributes,
+        array(
+            'eyebrow'     => 'همراه مسیر رشد',
+            'title'       => 'عضو خانواده مروارید درون شوید',
+            'text'        => '',
+            'buttonLabel' => 'عضویت در خبرنامه',
+            'buttonUrl'   => '',
+        )
+    );
+
+    $url = esc_url($attributes['buttonUrl']);
+
+    return '<section class="newsletter section md-gb-newsletter"><div class="container newsletter-inner"><div>'
+        . ($attributes['eyebrow'] ? '<span class="eyebrow">' . esc_html($attributes['eyebrow']) . '</span>' : '')
+        . '<h2>' . esc_html($attributes['title']) . '</h2>'
+        . ($attributes['text'] ? '<p>' . esc_html($attributes['text']) . '</p>' : '')
+        . '</div>'
+        . ($url ? '<a class="btn btn-primary" href="' . $url . '">' . esc_html($attributes['buttonLabel']) . ' ←</a>' : '')
+        . '</div></section>';
 }
 
 /* -------------------------------------------------------------- registration */
@@ -425,6 +635,9 @@ function md_register_extra_blocks() {
                 'columns'   => array('type' => 'number', 'default' => 3),
                 'category'  => array('type' => 'string', 'default' => ''),
                 'level'     => array('type' => 'string', 'default' => ''),
+                'linkLabel'  => array('type' => 'string', 'default' => ''),
+                'linkUrl'    => array('type' => 'string', 'default' => ''),
+                'background' => array('type' => 'string', 'default' => ''),
             ),
         ),
         'challenge-grid' => array(
@@ -434,6 +647,9 @@ function md_register_extra_blocks() {
                 'subtitle' => array('type' => 'string', 'default' => ''),
                 'count'    => array('type' => 'number', 'default' => 3),
                 'status'   => array('type' => 'string', 'default' => 'all'),
+                'linkLabel'  => array('type' => 'string', 'default' => ''),
+                'linkUrl'    => array('type' => 'string', 'default' => ''),
+                'background' => array('type' => 'string', 'default' => ''),
             ),
         ),
         'challenge-days' => array(
@@ -477,6 +693,9 @@ function md_register_extra_blocks() {
                 'subtitle' => array('type' => 'string', 'default' => ''),
                 'count'    => array('type' => 'number', 'default' => 3),
                 'kind'     => array('type' => 'string', 'default' => ''),
+                'linkLabel'  => array('type' => 'string', 'default' => ''),
+                'linkUrl'    => array('type' => 'string', 'default' => ''),
+                'background' => array('type' => 'string', 'default' => ''),
             ),
         ),
         'service-grid'   => array(
@@ -485,6 +704,44 @@ function md_register_extra_blocks() {
                 'title'    => array('type' => 'string', 'default' => 'خدمات کوچینگ'),
                 'subtitle' => array('type' => 'string', 'default' => ''),
                 'count'    => array('type' => 'number', 'default' => 3),
+                'linkLabel'  => array('type' => 'string', 'default' => ''),
+                'linkUrl'    => array('type' => 'string', 'default' => ''),
+                'background' => array('type' => 'string', 'default' => ''),
+            ),
+        ),
+        'features'       => array(
+            'render'     => 'md_block_features',
+            'attributes' => array(
+                'items' => array(
+                    'type'    => 'array',
+                    'default' => array(
+                        array('icon' => '▤', 'title' => 'مجله رشد', 'text' => 'مقاله، داستان و راهکارهای کاربردی', 'url' => ''),
+                        array('icon' => '❀', 'title' => 'کوچینگ فردی', 'text' => 'همراهی در مسیر شناخت و تغییر', 'url' => ''),
+                        array('icon' => '✦', 'title' => 'آکادمی آموزشی', 'text' => 'دوره و کارگاه برای رشد آگاهانه', 'url' => ''),
+                    ),
+                ),
+                'background' => array('type' => 'string', 'default' => ''),
+            ),
+        ),
+        'media-grid'     => array(
+            'render'     => 'md_block_media_grid',
+            'attributes' => array(
+                'title'      => array('type' => 'string', 'default' => 'کتابخانه ویدیو و پادکست'),
+                'subtitle'   => array('type' => 'string', 'default' => 'محتوای چندرسانه‌ای و جلسه‌های آموزشی'),
+                'count'      => array('type' => 'number', 'default' => 3),
+                'linkLabel'  => array('type' => 'string', 'default' => 'همه پادکست‌ها'),
+                'linkUrl'    => array('type' => 'string', 'default' => ''),
+                'background' => array('type' => 'string', 'default' => ''),
+            ),
+        ),
+        'newsletter'     => array(
+            'render'     => 'md_block_newsletter',
+            'attributes' => array(
+                'eyebrow'     => array('type' => 'string', 'default' => 'همراه مسیر رشد'),
+                'title'       => array('type' => 'string', 'default' => 'عضو خانواده مروارید درون شوید'),
+                'text'        => array('type' => 'string', 'default' => ''),
+                'buttonLabel' => array('type' => 'string', 'default' => 'عضویت در خبرنامه'),
+                'buttonUrl'   => array('type' => 'string', 'default' => ''),
             ),
         ),
         'request-form'   => array(
