@@ -445,6 +445,8 @@ function md_block_resource_grid($attributes) {
  * @return string
  */
 function md_block_service_grid($attributes) {
+    // Kept for existing saved posts; retired service section renders nothing.
+    return '';
     $attributes = wp_parse_args(
         $attributes,
         array('title' => 'خدمات کوچینگ', 'subtitle' => '', 'count' => 3, 'linkLabel' => '', 'linkUrl' => '', 'background' => '')
@@ -693,17 +695,6 @@ function md_register_extra_blocks() {
                 'subtitle' => array('type' => 'string', 'default' => ''),
                 'count'    => array('type' => 'number', 'default' => 3),
                 'kind'     => array('type' => 'string', 'default' => ''),
-                'linkLabel'  => array('type' => 'string', 'default' => ''),
-                'linkUrl'    => array('type' => 'string', 'default' => ''),
-                'background' => array('type' => 'string', 'default' => ''),
-            ),
-        ),
-        'service-grid'   => array(
-            'render'     => 'md_block_service_grid',
-            'attributes' => array(
-                'title'    => array('type' => 'string', 'default' => 'خدمات کوچینگ'),
-                'subtitle' => array('type' => 'string', 'default' => ''),
-                'count'    => array('type' => 'number', 'default' => 3),
                 'linkLabel'  => array('type' => 'string', 'default' => ''),
                 'linkUrl'    => array('type' => 'string', 'default' => ''),
                 'background' => array('type' => 'string', 'default' => ''),
