@@ -51,6 +51,12 @@ while (have_posts()) :
                 <?php the_content(); ?>
             </div>
 
+            <?php if (class_exists('MD_Learning_Courses')) : ?>
+                <?php echo MD_Learning_Courses::course_ui($course_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            <?php endif; ?>
+            <?php if (!class_exists('MD_Learning_Courses')
+                || (!MD_Learning_Courses::open_enrollment($course_id)
+                    && !MD_Learning_Courses::is_enrolled(MD_Learning_Auth::current_learner_id(), $course_id))) : ?>
             <div class="md-course-cta">
                 <div>
                     <strong><?php echo esc_html($price ? 'هزینه دوره: ' . $price : 'برای شرکت در این دوره آماده‌اید؟'); ?></strong>
@@ -58,6 +64,7 @@ while (have_posts()) :
                 </div>
                 <a class="btn btn-primary" href="<?php echo esc_url($cta); ?>">درخواست ثبت‌نام ←</a>
             </div>
+            <?php endif; ?>
 
             <section class="md-course-lessons">
                 <h2>جلسات این دوره</h2>
