@@ -122,3 +122,11 @@
  .md-member-day.md-day-accordion > summary strong{font-size:9px}
  .md-member-day.md-day-accordion > summary h3{font-size:13px}
 }
+
+
+/* One-time onboarding credentials when signup directly joins a challenge. */
+.md-challenge-first-receipt{background:#eff8ed;border:1px solid #b9d8c2;border-radius:24px;padding:clamp(19px,3vw,29px);margin-bottom:24px}
+.md-challenge-first-receipt h2{font-size:22px;margin:0 0 9px;color:#285c42}
+.md-challenge-first-receipt p{font-size:14px;line-height:1.9;color:#426d56}
+.md-challenge-first-receipt label{display:grid;gap:7px;margin:14px 0;font-size:13px;font-weight:700;color:#355f47}
+.md-challenge-first-receipt input{width:100%;padding:12px;border:1px solid #a8ccb0;border-radius:12px;background:white;font-size:16px;direction:ltr;text-align:left}
