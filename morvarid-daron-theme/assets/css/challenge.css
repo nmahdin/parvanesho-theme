@@ -839,3 +839,16 @@ body.admin-bar .md-day-nav {
         gap: 26px;
     }
 }
+
+/* The current day stays legible in a long multi-day challenge. */
+.md-day-nav .is-current a {
+    border-color: #5f9d7a;
+    background: #e6f4eb;
+    color: #215a3d;
+    box-shadow: 0 0 0 2px rgba(48, 116, 79, .08);
+}
+.md-day-nav .is-current .md-day-nav-number {
+    background: #2d8063;
+    color: #fff;
+}
+.md-day-nav a:focus-visible { outline: 2px solid #2d8063; outline-offset: 3px; }
