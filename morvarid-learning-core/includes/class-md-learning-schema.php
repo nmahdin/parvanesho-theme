@@ -111,6 +111,7 @@ final class MD_Learning_Schema {
             question_text text NOT NULL,
             answer_text longtext NOT NULL,
             status varchar(12) NOT NULL DEFAULT 'draft',
+            manager_visible tinyint(1) NOT NULL DEFAULT 1,
             created_at datetime NOT NULL,
             updated_at datetime NOT NULL,
             submitted_at datetime DEFAULT NULL,
