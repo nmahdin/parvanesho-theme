@@ -136,7 +136,7 @@ while (have_posts()) :
             <?php md_render_sidebar('challenge', 'right'); ?>
         </div>
 
-        <?php if ($enroll) : ?>
+        <?php if ($enroll && !function_exists('md_learning_current_challenge_member')) : ?>
             <section class="md-challenge-final-cta">
                 <div class="container">
                     <h2>همین حالا به چالش بپیوندید</h2>
