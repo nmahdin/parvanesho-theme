@@ -121,7 +121,7 @@ function md_challenge_day_tip_html($day) {
 }
 
 /** Render every independent practical task for this challenge day. */
-function md_challenge_day_exercise_html($day) {
+function md_challenge_day_exercise_html($day, $member_state = null) {
     $items = md_challenge_day_items($day->ID, 'tasks');
     if (!$items) {
         return '';
@@ -137,6 +137,12 @@ function md_challenge_day_exercise_html($day) {
         }
         $index++;
         $html .= '<section class="md-day-exercise"><span class="md-day-label">کار ' . esc_html(md_fa_num($index)) . '</span>';
+        if (is_array($member_state)) {
+            $task_key = $index - 1;
+            $done = !empty($member_state['tasks'][$task_key]);
+            $form_id = (string) ($member_state['form_id'] ?? '');
+            $html .= '<label class="md-member-task-toggle"><input type="checkbox" name="md_checked_tasks[]" value="' . esc_attr($task_key) . '" form="' . esc_attr($form_id) . '" ' . checked($done, true, false) . '> <span>این کار را انجام دادم</span></label>';
+        }
         if ($title !== '') {
             $html .= '<h3>' . esc_html($title) . '</h3>';
         }
@@ -198,20 +204,22 @@ function md_challenge_day_qa_html($day) {
  * @param WP_Post $day          Day post.
  * @param int     $challenge_id Challenge ID.
  */
-function md_challenge_render_day($day, $challenge_id) {
+function md_challenge_render_day($day, $challenge_id, $member_state = null) {
     if (!$day instanceof WP_Post) {
         return;
     }
 
     $order       = md_challenge_day_order($day->ID);
-    $unlocked    = md_challenge_day_is_unlocked($day, $challenge_id);
+    $unlocked    = is_array($member_state) ? !empty($member_state['opened']) : md_challenge_day_is_unlocked($day, $challenge_id);
     $show_title  = md_challenge_show_locked_title($challenge_id);
     $is_editor   = md_challenge_is_editor($challenge_id);
     $title       = $day->post_title ? $day->post_title : 'روز ' . md_fa_num($order);
     $summary     = sanitize_textarea_field($day->post_excerpt);
     $unlock_date = md_challenge_day_unlock_date($day, $challenge_id);
 
-    echo '<details id="day-' . esc_attr($order) . '" class="md-day md-day-accordion' . ($unlocked ? '' : ' md-day-locked') . '">';
+    $day_dom_id = is_array($member_state) ? 'member-day-' . $day->ID : 'day-' . $order;
+    $expanded = is_array($member_state) && isset($_GET['md_saved']) && absint($_GET['md_saved']) === (int) $day->ID;
+    echo '<details id="' . esc_attr($day_dom_id) . '" class="md-day md-day-accordion' . ($unlocked ? '' : ' md-day-locked') . '"' . ($expanded ? ' open' : '') . '>';
 
     echo '<summary class="md-day-header">';
     echo '<span class="md-day-number">روز ' . esc_html(md_fa_num($order)) . '</span>';
@@ -222,7 +230,9 @@ function md_challenge_render_day($day, $challenge_id) {
         echo '<h2>روز ' . esc_html(md_fa_num($order)) . '</h2>';
     }
 
-    if ($is_editor) {
+    if (is_array($member_state)) {
+        echo '<span class="md-day-preview-badge md-member-progress-badge">' . (!empty($member_state['done']) ? 'انجام‌شده ✓' : ($unlocked ? 'آماده انجام' : 'قفل')) . '</span>';
+    } elseif ($is_editor) {
         echo '<span class="md-day-preview-badge">پیش‌نمایش مدیر</span>';
     }
     if (!$unlocked) {
@@ -267,9 +277,12 @@ function md_challenge_render_day($day, $challenge_id) {
     }
 
     echo md_challenge_day_tip_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo md_challenge_day_exercise_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo md_challenge_day_exercise_html($day, $member_state); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo md_challenge_day_media_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo md_challenge_day_qa_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    if (is_array($member_state) && function_exists('md_challenge_member_render_day_form')) {
+        md_challenge_member_render_day_form($day, $challenge_id, $member_state);
+    }
 
     echo '</div></details>';
 }
