@@ -65,7 +65,8 @@ check(MD_Learning_Challenges::current_member(100) !== null, 'existing challenge 
 
 MD_Learning_Auth::$current = 1;
 ob_start();
-MD_Learning_Challenges::render_join(101);
+$GLOBALS['posts'][102] = (object) array('ID'=>102,'post_type'=>'md_challenge','post_status'=>'publish','post_title'=>'چالش تازه');
+MD_Learning_Challenges::render_join(102);
 $html = ob_get_clean();
 check(strpos($html, 'action="md_learning_challenge_join"') === false,
     'hidden action should be form input, not form attribute');
