@@ -231,7 +231,7 @@ function md_challenge_render_day($day, $challenge_id, $member_state = null) {
     }
 
     if (is_array($member_state)) {
-        echo '<span class="md-day-preview-badge md-member-progress-badge">' . (!empty($member_state['done']) ? 'انجام‌شده ✓' : ($unlocked ? 'آماده انجام' : 'قفل')) . '</span>';
+        echo '<span class="md-day-preview-badge md-member-progress-badge">' . (!empty($member_state['done']) ? 'انجام‌شده ✓' : ($unlocked ? 'آماده انجام' : '')) . '</span>';
     } elseif ($is_editor) {
         echo '<span class="md-day-preview-badge">پیش‌نمایش مدیر</span>';
     }
