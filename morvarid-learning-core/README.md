@@ -1,7 +1,7 @@
-# Morvarid Learning Core — Phases A + B + C + D + E
+# Morvarid Learning Core — Phases A + B + C + D + E + F
 
 Standalone WordPress plugin for an **email-free, unified learner identity**.
-Version: **0.5.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
+Version: **0.6.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
 website **must use HTTPS**. WordPress administrator login stays separate.
 
 ## Installation
@@ -14,7 +14,7 @@ then upload it via Plugins > Add New > Upload Plugin.
 
 Do not upload this folder as a theme and do not edit `functions.php`.
 
-Activation and upgrades create six tables (with the site's configured prefix):
+Activation and upgrades create eight tables (with the site's configured prefix):
 
 - `<prefix>md_learning_learners`: profile, one globally unique hashed 8-digit code.
 - `<prefix>md_learning_links`: long random access-link secrets, stored only as keyed hashes.
@@ -22,6 +22,8 @@ Activation and upgrades create six tables (with the site's configured prefix):
 - `<prefix>md_learning_challenges`: one challenge membership per learner per challenge, with database uniqueness constraints.
 - `<prefix>md_learning_responses`: private question answers (draft/final) keyed by learner, educational content and stable question UUID; v0.5.0 adds a manager-visibility flag.
 - `<prefix>md_learning_audit_events`: audited administrator answer-detail views, metadata only (no private answer text).
+- `<prefix>md_learning_enrollments`: unique central learner/course membership with active or revoked status.
+- `<prefix>md_learning_lesson_progress`: unique central learner/course/lesson completion records, preserving timestamps.
 
 And three published pages (unless an unrelated page already occupies the slug):
 
@@ -68,6 +70,88 @@ invalidates prior code, links and sessions without deleting the learner record.
 - This identity is **not** a WordPress user account. Never authorize access
   to answers using a user-supplied learner ID. Always resolve it from the
   validated server-side session.
+
+## Phase F: unified course memberships and lesson progress (v0.6.0)
+
+Requires **Morvarid Learning Core 0.6.0** *and* **Morvarid Daron
+theme 1.3.9** for the integrated public course/lesson UI. The course builder
+and its `md_course`/`md_lesson` post types remain unchanged; existing lesson
+chapter and ordering metadata are honored.
+
+A separate course enrollment model is joined to the Phase A learner identity:
+
+- `md_learning_enrollments` stores a unique learner-course membership
+  (active/revoked). `md_learning_lesson_progress` uniquely records
+  learner/course/lesson status and completion time; lesson completion is an
+  **explicit action**, not triggered just by viewing a video or lesson.
+- In the course editor sidebar, administrators may enable
+  **اجازه عضویت آزاد با پروفایل مرکزی** per published course. The default
+  is **off**, particularly to avoid unintended free access to paid courses.
+  There is NO automatic billing or payment verification.
+- When open enrollment is enabled, an authenticated learner may agree to
+  tracking and enroll exactly once with the existing central identity. Guests
+  are taken through central login/registration and returned to the course.
+  The one-time newly issued code/link receipt remains available.
+- When open enrollment is off, the original course CTA/request-registration
+  flow is preserved; the WP administrator can manually add a known learner
+  through **یادگیرندگان → عضویت دوره‌ها** after any external approval/payment.
+- Administrators can filter enrollments by course ID, manually enroll a
+  learner by `L-`ID, revoke, or restore a membership. Revocation stops
+  progress writing and removes that course from the learner dashboard; it
+  **does not delete** their historical lesson completion records.
+- Course pages show the learner's enrollment and actual percentage based
+  only on the course's **currently published and correctly linked lessons**.
+  Lesson pages allow that learner to mark a lesson complete or incomplete.
+  When lessons are deleted, unpublished or reassigned, they are excluded
+  from the current progress denominator. No stale completion records are
+  transferred to a different course automatically.
+- The central personal dashboard has a **دوره‌های من** tab and real course
+  summary count, completed/total published lessons, progress bars, course
+  links and next unfinished lesson links.
+- Every progress write verifies the authenticated central learner,
+  published course, active membership, correct published lesson/course
+  relationship, and a session-bound CSRF nonce. Submitting another person's
+  learner ID or a lesson from a different course cannot alter progress.
+- The plugin does **not introduce a lesson paywall or private media access**
+  at this phase. Existing published lesson pages remain public as before.
+  Course membership is used to track progress, not to enforce paid content
+  access. Private-course delivery/payment gating requires a separate feature.
+- Course and lesson pages disable shared full-page caching when the plugin
+  is active, because personal completion controls and session-specific
+  nonces are rendered on the page. The theme still renders the original
+  templates when the central plugin is disabled.
+
+### Phase F staging acceptance tests
+
+1. Install plugin 0.6.0 and theme 1.3.9 together. Verify both new database
+   tables exist after a WordPress administrator loads the dashboard.
+2. Create two published courses with published lessons, and one unpublished
+   lesson. Confirm published lesson counts and ordering follow the existing
+   course builder.
+3. Keep course A's open enrollment disabled. As a learner, verify no free
+   self-enrollment is offered. Verify the original registration CTA works.
+4. Enable course B's open enrollment. Register a new learner with their
+   existing eight-digit code, join B, then join again: only one membership
+   record should exist.
+5. Complete a lesson, refresh, log out and back in, verify that completion
+   and percentage persist; reverse the completion and confirm the timestamp
+   becomes NULL and the percentage adjusts.
+6. Log in as learner C: try changing another learner's progress, using a
+   different course's lesson ID, editing an unpublished lesson, or posting
+   without a nonce. All must be refused server-side.
+7. In administrator course memberships, enroll an approved learner in the
+   closed course, revoke their membership, verify progress cannot be changed,
+   then restore it and confirm the previous completion remains intact.
+8. Move a lesson between courses in the builder; it must not count toward
+   the old course or inherit its completed state in the new course.
+9. Check the learner's **دوره‌های من** dashboard list, summaries, progress
+   bars and next unfinished lesson links on desktop and mobile.
+10. Verify published lesson content is still public: enrollment is not yet
+    a paid-content paywall, and no payment provider has been integrated.
+
+Automated CI covers PHP syntax, JavaScript syntax, A–E regressions, and
+course enrollment/progress authorization smoke tests. It is not a live WP
+browser/MySQL acceptance test, which remains necessary before deployment.
 
 ## Phase E: private answer-report administration (v0.5.0)
 
@@ -260,8 +344,8 @@ should never be included in full-page caches.
 The underlying session policy remains 7 days idle / 30 days absolute.
 WP administrator sessions are intentionally independent of learner sessions.
 
-**Scope boundary:** the course/progress area and saved answers from
-educational-resource question blocks are still future phases. Phase C
+**Scope boundary:** the course/progress area (implemented in Phase F) and saved answers from
+educational-resource question blocks (implemented in Phase D). Phase C
 does not manufacture placeholder progress or change old challenge records.
 The optional course/resource links go to their public archive, not a claim
 that learner enrollment for those content types is active.
