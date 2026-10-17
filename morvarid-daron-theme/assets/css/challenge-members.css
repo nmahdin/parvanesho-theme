@@ -163,3 +163,9 @@
 .md-individual-task.is-checked{background:#e6f5e9;color:#285d3b}
 @media(max-width:900px){.md-individual-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.md-individual-kpis{grid-template-columns:1fr}}
+
+
+.md-challenge-page .md-member-day-form button[type=submit],
+.md-challenge-page .md-member-day-form .btn{border-radius:999px!important;box-shadow:none!important;text-shadow:none!important;transform:none!important;border:0!important;background-image:none!important;filter:none!important}
+.md-challenge-page .md-member-day-form button[type=submit]:hover{box-shadow:none!important;transform:none!important}
+.md-challenge-first-receipt .md-learning-copy-row{max-width:100%}
