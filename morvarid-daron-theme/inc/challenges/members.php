@@ -449,8 +449,10 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                     <section class="md-learning-receipt md-challenge-first-receipt" aria-label="اطلاعات ورود خصوصی">
                         <h2>کد و لینک ورود شما آماده است</h2>
                         <p><strong>این اطلاعات فقط یک بار نمایش داده می‌شود.</strong> آن‌ها را در جای امن نگه دارید.</p>
-                        <label>کد ۸ رقمی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['code']); ?>"></label>
-                        <label>لینک اختصاصی ورود <input readonly type="text" dir="ltr" onclick="this.select()" value="<?php echo esc_attr($receipt['link']); ?>"></label>
+                        <label>کد ۸ رقمی ورود</label>
+                        <div class="md-learning-copy-row"><input readonly type="text" dir="ltr" value="<?php echo esc_attr($receipt['code']); ?>"><button class="md-learning-copy-button" type="button" data-md-copy>کپی کد</button></div>
+                        <label>لینک اختصاصی ورود</label>
+                        <div class="md-learning-copy-row"><input readonly type="text" dir="ltr" value="<?php echo esc_attr($receipt['link']); ?>"><button class="md-learning-copy-button" type="button" data-md-copy>کپی لینک</button></div>
                         <p>این اطلاعات محرمانه‌اند و نباید با دیگران به اشتراک گذاشته شوند.</p>
                     </section>
                 <?php endif; ?>
