@@ -425,6 +425,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                     <?php echo md_challenge_day_tip_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <?php echo md_challenge_day_exercise_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <?php echo md_challenge_day_media_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    <?php echo md_challenge_day_qa_html($day); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <form class="md-member-day-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
                         <input type="hidden" name="action" value="md_challenge_save_member_entry">
                         <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
@@ -435,7 +436,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                         <input type="hidden" name="day_id" value="<?php echo esc_attr($day->ID); ?>">
                         <?php wp_nonce_field('md_challenge_entry_' . $member->ID . '_' . $day->ID); ?>
                         <?php foreach ($prompts as $i => $prompt) : ?>
-                            <label><strong><?php echo esc_html($prompt); ?></strong>
+                            <label class="md-member-answer-field"><strong><span class="md-member-question-index">پرسش <?php echo esc_html(md_fa_num($i + 1)); ?></span><?php echo esc_html($prompt); ?></strong>
                                 <textarea name="answers[<?php echo esc_attr($i); ?>]" rows="3" maxlength="4000"><?php echo esc_textarea(isset($answers[$i]) ? $answers[$i] : ''); ?></textarea>
                             </label>
                         <?php endforeach; ?>
