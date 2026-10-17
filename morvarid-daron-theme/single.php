@@ -12,9 +12,6 @@ $layout = get_theme_mod('md_single_sidebar', 'right');
                     <h1><?php the_title(); ?></h1>
                     <div class="md-article-details">
                         <span class="md-article-detail"><span aria-hidden="true">◷</span> <time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time></span>
-                        <?php $author_id = get_the_author_meta('ID'); if ($author_id) : ?>
-                            <span class="md-article-detail"><span aria-hidden="true">✎</span> <?php echo esc_html(get_the_author()); ?></span>
-                        <?php endif; ?>
                         <?php $terms = get_the_category(); if ($terms) : ?>
                             <span class="md-article-detail md-article-categories"><span aria-hidden="true">⌁</span>
                                 <?php foreach ($terms as $index => $term) : ?>
