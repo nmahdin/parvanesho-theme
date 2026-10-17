@@ -2,9 +2,8 @@
 /**
  * Sidebar areas and the curated widget set.
  *
- * Three context aware sidebars are registered (magazine, academy, challenge).
- * When an area has no widgets the theme renders its own curated cards so the
- * layout never looks empty.
+ * Every context-aware sidebar is fully managed through Appearance > Widgets.
+ * Built-in card designs are ordinary configurable widgets (not fixed markup).
  *
  * @package Morvarid_Daron
  */
@@ -99,17 +98,13 @@ function md_render_sidebar($context = '', $layout = 'right') {
     );
     $id      = 'md-' . $context . '-sidebar';
 
-    echo '<aside class="md-magazine-sidebar md-sidebar md-sidebar-' . esc_attr($context) . '" aria-label="' . esc_attr($labels[$context]) . '">';
-
-    if (is_active_sidebar($id)) {
-        dynamic_sidebar($id);
-    } else {
-        md_sidebar_fallback($context);
+    // Respect an intentionally empty widget area: never restore fixed cards
+    // during rendering. The one-time migration seeds the previous defaults.
+    if (!is_active_sidebar($id)) {
+        return;
     }
-
-    // One family card carries the newsletter and configured social channels.
-    md_sidebar_newsletter();
-
+    echo '<aside class="md-magazine-sidebar md-sidebar md-sidebar-' . esc_attr($context) . '" aria-label="' . esc_attr($labels[$context]) . '">';
+    dynamic_sidebar($id);
     echo '</aside>';
 }
 
@@ -206,11 +201,11 @@ function md_sidebar_author() {
 /**
  * Latest posts with thumbnails.
  */
-function md_sidebar_popular() {
+function md_sidebar_popular($title = 'تازه‌ترین مطالب', $count = 5) {
     $posts = get_posts(
         array(
             'post_type'      => 'post',
-            'numberposts'    => 5,
+            'numberposts'    => max(1, min(12, absint($count))),
             'post_status'    => 'publish',
             'ignore_sticky_posts' => true,
         )
@@ -221,7 +216,7 @@ function md_sidebar_popular() {
     }
     ?>
     <section class="md-widget md-widget-posts">
-        <h2 class="md-widget-title">تازه‌ترین مطالب</h2>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <ol class="md-sidebar-posts">
             <?php foreach ($posts as $index => $item) : ?>
                 <li>
@@ -283,7 +278,7 @@ function md_sidebar_categories($taxonomy = 'category', $title = 'موضوعات'
 /**
  * Promote the next challenge.
  */
-function md_sidebar_challenge_promo() {
+function md_sidebar_challenge_promo($title = 'چالش پیش‌رو') {
     $today = md_today();
 
     $query = md_challenge_query(
@@ -315,7 +310,7 @@ function md_sidebar_challenge_promo() {
     $label        = md_challenge_time_label($challenge_id);
     ?>
     <section class="md-widget md-widget-challenge">
-        <h2 class="md-widget-title">چالش پیش‌رو</h2>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <a class="md-challenge-promo" href="<?php echo esc_url(get_permalink($challenge_id)); ?>">
             <span class="md-challenge-promo-glow" aria-hidden="true"></span>
             <?php if ($label) : ?>
@@ -342,7 +337,7 @@ function md_sidebar_challenge_promo() {
 /**
  * Progress card for the challenge being viewed.
  */
-function md_sidebar_challenge_progress() {
+function md_sidebar_challenge_progress($title = 'پیشرفت چالش') {
     $challenge_id = is_singular('md_challenge') ? get_the_ID() : 0;
 
     if (!$challenge_id) {
@@ -363,7 +358,7 @@ function md_sidebar_challenge_progress() {
     $end     = md_challenge_end($challenge_id);
     ?>
     <section class="md-widget md-widget-progress">
-        <h2 class="md-widget-title">پیشرفت چالش</h2>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <div class="md-progress-head">
             <span class="md-progress-count"><?php echo esc_html(md_fa_num($open) . ' از ' . md_fa_num($total)); ?></span>
             <span class="md-progress-caption">روز باز شده</span>
@@ -383,11 +378,11 @@ function md_sidebar_challenge_progress() {
 /**
  * Latest courses.
  */
-function md_sidebar_academy_promo() {
+function md_sidebar_academy_promo($title = 'دوره‌های آکادمی', $count = 4) {
     $courses = get_posts(
         array(
             'post_type'   => 'md_course',
-            'numberposts' => 4,
+            'numberposts' => max(1, min(12, absint($count))),
             'post_status' => 'publish',
         )
     );
@@ -397,7 +392,7 @@ function md_sidebar_academy_promo() {
     }
     ?>
     <section class="md-widget md-widget-courses">
-        <h2 class="md-widget-title">دوره‌های آکادمی</h2>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <ul class="md-sidebar-courses">
             <?php foreach ($courses as $course) : ?>
                 <?php
@@ -433,11 +428,11 @@ function md_sidebar_academy_promo() {
 /**
  * Latest lessons.
  */
-function md_sidebar_lesson_promo() {
+function md_sidebar_lesson_promo($title = 'تازه‌ترین جلسه‌ها', $count = 4) {
     $lessons = get_posts(
         array(
             'post_type'   => array('md_lesson', 'md_podcast'),
-            'numberposts' => 4,
+            'numberposts' => max(1, min(12, absint($count))),
             'post_status' => 'publish',
         )
     );
@@ -447,7 +442,7 @@ function md_sidebar_lesson_promo() {
     }
     ?>
     <section class="md-widget md-widget-lessons">
-        <h2 class="md-widget-title">تازه‌ترین جلسه‌ها</h2>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
         <ul class="md-sidebar-lessons">
             <?php foreach ($lessons as $lesson) : ?>
                 <?php $kind = get_post_meta($lesson->ID, '_md_media_kind', true); ?>
@@ -489,15 +484,19 @@ function md_sidebar_challenge_categories() {
 /**
  * Theme newsletter call to action.
  */
-function md_sidebar_newsletter() {
-    $url = get_theme_mod('md_newsletter_url', '/newsletter/');
+function md_sidebar_newsletter($settings = array()) {
+    $url = !empty($settings['button_url']) ? $settings['button_url'] : get_theme_mod('md_newsletter_url', '/newsletter/');
+    $title = isset($settings['title']) ? $settings['title'] : 'عضو خانواده مروارید درون شوید';
+    $body = isset($settings['body']) ? $settings['body'] : 'از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.';
+    $label = isset($settings['button_text']) ? $settings['button_text'] : 'عضویت در خبرنامه ←';
+    $social = !isset($settings['show_socials']) || !empty($settings['show_socials']);
     ?>
     <section class="md-widget md-widget-newsletter">
         <span class="md-newsletter-eyebrow">همراه مسیر رشد</span>
-        <h2 class="md-widget-title">عضو خانواده مروارید درون شوید</h2>
-        <p>از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.</p>
-        <a class="md-newsletter-cta" href="<?php echo esc_url($url); ?>">عضویت در خبرنامه ←</a>
-        <?php if (function_exists('md_social_links')) : ?>
+        <h2 class="md-widget-title"><?php echo esc_html($title); ?></h2>
+        <?php if (trim($body) !== '') : ?><p><?php echo esc_html($body); ?></p><?php endif; ?>
+        <?php if ($url && $label) : ?><a class="md-newsletter-cta" href="<?php echo esc_url($url); ?>"><?php echo esc_html($label); ?></a><?php endif; ?>
+        <?php if ($social && function_exists('md_social_links')) : ?>
             <?php echo md_social_links(array('class' => 'md-social-stack md-social-family')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php endif; ?>
     </section>
