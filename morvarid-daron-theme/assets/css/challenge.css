@@ -852,3 +852,31 @@ body.admin-bar .md-day-nav {
     color: #fff;
 }
 .md-day-nav a:focus-visible { outline: 2px solid #2d8063; outline-offset: 3px; }
+
+/* 1.4.0 — concise text-only challenge header and fast mobile reading. */
+.md-challenge-hero{padding:clamp(18px,2.8vw,34px) 0;background:#f4f8f2}
+.md-challenge-hero-grid{display:block}
+.md-challenge-hero-copy{max-width:100%}
+.md-challenge-hero-copy h1{font-size:clamp(23px,2.6vw,34px);line-height:1.55;margin:6px 0 10px;max-width:none}
+.md-challenge-summary{font-size:14px;line-height:1.9;margin-bottom:14px;max-width:1050px}
+.md-challenge-meta{font-size:12px;gap:6px;margin-bottom:12px}
+.md-challenge-meta>span{padding:5px 9px}
+.md-challenge-hero-media{display:none!important}
+.md-challenge-auth-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.md-challenge-auth-actions .btn{min-height:43px}
+.md-challenge-progress{margin-top:15px;max-width:680px}
+.md-challenge-intro{padding-block:20px 5px;max-width:none}
+.md-challenge-days{padding-top:14px;gap:16px}
+.md-day-nav{display:none!important}
+.md-day{padding:clamp(16px,2vw,26px);border-radius:16px}
+@media(max-width:720px){
+ .md-challenge-page{padding-bottom:35px}
+ .md-challenge-hero{padding:17px 0}
+ .md-challenge-hero-copy h1{font-size:23px}
+ .md-challenge-meta{gap:5px}
+ .md-challenge-auth-actions{gap:9px}
+ .md-challenge-auth-actions .btn{font-size:12px;padding:10px 13px}
+ .md-challenge-layout{display:flex;flex-direction:column;gap:15px}
+ .md-challenge-main,.md-challenge-layout .md-sidebar{width:100%;min-width:0}
+ .md-challenge-days{gap:12px}
+}
