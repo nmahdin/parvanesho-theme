@@ -384,14 +384,10 @@ final class MD_Learning_Auth {
         exit;
     }
 
-    public static function logout() {
-        check_admin_referer('md_learning_logout');
-        $hash = self::current_session_hash();
-        if ($hash) {
-            global $wpdb;
-            $wpdb->delete(MD_Learning_Schema::table('sessions'), array('token_hash' => $hash), array('%s'));
-        }
+    /** Forget the current browser credentials without touching other sessions. */
+    public static function forget_current_cookie() {
         self::$cached_id = 0;
+        unset($_COOKIE[self::COOKIE]);
         setcookie(self::COOKIE, '', array(
             'expires' => time() - DAY_IN_SECONDS,
             'path' => '/',
@@ -399,6 +395,16 @@ final class MD_Learning_Auth {
             'httponly' => true,
             'samesite' => 'Lax',
         ));
+    }
+
+    public static function logout() {
+        check_admin_referer('md_learning_logout');
+        $hash = self::current_session_hash();
+        if ($hash) {
+            global $wpdb;
+            $wpdb->delete(MD_Learning_Schema::table('sessions'), array('token_hash' => $hash), array('%s'));
+        }
+        self::forget_current_cookie();
         wp_safe_redirect(MD_Learning_Schema::url('login'));
         exit;
     }
