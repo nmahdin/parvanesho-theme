@@ -410,12 +410,14 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                 $notes = $entry ? (string) get_post_meta($entry->ID, '_md_member_notes', true) : '';
                 $prompts = md_challenge_day_prompts($day);
                 ?>
-                <article id="member-day-<?php echo esc_attr($day->ID); ?>" class="md-member-day <?php echo $is_done ? 'is-done' : ''; ?>">
-                    <div class="md-member-day-head">
+                <details id="member-day-<?php echo esc_attr($day->ID); ?>" class="md-member-day md-day-accordion <?php echo $is_done ? 'is-done' : ''; ?>" <?php echo isset($_GET['md_saved']) && absint($_GET['md_saved']) === (int) $day->ID ? 'open' : ''; ?>>
+                    <summary class="md-member-day-head">
                         <span>روز <?php echo esc_html(md_fa_num(md_challenge_day_order($day->ID))); ?></span>
                         <h3><?php echo esc_html($opened ? $day->post_title : (md_challenge_show_locked_title($challenge_id) ? $day->post_title : 'روز قفل‌شده')); ?></h3>
                         <strong><?php echo $is_done ? 'انجام‌شده ✓' : ($opened ? 'آماده انجام' : 'قفل'); ?></strong>
-                    </div>
+                        <span class="md-day-chevron" aria-hidden="true"></span>
+                    </summary>
+                    <div class="md-member-day-body">
                     <?php if (!$opened) : ?>
                         <p>این مرحله هنوز برای شما در دسترس نیست. پس از تکمیل مرحله پیشین یا رسیدن زمان انتشار باز می‌شود.</p>
                     <?php else : ?>
@@ -447,7 +449,8 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
                         <?php endif; ?>
                     </form>
                     <?php endif; ?>
-                </article>
+                    </div>
+                </details>
             <?php endforeach; ?>
         </section>
     </main>
