@@ -106,17 +106,6 @@ while (have_posts()) :
                     <?php endif; ?>
                 </div>
 
-                <div class="md-challenge-hero-media">
-                    <?php if (has_post_thumbnail()) : ?>
-                        <?php the_post_thumbnail('large', array('class' => 'md-challenge-cover')); ?>
-                    <?php else : ?>
-                        <div class="md-challenge-art" role="img" aria-label="چالش مروارید درون">
-                            <span class="md-challenge-art-ring" aria-hidden="true">◌</span>
-                            <span class="md-challenge-art-pearl" aria-hidden="true">●</span>
-                            <span class="md-challenge-art-days"><?php echo esc_html(md_fa_num($content_days ? $content_days : $calendar_days)); ?> روز همراهی</span>
-                        </div>
-                    <?php endif; ?>
-                </div>
             </div>
         </section>
 
@@ -132,7 +121,6 @@ while (have_posts()) :
                 <?php endif; ?>
 
                 <?php md_challenge_registration_form($challenge_id); ?>
-                <?php md_challenge_render_day_nav($days, $challenge_id); ?>
 
                 <div class="md-challenge-days" id="md-days">
                     <?php if ($days) : ?>
