@@ -232,7 +232,7 @@ final class MD_Learning_Auth {
 
     public static function nonce_learner_session($guest_id, $action) {
         if (!is_string($action) || !preg_match(
-            '/^(?:md_learning_(?:profile_update|rotate_self|revoke_session|signout_others|logout|challenge_join_[0-9]+)|md_challenge_entry_[0-9]+_[0-9]+)$/D',
+            '/^(?:md_learning_(?:profile_update|rotate_self|revoke_session|signout_others|logout|challenge_join_[0-9]+)|md_challenge_entry_[0-9]+_[0-9]+|md_learning_question_save_[0-9]+_[a-f0-9]{32})$/D',
             $action
         )) {
             return $guest_id;
