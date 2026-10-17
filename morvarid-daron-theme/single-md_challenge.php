@@ -73,18 +73,16 @@ while (have_posts()) :
                     <?php endif; ?>
 
                     <div class="md-challenge-auth-actions">
-                        <?php
-                        $join_target = '#md-challenge-enroll';
-                        $join_label = 'عضویت در چالش';
-                        if (class_exists('MD_Learning_Auth') && function_exists('md_learning_current_challenge_member')) {
-                            if (!MD_Learning_Auth::current_learner_id()) {
-                                $join_target = add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register'));
-                                $join_label = 'ثبت‌نام و دریافت کد';
-                            }
-                        }
-                        ?>
-                        <a class="btn btn-primary" href="<?php echo esc_url($join_target); ?>"><?php echo esc_html($join_label); ?></a>
-                        <a class="btn btn-light" href="<?php echo esc_url(function_exists('md_learning_current_challenge_member') ? MD_Learning_Schema::url('dashboard') : '#md-challenge-enroll'); ?>">داشبورد من</a>
+                        <?php if (function_exists('md_learning_current_challenge_member') && class_exists('MD_Learning_Auth') && class_exists('MD_Learning_Schema')) : ?>
+                            <?php if (MD_Learning_Auth::current_learner_id()) : ?>
+                                <a class="btn btn-primary md-challenge-join-button" href="#md-challenge-enroll">عضویت در چالش</a>
+                            <?php else : ?>
+                                <a class="btn btn-primary md-challenge-join-button" href="<?php echo esc_url(add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login'))); ?>">ورود و عضویت</a>
+                                <a class="btn btn-light md-challenge-join-button" href="<?php echo esc_url(add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register'))); ?>">ساخت حساب و عضویت در چالش</a>
+                            <?php endif; ?>
+                        <?php else : ?>
+                            <a class="btn btn-primary md-challenge-join-button" href="#md-challenge-enroll">عضویت در چالش</a>
+                        <?php endif; ?>
                     </div>
                     <?php if ($enroll && !function_exists('md_learning_current_challenge_member')) : ?>
                         <a class="text-link" href="<?php echo esc_url($enroll); ?>">لینک تکمیلی ثبت‌نام ←</a>
