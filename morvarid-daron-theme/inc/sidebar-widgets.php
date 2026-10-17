@@ -154,9 +154,9 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         $v['show_socials'] = !empty($new['show_socials']) ? 1 : 0;
         $v['count'] = max(1, min(12, absint($new['count'] ?? 5)));
         $allowed = array('', 'post', 'md_course', 'md_lesson', 'md_podcast', 'md_resource', 'md_challenge');
-        $v['post_type'] = in_array($new['post_type'] ?? '', $allowed, true) ? $new['post_type'] : 'post';
+        $v['post_type'] = in_array($new['post_type'] ?? '', $allowed, true) ? ($new['post_type'] ?? '') : 'post';
         $taxonomies = array('category', 'md_academy_cat', 'md_resource_cat', 'md_challenge_cat');
-        $v['taxonomy'] = in_array($new['taxonomy'] ?? '', $taxonomies, true) ? $new['taxonomy'] : 'category';
+        $v['taxonomy'] = in_array($new['taxonomy'] ?? '', $taxonomies, true) ? ($new['taxonomy'] ?? 'category') : 'category';
         return $v;
     }
 
