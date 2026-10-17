@@ -367,3 +367,12 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
     </main>
     <?php
 }
+
+
+/** Load participant styling only on public challenge screens. */
+function md_challenge_member_public_assets() {
+    if (is_singular('md_challenge')) {
+        wp_enqueue_style('md-challenge-members', MD_THEME_URI . '/assets/css/challenge-members.css', array('md-challenge'), MD_THEME_VERSION);
+    }
+}
+add_action('wp_enqueue_scripts', 'md_challenge_member_public_assets', 20);
