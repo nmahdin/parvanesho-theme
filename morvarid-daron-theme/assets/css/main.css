@@ -96,3 +96,17 @@ body,button,input,select,textarea{font-family:'Vazirmatn',Tahoma,sans-serif}
 .md-article-content-card>.entry-content>:last-child{margin-bottom:0}
 .md-article-content-card .single-cover{margin:0 0 26px}
 @media(max-width:650px){.md-article-redesign{gap:14px}.md-article-header-card,.md-article-content-card{border-radius:15px}.md-article-details{gap:8px 14px}}
+
+
+/* 1.4.3: compact, subtly tinted article header and clean standalone pages. */
+.md-article-redesign{gap:16px}
+.md-article-header-card{background:linear-gradient(125deg,#eaf3ec,#f9f2e9);padding:clamp(16px,2.4vw,25px);border-color:#d7e5d9;box-shadow:none;border-radius:16px}
+.md-article-header-card .eyebrow{margin:7px 0 2px}
+.md-article-header-card h1{font-size:clamp(25px,2.75vw,35px);margin:5px 0 13px;line-height:1.5}
+.md-article-details{padding-top:10px;font-size:12.5px;gap:8px 17px;border-color:#d1e1d3}
+.md-article-content-card{background:transparent;box-shadow:none;border:0;padding:clamp(8px,1.3vw,14px) 0}
+.md-standard-page .md-page-learning{background:transparent;border:0;box-shadow:none;padding:0}
+.md-standard-page .md-page-learning>.entry-content{background:transparent;border:0;box-shadow:none;padding:0}
+.md-standard-page .md-page-regular:empty,.md-standard-page .entry-content:empty{display:none}
+.md-standard-page:has(.md-page-learning){max-width:1140px}
+@media(max-width:650px){.md-article-header-card{padding:16px}.md-article-content-card{padding:6px 0}.md-article-header-card h1{font-size:25px}}
