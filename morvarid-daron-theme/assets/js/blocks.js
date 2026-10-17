@@ -340,14 +340,6 @@
             linkUrl: { type: 'string', default: '' },
             background: { type: 'string', default: '' }
         },
-        'service-grid': {
-            title: { type: 'string', default: 'خدمات کوچینگ' },
-            subtitle: { type: 'string', default: '' },
-            count: { type: 'number', default: 3 },
-            linkLabel: { type: 'string', default: '' },
-            linkUrl: { type: 'string', default: '' },
-            background: { type: 'string', default: '' }
-        },
         'features': {
             background: { type: 'string', default: '' },
             items: {
@@ -545,25 +537,6 @@
                             { label: 'کاربرگ دانلودی', value: 'download' }
                         ],
                         onChange: function (value) { props.setAttributes({ kind: value }); }
-                    })
-                ].concat(linkFields(props));
-            }
-        },
-        {
-            slug: 'service-grid',
-            title: 'شبکه خدمات کوچینگ',
-            icon: 'heart',
-            description: 'نمایش خدمات کوچینگ به‌صورت کارت.',
-            fields: function (props) {
-                return [
-                    field(props, 'title', 'عنوان بخش'),
-                    field(props, 'subtitle', 'توضیح کوتاه'),
-                    el(RangeControl, {
-                        label: 'تعداد خدمات',
-                        value: props.attributes.count,
-                        min: 1,
-                        max: 12,
-                        onChange: function (value) { props.setAttributes({ count: value }); }
                     })
                 ].concat(linkFields(props));
             }
