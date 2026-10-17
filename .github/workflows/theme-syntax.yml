@@ -24,6 +24,10 @@ jobs:
         run: find morvarid-daron-theme -type f -name '*.js' -print0 | xargs -0 -n1 node --check
       - name: Smoke-test central challenge identity and membership
         run: php morvarid-learning-core/tests/phase-b-smoke.php
+      - name: Smoke-test redesigned challenge joining, consent and errors
+        run: php morvarid-learning-core/tests/phase-ux-join-smoke.php
+      - name: Parse header media-picker JavaScript
+        run: node --check morvarid-daron-theme/assets/js/header-settings.js
       - name: Smoke-test personal workspace privacy and progression
         run: php morvarid-learning-core/tests/phase-c-smoke.php
       - name: Smoke-test authenticated guest nonce isolation
