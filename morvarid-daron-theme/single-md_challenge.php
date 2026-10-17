@@ -76,7 +76,7 @@ while (have_posts()) :
                         <a class="btn btn-primary" href="#md-challenge-enroll">عضویت در چالش</a>
                         <a class="btn btn-light" href="<?php echo esc_url(function_exists('md_learning_current_challenge_member') ? MD_Learning_Schema::url('dashboard') : '#md-challenge-enroll'); ?>">داشبورد من</a>
                     </div>
-                    <?php if ($enroll) : ?>
+                    <?php if ($enroll && !function_exists('md_learning_current_challenge_member')) : ?>
                         <a class="text-link" href="<?php echo esc_url($enroll); ?>">لینک تکمیلی ثبت‌نام ←</a>
                     <?php endif; ?>
 
