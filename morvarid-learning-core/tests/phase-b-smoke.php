@@ -11,6 +11,7 @@ class WP_Error {
     public function get_error_message() { return $this->message; }
 }
 function is_wp_error($v) { return $v instanceof WP_Error; }
+function current_user_can($cap, $id = 0) { return !empty($GLOBALS['can_edit']); }
 function absint($v) { return abs((int) $v); }
 function post_type_exists($v) { return $v === 'md_challenge_member'; }
 function get_post_type($id) { return isset($GLOBALS['posts'][$id]) ? $GLOBALS['posts'][$id]->post_type : ''; }
@@ -140,5 +141,9 @@ $GLOBALS['entries'][$m1->ID] = array(200 => (object) array('ID' => 300));
 $html = MD_Learning_Challenges::dashboard_html(1);
 check(strpos($html, '50٪') !== false, 'completion percentage missing');
 check(strpos($html, 'چالش الف') !== false && strpos($html, 'چالش ب') !== false, 'challenge tiles missing');
+check(strpos(MD_Learning_Challenges::dashboard_html(2), 'چالش الف') === false, 'arbitrary learner ID exposed dashboard');
+$GLOBALS['can_edit'] = true;
 check(count(MD_Learning_Challenges::members_for_challenge(100)) === 2, 'admin query not scoped');
+$GLOBALS['can_edit'] = false;
+check(count(MD_Learning_Challenges::members_for_challenge(100)) === 0, 'noneditor can list private members');
 echo "Phase B smoke tests: PASS\n";
