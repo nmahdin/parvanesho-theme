@@ -82,7 +82,7 @@ final class MD_Learning_Pages {
             </div>
             <button class="md-learning-button" type="submit">ثبت‌نام و دریافت کد ۸ رقمی</button>
             <div class="md-learning-form-notes">
-        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('login')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('login')) : MD_Learning_Schema::url('login')))); ?>">با کد قبلی وارد شوید</a>.</p>
+        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg(array('md_account_mode' => 'login', 'md_challenge' => $challenge_id), get_permalink($challenge_id)) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('login')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('login')) : MD_Learning_Schema::url('login')))); ?>">با کد قبلی وارد شوید</a>.</p>
         <p class="md-learning-note">نام، راه بازیابی حساب نیست. کد و لینک را نزد خود نگه دارید؛ اگر هر دو را گم کنید، باید از مدیر کمک بگیرید.</p>
             </div>
         </form>
@@ -126,7 +126,7 @@ final class MD_Learning_Pages {
             <button class="md-learning-button" type="submit">ورود به داشبورد من</button>
             <div class="md-learning-form-notes">
         <p class="md-learning-note">لینک اختصاصی خود را دارید؟ کافی است آن را باز کنید؛ نیازی به واردکردن کد نیست.</p>
-        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('register')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('register')) : MD_Learning_Schema::url('register')))); ?>">ایجاد پروفایل جدید</a>.</p>
+        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg(array('md_account_mode' => 'register', 'md_challenge' => $challenge_id), get_permalink($challenge_id)) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('register')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('register')) : MD_Learning_Schema::url('register')))); ?>">ایجاد پروفایل جدید</a>.</p>
             </div>
         </form>
         <?php echo self::shell_end(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
