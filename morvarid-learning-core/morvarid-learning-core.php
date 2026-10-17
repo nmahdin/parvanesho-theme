@@ -48,6 +48,10 @@ add_action('wp_enqueue_scripts', function () {
         wp_enqueue_style('dashicons');
         wp_enqueue_style('md-learning-core', MD_LEARNING_CORE_URL . 'assets/learning.css', array('dashicons'), MD_LEARNING_CORE_VERSION);
     }
+    if (is_page(MD_Learning_Schema::page_ids()) || is_singular('md_challenge')) {
+        wp_enqueue_style('md-learning-core-forms', MD_LEARNING_CORE_URL . 'assets/learning.css', array(), MD_LEARNING_CORE_VERSION);
+        wp_enqueue_script('md-learning-copy', MD_LEARNING_CORE_URL . 'assets/copy.js', array(), MD_LEARNING_CORE_VERSION, true);
+    }
 });
 
 /**
