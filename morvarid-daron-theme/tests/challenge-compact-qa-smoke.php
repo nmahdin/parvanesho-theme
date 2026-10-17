@@ -46,8 +46,8 @@ verify(strpos($qa,'<details') === false && strpos($qa,'<summary') === false,
     'question itself must not be an accordion');
 $tips = md_challenge_day_tip_html($day);
 $tasks = md_challenge_day_exercise_html($day);
-verify(strpos($tips,'نکته ۱') !== false && strpos($tips,'نکته ۲') !== false,
-    'tip numbering not sequential');
+verify(substr_count($tips,'💡') === 2 && strpos($tips,'نکته ۱') === false,
+    'tip icon must replace numbers on every tip');
 verify(strpos($tasks,'کار ۱') !== false && strpos($tasks,'کار ۲') !== false,
     'task numbering not sequential');
 $public = file_get_contents(dirname(__DIR__) . '/inc/challenges/public.php');
