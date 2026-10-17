@@ -227,16 +227,17 @@ final class MD_Learning_Response_Admin {
     /** Audit *metadata only* when an administrator opens an answer. */
     private static function record_view($row) {
         if (!self::allowed()) {
-            return;
+            return false;
         }
         global $wpdb;
-        $wpdb->insert(MD_Learning_Schema::table('audit_events'), array(
+        $written = $wpdb->insert(MD_Learning_Schema::table('audit_events'), array(
             'actor_user_id' => get_current_user_id(),
             'learner_id' => absint($row->learner_id),
             'response_id' => absint($row->id),
             'event_type' => 'answer_viewed',
             'created_at' => gmdate('Y-m-d H:i:s'),
         ), array('%d', '%d', '%d', '%s', '%s'));
+        return $written === 1;
     }
 
     private static function visible_time($date) {
@@ -362,7 +363,11 @@ final class MD_Learning_Response_Admin {
             echo '<p><a class="button" href="' . esc_url($back) . '">بازگشت به فهرست</a></p>';
             return;
         }
-        self::record_view($answer);
+        // Fail closed if the audit table is unavailable: private plaintext
+        // cannot be viewed without an attributable access log.
+        if (!self::record_view($answer)) {
+            wp_die('ثبت گزارش دسترسی ممکن نشد؛ مشاهده پاسخ خصوصی به‌صورت موقت غیرفعال است.', '', array('response' => 503));
+        }
         ?>
         <p><a href="<?php echo esc_url($back); ?>">← بازگشت به فهرست پاسخ‌ها</a></p>
         <h1>جزئیات پاسخ آموزشی</h1>
