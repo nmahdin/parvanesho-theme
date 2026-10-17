@@ -61,11 +61,11 @@ function md_challenge_details_box($post) {
         <div class="md-challenge-dates">
             <div class="md-admin-field">
                 <label for="md_start_date_jalali">تاریخ شروع <span class="md-field-hint">(شمسی)</span></label>
-                <?php echo md_jalali_date_field(array('name' => 'md_start_date', 'value' => $start, 'required' => true)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                <?php echo md_jalali_date_field(array('name' => 'md_start_date', 'value' => $start, 'required' => false)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
             <div class="md-admin-field">
                 <label for="md_end_date_jalali">تاریخ پایان <span class="md-field-hint">(شمسی)</span></label>
-                <?php echo md_jalali_date_field(array('name' => 'md_end_date', 'value' => $end, 'required' => true)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                <?php echo md_jalali_date_field(array('name' => 'md_end_date', 'value' => $end, 'required' => false)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
         </div>
 
@@ -104,7 +104,7 @@ function md_challenge_details_box($post) {
                 <input type="url" id="md_enrollment_url" name="md_enrollment_url" class="regular-text" value="<?php echo esc_attr($enroll); ?>" placeholder="<?php echo esc_attr(home_url('/contact/')); ?>">
             </div>
         </div>
-        <p class="description">تاریخ شروع و پایان را به شمسی وارد کنید؛ معادل میلادی برای محاسبات ذخیره می‌شود. برای انتشار چالش، تاریخ شروع و پایان الزامی است.</p>
+        <p class="description">تاریخ‌ها اختیاری‌اند. با ثبت هر دو تاریخ، روزهای چالش به‌صورت خودکار هنگام ذخیره ایجاد می‌شوند. بدون تاریخ، روزها را دستی تعریف کنید. تغییر یا کوتاه‌کردن بازه هیچ روز موجودی را حذف نمی‌کند.</p>
     </div>
     <?php
 }
@@ -119,12 +119,12 @@ function md_challenge_days_box($post) {
         ?>
         <div class="md-days-manager md-days-manager-new" id="md-challenge-days" data-challenge-id="0">
             <div class="md-days-toolbar">
-                <button type="button" class="button button-primary" id="md-add-day">افزودن روز جدید</button>
+                <a class="button button-primary" href="#md-day-inline-form">افزودن روز جدید</a>
                 <span class="md-days-summary">پیش‌نویس چالش به‌صورت خودکار ساخته می‌شود.</span>
             </div>
             <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
             <p class="md-days-save-first">
-                با کلیک روی «افزودن روز جدید» یک پیش‌نویس از چالش با همین اطلاعات ساخته می‌شود، صفحه دوباره باز می‌شود و پنجره افزودن روز مستقیماً نمایش داده می‌شود. پس از تکمیل، چالش را منتشر کنید.
+                برای افزودن روز به چالش بدون تاریخ، ابتدا چالش را به‌صورت پیش‌نویس ذخیره کنید. سپس فرم ثبت روز در همین صفحه ظاهر می‌شود.
             </p>
         </div>
         <?php
@@ -158,7 +158,7 @@ function md_challenge_render_days_manager($challenge_id, $days) {
     ?>
     <div class="md-days-manager" id="md-challenge-days" data-challenge-id="<?php echo esc_attr($challenge_id); ?>" data-content-days="<?php echo esc_attr($content_days); ?>">
         <div class="md-days-toolbar">
-            <button type="button" class="button button-primary" id="md-add-day">افزودن روز جدید</button>
+            <a class="button button-primary" href="#md-day-inline-form">افزودن روز جدید</a>
             <span class="md-days-summary">
                 <span>روزهای محتوایی: <strong id="md-manager-content-days"><?php echo esc_html(md_fa_num($content_days)); ?></strong></span>
                 <span>روزهای تقویمی: <strong id="md-manager-calendar-days"><?php echo esc_html($calendar ? md_fa_num($calendar) : '—'); ?></strong></span>
@@ -224,6 +224,7 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         <p class="md-days-empty" id="md-days-empty" <?php echo $days ? 'hidden' : ''; ?>>هنوز روزی برای این چالش اضافه نشده است. با دکمه «افزودن روز جدید» شروع کنید.</p>
         <p class="md-days-empty" id="md-days-no-match" hidden>روزی با این جست‌وجو یا وضعیت پیدا نشد. فیلترها را تغییر دهید.</p>
         <p class="description">برای تغییر ترتیب، ردیف‌ها را با دستگیره بکشید یا از دکمه‌های ↑ و ↓ استفاده کنید. تغییر ترتیب به‌صورت خودکار ذخیره می‌شود.</p>
+        <?php md_challenge_manual_day_editor($challenge_id); ?>
     </div>
 
     <?php
@@ -434,6 +435,9 @@ function md_challenge_save_details($post_id, $post) {
     if (!in_array($mode, array('all', 'schedule'), true)) {
         $mode = 'schedule';
     }
+    if (!$start || !$end) {
+        $mode = 'all';
+    }
     update_post_meta($post_id, '_md_access_mode', $mode);
     update_post_meta($post_id, '_md_show_locked_title', empty($_POST['md_show_locked_title']) ? 0 : 1);
 
@@ -445,6 +449,10 @@ function md_challenge_save_details($post_id, $post) {
     }
 
     update_post_meta($post_id, '_md_calendar_days', md_calendar_days($start, $end));
+    // Server-side generation: no JavaScript, AJAX request or extra click needed.
+    if ($start && $end && $end >= $start) {
+        md_challenge_ensure_calendar_days($post_id);
+    }
     md_challenge_sync_counts($post_id);
 }
 add_action('save_post_md_challenge', 'md_challenge_save_details', 10, 2);
@@ -491,13 +499,12 @@ function md_challenge_validate_publish($data, $postarr) {
     if ('' === trim((string) $data['post_title'])) {
         $errors[] = 'عنوان چالش نمی‌تواند خالی باشد.';
     }
-    if (!$start || !$end) {
-        $errors[] = 'برای انتشار چالش، تاریخ شروع و پایان الزامی است.';
-    } elseif ($end < $start) {
+    if (($start && !$end) || (!$start && $end)) {
+        $errors[] = 'یا هر دو تاریخ را وارد کنید یا هر دو را خالی بگذارید.';
+    } elseif ($start && $end && $end < $start) {
         $errors[] = 'تاریخ پایان نمی‌تواند پیش از تاریخ شروع باشد.';
-    }
-    if ('schedule' === $mode && (!$start || !$end)) {
-        $errors[] = 'در حالت زمان‌بندی روزانه، تاریخ شروع و پایان لازم است.';
+    } elseif ($start && $end && md_calendar_days($start, $end) > 120) {
+        $errors[] = 'بازه چالش تاریخ‌دار حداکثر ۱۲۰ روز است.';
     }
 
     if ($errors) {
