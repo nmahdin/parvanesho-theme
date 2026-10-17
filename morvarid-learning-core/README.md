@@ -1,7 +1,7 @@
-# Morvarid Learning Core — Phases A + B
+# Morvarid Learning Core — Phases A + B + C
 
 Standalone WordPress plugin for an **email-free, unified learner identity**.
-Version: **0.2.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
+Version: **0.3.0**. Supports WordPress 6.4+ and PHP 7.4+. The production
 website **must use HTTPS**. WordPress administrator login stays separate.
 
 ## Installation
@@ -66,6 +66,70 @@ invalidates prior code, links and sessions without deleting the learner record.
 - This identity is **not** a WordPress user account. Never authorize access
   to answers using a user-supplied learner ID. Always resolve it from the
   validated server-side session.
+
+## Phase C: personal workspace (v0.3.0)
+
+The existing `[md_learning_dashboard]` shortcode now renders a full,
+responsive, right-to-left personal workspace. All tabs use the same existing
+dashboard page; navigation is server-rendered, so JavaScript is not needed:
+
+- `?md_tab=home`: greeting, honest challenge progress metrics, recent
+  completed/saved challenge-day events. No invented course or academy data.
+- `?md_tab=challenges`: cards for all of the **currently signed-in**
+  learner's active mapped challenge memberships. Each includes progress and
+  a link to the existing private challenge page.
+- `?md_tab=activity`: recent private per-day answer-save and completion
+  metadata, capped at 25; never includes private answer text in the list.
+- `?md_tab=profile`: display name and immutable learner ID; edit name
+  through a CSRF-protected POST. Mapped challenge membership titles are kept
+  in sync without touching answers or other identities.
+- `?md_tab=security`: list active sessions (created/last seen, 50 maximum),
+  revoke an owned session, sign out other devices, or reissue the learner's
+  own globally unique 8-digit code and private access link.
+
+Self-service credential rotation invalidates **all** previous codes, access
+links and sessions, then immediately opens a new session for the current
+browser and displays the new credentials **once** in a 5-minute receipt.
+If issuing a new browser session fails after rotation, the learner should
+contact an administrator to reissue credentials. No emails are sent.
+
+Both learner identity and session ownership are resolved server-side. A
+submitted session ID is always paired with the current learner ID before
+deletion. Trying to open someone else's dashboard summary with an arbitrary
+learner ID returns no data. Cross-account changes are rejected. Each form
+has its own WordPress nonce. Personal dashboards use no-store headers and
+should never be included in full-page caches.
+
+The underlying session policy remains 7 days idle / 30 days absolute.
+WP administrator sessions are intentionally independent of learner sessions.
+
+**Scope boundary:** the course/progress area and saved answers from
+educational-resource question blocks are still future phases. Phase C
+does not manufacture placeholder progress or change old challenge records.
+The optional course/resource links go to their public archive, not a claim
+that learner enrollment for those content types is active.
+
+### Phase C acceptance tests (WordPress staging)
+
+1. Open `/learning-dashboard/` signed out; verify no personal data is shown.
+2. Sign in as learner A and visit all five tabs. Verify the learner name,
+   mapped challenge cards, progress, and recent activity are correct.
+3. Sign in as learner B in another browser. Confirm B never sees A's activity,
+   answers, sessions, or challenge progress.
+4. Change A's display name; verify it persists after signing out/in and is
+   reflected in A's challenge membership labels, without changing B.
+5. In A's security tab, create sessions in two browsers, revoke one
+   session ID, and ensure only that browser is signed out.
+6. Use "sign out all other devices" and confirm the present browser stays in.
+7. Rotate credentials from A's account; capture the one-time new code/link.
+   Verify the old code, links, and both prior sessions are invalid.
+8. Try a forged session ID that belongs to B (with A authenticated) and
+   verify it returns HTTP 403 without invalidating B.
+9. Try a missing/invalid CSRF nonce; verify profile changes are rejected.
+10. Verify responsive views on mobile and no private page is cacheable.
+
+Automated PHP lint and pure-PHP smoke tests cover key behaviors. They do
+**not** replace a real WordPress/database/browser acceptance test.
 
 ## Phase B: challenge integration (v0.2.0)
 
