@@ -11,13 +11,20 @@ while (have_posts()) :
     the_post();
 
     $challenge_id   = get_the_ID();
-    // Personal dashboards require both the private member ID and its 256-bit key.
-    // They never expose another member's answers on the public challenge page.
-    if (isset($_GET['md_member']) || isset($_GET['md_key'])) {
+    // Phase B: central session is the ONLY participant credential when the
+    // learning plugin is active. Old challenge-only codes/URLs are obsolete.
+    if (function_exists('md_learning_current_challenge_member')) {
+        $member = md_learning_current_challenge_member($challenge_id);
+        if ($member) {
+            md_challenge_render_member_dashboard($challenge_id, $member);
+            continue;
+        }
+    } elseif (isset($_GET['md_member']) || isset($_GET['md_key'])) {
+        // Compatibility fallback when the learning plugin is not installed.
         $member = md_challenge_member_from_request($challenge_id);
         if (!$member) {
             status_header(403);
-            echo '<main class="container md-member-access-error" dir="rtl"><h1>لینک اختصاصی معتبر نیست</h1><p>این لینک اشتباه یا غیرفعال شده است. از لینک معتبر خود استفاده کنید.</p></main>';
+            echo '<main class="container md-member-access-error" dir="rtl"><h1>لینک اختصاصی معتبر نیست</h1><p>این لینک اشتباه یا غیرفعال شده است.</p></main>';
         } else {
             md_challenge_render_member_dashboard($challenge_id, $member);
         }
@@ -66,8 +73,8 @@ while (have_posts()) :
                     <?php endif; ?>
 
                     <div class="md-challenge-auth-actions">
-                        <a class="btn btn-primary" href="#md-challenge-enroll">ثبت‌نام در چالش</a>
-                        <a class="btn btn-light" href="#md-challenge-enroll">ورود با کد ۸ رقمی</a>
+                        <a class="btn btn-primary" href="#md-challenge-enroll">عضویت در چالش</a>
+                        <a class="btn btn-light" href="<?php echo esc_url(function_exists('md_learning_current_challenge_member') ? MD_Learning_Schema::url('dashboard') : '#md-challenge-enroll'); ?>">داشبورد من</a>
                     </div>
                     <?php if ($enroll) : ?>
                         <a class="text-link" href="<?php echo esc_url($enroll); ?>">لینک تکمیلی ثبت‌نام ←</a>
