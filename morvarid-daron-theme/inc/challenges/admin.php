@@ -124,7 +124,7 @@ function md_challenge_days_box($post) {
             </div>
             <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
             <p class="md-days-save-first">
-                برای افزودن روز به چالش بدون تاریخ، ابتدا چالش را به‌صورت پیش‌نویس ذخیره کنید. سپس فرم ثبت روز در همین صفحه ظاهر می‌شود.
+                برای ساخت اولین روز، ابتدا چالش را ذخیره کنید؛ سپس روز را از پنجره ویرایش پیشرفته اضافه کنید.
             </p>
         </div>
         <?php
@@ -158,7 +158,7 @@ function md_challenge_render_days_manager($challenge_id, $days) {
     ?>
     <div class="md-days-manager" id="md-challenge-days" data-challenge-id="<?php echo esc_attr($challenge_id); ?>" data-content-days="<?php echo esc_attr($content_days); ?>">
         <div class="md-days-toolbar">
-            <a class="button button-primary" href="#md-day-inline-form">افزودن روز جدید</a>
+            <button type="button" class="button button-primary" id="md-add-day">افزودن روز جدید</button>
             <span class="md-days-summary">
                 <span>روزهای محتوایی: <strong id="md-manager-content-days"><?php echo esc_html(md_fa_num($content_days)); ?></strong></span>
                 <span>روزهای تقویمی: <strong id="md-manager-calendar-days"><?php echo esc_html($calendar ? md_fa_num($calendar) : '—'); ?></strong></span>
