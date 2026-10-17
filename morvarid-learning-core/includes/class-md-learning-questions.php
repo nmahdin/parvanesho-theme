@@ -356,7 +356,7 @@ final class MD_Learning_Questions {
             if (isset($locked_questions[$q['id']])) {
                 continue;
             }
-            $value = isset($raw[$q['id']] && is_string($raw[$q['id']])
+            $value = isset($raw[$q['id']]) && is_string($raw[$q['id']])
                 ? sanitize_textarea_field($raw[$q['id']]) : '';
             $max = $q['type'] === 'short' ? 500 : 10000;
             if ((function_exists('mb_strlen') ? mb_strlen($value) : strlen($value)) > $max) {
