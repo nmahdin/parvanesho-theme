@@ -31,6 +31,7 @@ class ReportDb {
     public $prepared = array();
     public $queries = array();
     public $inserts = array();
+    public $fail_insert = false;
     public function esc_like($s) {
         return addcslashes($s, '_%\\');
     }
@@ -57,6 +58,7 @@ class ReportDb {
         return array((object) array('id' => 9, 'learner_id' => 3, 'content_id' => 20, 'status' => 'draft', 'question_text' => 'سؤال', 'display_name' => 'فرد آزمایشی'));
     }
     public function insert($table, $values, $format = null) {
+        if ($this->fail_insert) { return false; }
         $this->inserts[] = array('table' => $table, 'values' => $values);
         return 1;
     }
@@ -102,6 +104,7 @@ verify(count($report['rows']) === 1, 'report list did not return rows');
 
 $summary_prepared = $wpdb->prepared[count($wpdb->prepared) - 2];
 $list_prepared = $wpdb->prepared[count($wpdb->prepared) - 1];
+verify(strpos($summary_prepared['sql'], 'r.manager_visible = 1') !== false, 'hidden answers counted in report');
 verify(strpos($summary_prepared['sql'], 'r.status = %s') !== false, 'status not parameterized');
 verify(strpos($summary_prepared['sql'], 'r.learner_id = %d') !== false, 'learner not parameterized');
 verify(strpos($summary_prepared['sql'], 'r.content_id = %d') !== false, 'content not parameterized');
@@ -114,6 +117,8 @@ verify($list_prepared['values'][count($list_prepared['values']) - 1] === 25,
     'second-page SQL offset wrong');
 
 $detail = MD_Learning_Response_Admin::detail(9);
+$detail_sql = $wpdb->prepared[count($wpdb->prepared) - 1]['sql'];
+verify(strpos($detail_sql, 'r.manager_visible = 1') !== false, 'hidden answer accessible through direct ID');
 verify($detail && $detail->answer_text === 'پاسخ خصوصی', 'authorized detail missing answer');
 
 $method = new ReflectionMethod(MD_Learning_Response_Admin::class, 'record_view');
@@ -128,5 +133,21 @@ verify(!isset($logged['values']['answer_text']), 'private answer leaked into aud
 $GLOBALS['can_view_responses'] = false;
 $method->invoke(null, $detail);
 verify(count($wpdb->inserts) === 1, 'unauthorized view unexpectedly wrote an audit record');
+
+// Private answers must fail closed if access logging is unavailable.
+$GLOBALS['can_view_responses'] = true;
+$wpdb->fail_insert = true;
+$_GET = array('page' => 'md-learning-answers', 'md_answer' => '9');
+$denied = false;
+ob_start();
+try {
+    MD_Learning_Response_Admin::render();
+} catch (AccessDenied $e) {
+    $denied = true;
+}
+ob_end_clean();
+verify($denied && end($GLOBALS['rendered_dies'])['status'] === 503,
+    'private detail rendered without a successful access audit');
+
 
 echo "Phase E reporting authorization, filters, pagination and auditing: PASS\n";
