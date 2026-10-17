@@ -67,10 +67,21 @@ function md_challenge_admin_participants_page() {
                 <div><span>روزهای منتشرشده</span><strong><?php echo esc_html(md_fa_num($total)); ?></strong></div>
                 <div><span>چالش</span><strong><?php echo md_challenge_calendar_days($challenge_id) ? 'تاریخ‌دار' : 'بدون تاریخ'; ?></strong></div>
             </div>
+            <section class="md-admin-create-member">
+                <h2>ثبت شرکت‌کننده توسط مدیر</h2>
+                <p>نام را وارد کنید تا کد ۸ رقمی و لینک اختصاصی ساخته شود. سپس کد یا لینک را خارج از سایت در اختیار شرکت‌کننده بگذارید.</p>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <input type="hidden" name="action" value="md_challenge_admin_create_member">
+                    <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
+                    <?php wp_nonce_field('md_challenge_admin_create_member_' . $challenge_id); ?>
+                    <label>نام شرکت‌کننده <input type="text" name="member_name" maxlength="120" required></label>
+                    <button class="button button-primary" type="submit">ساخت کد و لینک جدید</button>
+                </form>
+            </section>
             <?php if (!$members) : ?><p class="notice notice-info inline">هنوز کسی در این چالش ثبت‌نام نکرده است.</p><?php endif; ?>
             <div class="md-participants-table-wrap">
                 <table class="widefat striped md-participants-table">
-                    <thead><tr><th>نام</th><th>ایمیل</th><th>ثبت‌نام</th><th>پیشرفت</th><th>آخرین فعالیت</th><th>لینک اختصاصی (محرمانه)</th><th>جزئیات</th></tr></thead>
+                    <thead><tr><th>نام</th><th>کد ورود ۸ رقمی</th><th>ثبت‌نام</th><th>پیشرفت</th><th>آخرین فعالیت</th><th>لینک اختصاصی (محرمانه)</th><th>جزئیات</th></tr></thead>
                     <tbody>
                     <?php foreach ($members as $member) :
                         $entries = md_challenge_member_entries($member->ID);
@@ -85,7 +96,7 @@ function md_challenge_admin_participants_page() {
                         ?>
                         <tr>
                             <td><strong><?php echo esc_html($member->post_title); ?></strong></td>
-                            <td><?php echo esc_html(get_post_meta($member->ID, '_md_member_email', true)); ?></td>
+                            <td><strong class="md-member-admin-code" dir="ltr"><?php echo esc_html(get_post_meta($member->ID, '_md_member_code', true) ?: '—'); ?></strong></td>
                             <td><?php echo esc_html(md_format_jalali($member->post_date, 'short')); ?></td>
                             <td><?php echo esc_html(md_fa_num($done) . ' / ' . md_fa_num($total)); ?></td>
                             <td><?php echo esc_html($last ? $last : '—'); ?></td>
@@ -135,6 +146,38 @@ function md_challenge_admin_participants_page() {
     </div>
     <?php
 }
+
+/**
+ * The admin can manually create a participant and hand over the short code.
+ * The public registration path never grants admin capabilities.
+ */
+function md_challenge_admin_create_member() {
+    $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
+    if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge' || !current_user_can('edit_post', $challenge_id)) {
+        wp_die('اجازه مدیریت این چالش را ندارید.', '', array('response' => 403));
+    }
+    check_admin_referer('md_challenge_admin_create_member_' . $challenge_id);
+    $name = isset($_POST['member_name']) && is_string($_POST['member_name']) ? sanitize_text_field(wp_unslash($_POST['member_name'])) : '';
+    if (!$name || strlen($name) > 360) {
+        wp_die('نام شرکت‌کننده معتبر نیست.', '', array('response' => 400));
+    }
+    $code = md_challenge_generate_member_code($challenge_id);
+    if (!$code) {
+        wp_die('ساخت کد جدید ممکن نشد.', '', array('response' => 500));
+    }
+    $member_id = wp_insert_post(array('post_type' => 'md_challenge_member', 'post_status' => 'private', 'post_title' => $name), true);
+    if (!$member_id || is_wp_error($member_id)) {
+        wp_die('ثبت شرکت‌کننده انجام نشد.', '', array('response' => 500));
+    }
+    update_post_meta($member_id, '_md_challenge_id', $challenge_id);
+    update_post_meta($member_id, '_md_member_code', $code);
+    update_post_meta($member_id, '_md_member_code_hash', md_challenge_code_hash($challenge_id, $code));
+    update_post_meta($member_id, '_md_member_key', bin2hex(random_bytes(32)));
+    update_post_meta($member_id, '_md_member_registered_at', current_time('mysql'));
+    wp_safe_redirect(add_query_arg('member_id', $member_id, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail');
+    exit;
+}
+add_action('admin_post_md_challenge_admin_create_member', 'md_challenge_admin_create_member');
 
 function md_challenge_revoke_member() {
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
