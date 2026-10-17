@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lint theme PHP
         run: find morvarid-daron-theme -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Test fully editable sidebar widgets and search icon centering
+        run: php morvarid-daron-theme/tests/sidebar-widgets-smoke.php
       - name: Lint learner plugin PHP
         run: find morvarid-learning-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Parse theme JavaScript
