@@ -227,8 +227,10 @@ final class MD_Learning_Challenges {
             echo '<p class="md-join-error" role="alert">' . esc_html($errors[$error]) . '</p>';
         }
         if (!$learner_id) {
-            $redirect_login = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('login'));
-            $redirect_register = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('register'));
+            // Render the account forms on the actual challenge permalink:
+            // no dependency on WordPress page slugs or account-page settings.
+            $redirect_login = add_query_arg(array('md_account_mode' => 'login', 'md_challenge' => absint($challenge_id)), get_permalink($challenge_id));
+            $redirect_register = add_query_arg(array('md_account_mode' => 'register', 'md_challenge' => absint($challenge_id)), get_permalink($challenge_id));
             echo '<p>با یک کد ۸ رقمی اصلی وارد تمام چالش‌های خود شوید. نیازی به ثبت‌نام جداگانه در هر چالش نیست.</p>';
             echo '<div class="md-challenge-join-options"><a class="btn btn-primary md-challenge-join-button" href="' . esc_url($redirect_login) . '">ورود و عضویت</a> ';
             echo '<a class="btn btn-light md-challenge-join-button" href="' . esc_url($redirect_register) . '">ساخت حساب و عضویت در چالش</a></div>';
