@@ -99,8 +99,12 @@ final class MD_Learning_Challenges {
 
         $existing = self::member_id($learner_id, $challenge_id);
         if ($existing) {
-            $member = self::current_member($challenge_id);
-            return $member ? $member : new WP_Error('membership_unavailable', 'عضویت این چالش در دسترس نیست.');
+            $member = get_post($existing);
+            return $member && $member->post_type === 'md_challenge_member'
+                && $member->post_status === 'private'
+                && (int) get_post_meta($member->ID, '_md_challenge_id', true) === $challenge_id
+                && !get_post_meta($member->ID, '_md_member_revoked', true)
+                ? $member : new WP_Error('membership_unavailable', 'عضویت این چالش در دسترس نیست.');
         }
 
         $member_id = wp_insert_post(array(
@@ -127,8 +131,11 @@ final class MD_Learning_Challenges {
             wp_delete_post($member_id, true);
             $existing = self::member_id($learner_id, $challenge_id);
             if ($existing) {
-                $member = self::current_member($challenge_id);
-                return $member ? $member : new WP_Error('membership_unavailable', 'عضویت غیرفعال است.');
+                $member = get_post($existing);
+                return $member && $member->post_type === 'md_challenge_member'
+                    && $member->post_status === 'private'
+                    && !get_post_meta($member->ID, '_md_member_revoked', true)
+                    ? $member : new WP_Error('membership_unavailable', 'عضویت غیرفعال است.');
             }
             return new WP_Error('conflict', 'ذخیره عضویت انجام نشد. دوباره تلاش کنید.');
         }
