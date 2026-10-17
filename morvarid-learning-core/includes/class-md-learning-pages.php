@@ -13,6 +13,15 @@ final class MD_Learning_Pages {
     }
 
     public static function private_headers() {
+        // Challenge pages now render user-specific content based on a central
+        // session; no shared full-page cache may store these responses.
+        if (is_singular('md_challenge')) {
+            nocache_headers();
+            header('Cache-Control: private, no-store, max-age=0, must-revalidate', true);
+            if (MD_Learning_Auth::current_learner_id()) {
+                header('Referrer-Policy: no-referrer', true);
+            }
+        }
         if (is_page(MD_Learning_Schema::page_ids())
             || isset($_GET['md_learning_link'])
             || isset($_GET['md_learning_error'])) {
