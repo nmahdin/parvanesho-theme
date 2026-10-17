@@ -1039,3 +1039,12 @@ border:0!important;
 margin:13px 0 0;
 }
 @media(max-width:650px){.md-challenge-page .md-qa-item,.md-member-page .md-qa-item{border-radius:19px!important;padding:14px 15px!important}.md-challenge-page .md-qa-item .md-qa-answer,.md-member-page .md-qa-item .md-qa-answer{border-radius:13px}}
+
+/* Clean borderless challenge day accordion and standalone +/- glyphs. */
+.md-challenge-page .md-day.md-day-accordion{border:0!important;box-shadow:none!important;background:#f4f8f4;border-radius:24px!important;margin-bottom:14px}
+.md-challenge-page .md-day-accordion>.md-day-header{border:0!important}
+.md-challenge-page .md-day-accordion[open]>.md-day-header{border-bottom:0!important}
+.md-challenge-page .md-day-accordion .md-day-chevron{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;color:#37674d}
+.md-challenge-page .md-day-accordion .md-day-chevron::after{font-weight:600;font-size:25px}
+.md-challenge-page .md-day-accordion .md-day-body{border:0!important}
+@media(max-width:650px){.md-challenge-page .md-day.md-day-accordion{border-radius:20px!important}.md-challenge-page .md-day-accordion .md-day-chevron::after{font-size:22px}}
