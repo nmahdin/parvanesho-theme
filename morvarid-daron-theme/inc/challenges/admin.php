@@ -144,6 +144,17 @@ function md_challenge_days_box($post) {
 function md_challenge_render_days_manager($challenge_id, $days) {
     $content_days = count($days);
     $calendar     = md_challenge_calendar_days($challenge_id);
+    $ready_days = 0;
+    $published_days = 0;
+    foreach ($days as $day) {
+        if ('ready' === md_challenge_day_content_status($day)['key']) {
+            $ready_days++;
+        }
+        if ('publish' === $day->post_status) {
+            $published_days++;
+        }
+    }
+    $ready_percent = $content_days ? (int) round(100 * $ready_days / $content_days) : 0;
     ?>
     <div class="md-days-manager" id="md-challenge-days" data-challenge-id="<?php echo esc_attr($challenge_id); ?>" data-content-days="<?php echo esc_attr($content_days); ?>">
         <div class="md-days-toolbar">
@@ -155,6 +166,40 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         </div>
 
         <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
+
+        <section class="md-days-overview" aria-label="وضعیت تولید محتوای چالش">
+            <div class="md-days-kpis" id="md-days-kpis" aria-live="polite">
+                <div class="md-days-kpi"><span>کل روزهای ساخته‌شده</span><strong id="md-kpi-total"><?php echo esc_html(md_fa_num($content_days)); ?></strong></div>
+                <div class="md-days-kpi"><span>محتوای آماده</span><strong id="md-kpi-ready"><?php echo esc_html(md_fa_num($ready_days)); ?></strong></div>
+                <div class="md-days-kpi"><span>روزهای منتشرشده</span><strong id="md-kpi-published"><?php echo esc_html(md_fa_num($published_days)); ?></strong></div>
+                <div class="md-days-kpi"><span>نیازمند تکمیل</span><strong id="md-kpi-incomplete"><?php echo esc_html(md_fa_num($content_days - $ready_days)); ?></strong></div>
+            </div>
+            <div class="md-days-progress-label"><span>پیشرفت آماده‌سازی محتوا</span><strong id="md-days-progress-text"><?php echo esc_html(md_fa_num($ready_percent)); ?>٪</strong></div>
+            <div class="md-days-progress" id="md-days-progress" role="progressbar" aria-label="درصد روزهای آماده" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr($ready_percent); ?>">
+                <span id="md-days-progress-fill" style="width:<?php echo esc_attr($ready_percent); ?>%"></span>
+            </div>
+        </section>
+
+        <div class="md-days-controls">
+            <label class="md-days-filter-label" for="md-day-search">
+                <span>جست‌وجوی روزها</span>
+                <input type="search" id="md-day-search" class="regular-text" placeholder="شماره یا عنوان روز">
+            </label>
+            <label class="md-days-filter-label" for="md-day-status-filter">
+                <span>نمایش روزها</span>
+                <select id="md-day-status-filter">
+                    <option value="all">همه روزها</option>
+                    <option value="ready">محتوای آماده</option>
+                    <option value="incomplete">نیازمند تکمیل</option>
+                    <option value="published">منتشرشده</option>
+                    <option value="unpublished">منتشرنشده</option>
+                </select>
+            </label>
+            <button type="button" class="button md-generate-days" id="md-generate-days" <?php disabled($calendar < 1); ?>>
+                ساخت پیش‌نویس روزهای باقی‌مانده
+            </button>
+        </div>
+        <p class="md-days-control-note">روزهای ساخته‌شده حذف یا بازنویسی نمی‌شوند؛ دکمه ساخت گروهی فقط جای خالی تا تاریخ پایان را با پیش‌نویس پُر می‌کند. تاریخ‌ها را ابتدا ذخیره کنید.</p>
 
         <table class="widefat striped md-days-table" id="md-days-table">
             <thead>
@@ -177,6 +222,7 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         </table>
 
         <p class="md-days-empty" id="md-days-empty" <?php echo $days ? 'hidden' : ''; ?>>هنوز روزی برای این چالش اضافه نشده است. با دکمه «افزودن روز جدید» شروع کنید.</p>
+        <p class="md-days-empty" id="md-days-no-match" hidden>روزی با این جست‌وجو یا وضعیت پیدا نشد. فیلترها را تغییر دهید.</p>
         <p class="description">برای تغییر ترتیب، ردیف‌ها را با دستگیره بکشید یا از دکمه‌های ↑ و ↓ استفاده کنید. تغییر ترتیب به‌صورت خودکار ذخیره می‌شود.</p>
     </div>
 
