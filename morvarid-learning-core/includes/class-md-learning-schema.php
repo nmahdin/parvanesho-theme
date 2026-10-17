@@ -4,13 +4,13 @@ if (!defined('ABSPATH')) {
 }
 
 final class MD_Learning_Schema {
-    const VERSION = '0.1.0';
+    const VERSION = '0.2.0';
     const VERSION_OPTION = 'md_learning_core_schema_version';
     const PAGE_OPTION = 'md_learning_core_pages';
 
     public static function table($name) {
         global $wpdb;
-        $allowed = array('learners', 'links', 'sessions');
+        $allowed = array('learners', 'links', 'sessions', 'challenges');
         if (!in_array($name, $allowed, true)) {
             return '';
         }
@@ -38,6 +38,7 @@ final class MD_Learning_Schema {
         $learners = self::table('learners');
         $links = self::table('links');
         $sessions = self::table('sessions');
+        $challenges = self::table('challenges');
 
         dbDelta("CREATE TABLE {$learners} (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -74,6 +75,19 @@ final class MD_Learning_Schema {
             UNIQUE KEY token_hash (token_hash),
             KEY learner_id (learner_id),
             KEY expires_at (expires_at)
+        ) {$charset};");
+        // Independent identity-to-challenge membership map. Existing answers
+        // continue using private md_challenge_entry posts, no migration needed.
+        dbDelta("CREATE TABLE {$challenges} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            learner_id bigint(20) unsigned NOT NULL,
+            challenge_id bigint(20) unsigned NOT NULL,
+            member_id bigint(20) unsigned NOT NULL,
+            created_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY learner_challenge (learner_id,challenge_id),
+            UNIQUE KEY member_id (member_id),
+            KEY challenge_id (challenge_id)
         ) {$charset};");
     }
 
