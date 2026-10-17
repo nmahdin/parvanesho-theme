@@ -284,7 +284,7 @@ function md_challenge_member_can_open_day($day, $challenge_id, $entries, $publis
         return false;
     }
     // Undated challenges progress one completed step at a time.
-    if (md_challenge_calendar_days($challenge_id) === 0) {
+    if (md_challenge_calendar_days($challenge_id) === 0 && !md_challenge_start($challenge_id)) {
         foreach ($published_days as $item) {
             if ($item->ID === $day->ID) {
                 return true;
