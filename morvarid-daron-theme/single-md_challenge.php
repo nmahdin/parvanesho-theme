@@ -39,7 +39,9 @@ while (have_posts()) :
     $enroll         = md_challenge_enrollment_url($challenge_id);
     $category       = md_challenge_categories($challenge_id);
     $is_editor      = md_challenge_is_editor($challenge_id);
-    $days           = md_challenge_days($challenge_id, $is_editor);
+    // Show every configured day, including future/draft days as locked previews.
+    // The day renderer never prints unpublished content to visitors.
+    $days           = md_challenge_days($challenge_id, true);
     $calendar_days  = md_challenge_calendar_days($challenge_id);
     $content_days   = count($days);
     ?>
@@ -72,18 +74,6 @@ while (have_posts()) :
                         <p class="md-challenge-summary"><?php echo esc_html(get_the_excerpt()); ?></p>
                     <?php endif; ?>
 
-                    <div class="md-challenge-auth-actions">
-                        <?php if (function_exists('md_learning_current_challenge_member') && class_exists('MD_Learning_Auth') && class_exists('MD_Learning_Schema')) : ?>
-                            <?php if (MD_Learning_Auth::current_learner_id()) : ?>
-                                <a class="btn btn-primary md-challenge-join-button" href="#md-challenge-enroll">عضویت در چالش</a>
-                            <?php else : ?>
-                                <a class="btn btn-primary md-challenge-join-button" href="<?php echo esc_url(add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login'))); ?>">ورود و عضویت</a>
-                                <a class="btn btn-light md-challenge-join-button" href="<?php echo esc_url(add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register'))); ?>">ساخت حساب و عضویت در چالش</a>
-                            <?php endif; ?>
-                        <?php else : ?>
-                            <a class="btn btn-primary md-challenge-join-button" href="#md-challenge-enroll">عضویت در چالش</a>
-                        <?php endif; ?>
-                    </div>
                     <?php if ($enroll && !function_exists('md_learning_current_challenge_member')) : ?>
                         <a class="text-link" href="<?php echo esc_url($enroll); ?>">لینک تکمیلی ثبت‌نام ←</a>
                     <?php endif; ?>
@@ -128,7 +118,11 @@ while (have_posts()) :
                     </section>
                 <?php endif; ?>
 
-                <?php md_challenge_registration_form($challenge_id); ?>
+                <?php if (class_exists('MD_Learning_Challenges')) : ?>
+                    <?php MD_Learning_Challenges::render_join($challenge_id); ?>
+                <?php else : ?>
+                    <?php md_challenge_registration_form($challenge_id); ?>
+                <?php endif; ?>
 
                 <div class="md-challenge-days" id="md-days">
                     <?php if ($days) : ?>
