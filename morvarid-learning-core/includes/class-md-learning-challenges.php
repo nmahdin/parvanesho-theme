@@ -67,6 +67,28 @@ final class MD_Learning_Challenges {
         return $member && (int) $member->ID === absint($member_id);
     }
 
+    /** Keep private challenge membership labels in sync with the central profile. */
+    public static function sync_member_titles($learner_id, $name) {
+        $learner_id = absint($learner_id);
+        if (!self::enabled() || !$learner_id
+            || (!current_user_can('manage_options') && $learner_id !== MD_Learning_Auth::current_learner_id())) {
+            return;
+        }
+        global $wpdb;
+        $table = self::table();
+        $ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT member_id FROM {$table} WHERE learner_id = %d", $learner_id
+        ));
+        foreach ((array) $ids as $member_id) {
+            $member = get_post(absint($member_id));
+            if ($member && $member->post_type === 'md_challenge_member'
+                && $member->post_status === 'private'
+                && $member->post_title !== $name) {
+                wp_update_post(array('ID' => $member->ID, 'post_title' => $name));
+            }
+        }
+    }
+
     public static function learner_id_for_member($member_id) {
         global $wpdb;
         $table = self::table();
