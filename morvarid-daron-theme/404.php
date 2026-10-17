@@ -1,0 +1,1 @@
+<?php get_header(); ?><main id="main" class="container content-page"><h1>این صفحه پیدا نشد</h1><p>ممکن است نشانی تغییر کرده باشد.</p><a class="btn btn-primary" href="<?php echo esc_url(home_url('/')); ?>">بازگشت به خانه</a></main><?php get_footer(); ?>
