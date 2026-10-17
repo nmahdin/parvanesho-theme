@@ -269,11 +269,14 @@ function md_challenge_render_day_nav($days, $challenge_id) {
                 <?php
                 $order    = md_challenge_day_order($day->ID);
                 $unlocked = md_challenge_day_is_unlocked($day, $challenge_id);
+                $visible_title = $unlocked || md_challenge_show_locked_title($challenge_id);
+                $day_title = ($visible_title && $day->post_title) ? $day->post_title : 'روز ' . md_fa_num($order);
+                $is_current = $unlocked && md_challenge_current_day($challenge_id) === $order;
                 ?>
-                <li class="<?php echo esc_attr($unlocked ? 'is-open' : 'is-locked'); ?>">
-                    <a href="#day-<?php echo esc_attr($order); ?>">
+                <li class="<?php echo esc_attr(($unlocked ? 'is-open' : 'is-locked') . ($is_current ? ' is-current' : '')); ?>">
+                    <a href="#day-<?php echo esc_attr($order); ?>" <?php echo $is_current ? 'aria-current="step"' : ''; ?>>
                         <span class="md-day-nav-number"><?php echo esc_html(md_fa_num($order)); ?></span>
-                        <span class="md-day-nav-label"><?php echo esc_html($day->post_title ? $day->post_title : 'روز ' . md_fa_num($order)); ?></span>
+                        <span class="md-day-nav-label"><?php echo esc_html($day_title); ?></span>
                         <?php if (!$unlocked) : ?><span class="md-day-nav-lock" aria-label="قفل">🔒</span><?php endif; ?>
                     </a>
                 </li>
