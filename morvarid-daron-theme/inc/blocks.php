@@ -495,6 +495,13 @@ function md_block_features($attributes) {
         $title = isset($item['title']) ? sanitize_text_field($item['title']) : '';
         $text  = isset($item['text']) ? sanitize_text_field($item['text']) : '';
         $url   = isset($item['url']) ? esc_url_raw($item['url']) : '';
+        // Previously published homepages may still contain the retired
+        // coaching-service feature. Hide that saved card without erasing data.
+        $feature_path = $url ? wp_parse_url($url, PHP_URL_PATH) : '';
+        if (($title === 'کوچینگ فردی' && $text === 'همراهی در مسیر شناخت و تغییر')
+            || (is_string($feature_path) && preg_match('~/(?:services)(?:/|$)~i', $feature_path))) {
+            continue;
+        }
 
         if ('' === $title && '' === $text) {
             continue;
