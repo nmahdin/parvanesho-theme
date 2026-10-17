@@ -107,8 +107,8 @@ function md_render_sidebar($context = '', $layout = 'right') {
         md_sidebar_fallback($context);
     }
 
-    // The social channels always close the sidebar, even with custom widgets.
-    md_sidebar_social();
+    // One family card carries the newsletter and configured social channels.
+    md_sidebar_newsletter();
 
     echo '</aside>';
 }
@@ -133,7 +133,6 @@ function md_sidebar_fallback($context) {
         md_sidebar_search('md_challenge', 'جستجو در چالش‌ها');
         md_sidebar_challenge_promo();
         md_sidebar_challenge_categories();
-        md_sidebar_newsletter();
         return;
     }
 
@@ -142,7 +141,6 @@ function md_sidebar_fallback($context) {
         md_sidebar_academy_promo();
         md_sidebar_lesson_promo();
         md_sidebar_academy_categories();
-        md_sidebar_newsletter();
         return;
     }
 
@@ -153,7 +151,6 @@ function md_sidebar_fallback($context) {
     md_sidebar_popular();
     md_sidebar_categories('category', 'موضوعات مجله');
     md_sidebar_challenge_promo();
-    md_sidebar_newsletter();
 }
 
 /**
@@ -500,6 +497,9 @@ function md_sidebar_newsletter() {
         <h2 class="md-widget-title">عضو خانواده مروارید درون شوید</h2>
         <p>از تازه‌ترین مطالب، کارگاه‌ها و تمرین‌های رایگان باخبر شوید.</p>
         <a class="md-newsletter-cta" href="<?php echo esc_url($url); ?>">عضویت در خبرنامه ←</a>
+        <?php if (function_exists('md_social_links')) : ?>
+            <?php echo md_social_links(array('class' => 'md-social-stack md-social-family')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+        <?php endif; ?>
     </section>
     <?php
 }
