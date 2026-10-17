@@ -196,4 +196,20 @@ check(count(MD_Learning_Courses::my_courses(2))===1,'second learner missing own 
 check(is_wp_error(MD_Learning_Courses::set_membership_status(1,300,'revoked')),
     'ordinary learner exercised administrator revoke');
 
+// Reassigning a lesson in the course builder must neither preserve its
+// completion in the old course nor carry progress into another course.
+MD_Learning_Auth::$current=1;
+check(MD_Learning_Courses::set_progress(1,300,401,true)===true,
+    'could not complete a lesson before reassignment');
+$GLOBALS['meta'][401]['_md_course_id']=301;
+$old=MD_Learning_Courses::progress(1,300);
+check($old['total']===1 && $old['completed']===0,
+    'reassigned lesson still counted toward old course progress');
+check(is_wp_error(MD_Learning_Courses::set_progress(1,300,401,true)),
+    'reassigned lesson was still editable in old course');
+MD_Learning_Auth::$current=2;
+$new=MD_Learning_Courses::progress(2,301);
+check($new['total']===2 && $new['completed']===0,
+    'another learner inherited reassigned lesson completion');
+
 echo "Phase F central course enrollment, lesson security and progress: PASS\n";
