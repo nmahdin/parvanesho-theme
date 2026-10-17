@@ -38,11 +38,11 @@ function md_challenge_render_day_row($day, $challenge_id) {
     if (absint(get_post_meta($day->ID, '_md_day_video_id', true)) || get_post_meta($day->ID, '_md_day_video_url', true)) {
         $resources[] = 'ویدیو';
     }
-    if (absint(get_post_meta($day->ID, '_md_day_file_id', true)) || get_post_meta($day->ID, '_md_day_file_url', true)) {
-        $resources[] = 'فایل';
-    }
-    if (trim((string) get_post_meta($day->ID, '_md_day_exercise_desc', true)) || trim((string) get_post_meta($day->ID, '_md_day_exercise_steps', true))) {
-        $resources[] = 'تمرین';
+    foreach (array('tips' => 'نکته', 'tasks' => 'کار', 'files' => 'فایل') as $kind => $label) {
+        $count = count(md_challenge_day_items($day->ID, $kind));
+        if ($count) {
+            $resources[] = $label . ' (' . md_fa_num($count) . ')';
+        }
     }
 
     ob_start();
@@ -90,6 +90,18 @@ function md_challenge_render_day_row($day, $challenge_id) {
     return ob_get_clean();
 }
 
+/** Decorate attachments with a file name for the media picker. */
+function md_challenge_editor_items($day_id, $kind) {
+    $items = md_challenge_day_items($day_id, $kind);
+    if ($kind === 'files') {
+        foreach ($items as &$item) {
+            $item['name'] = !empty($item['id']) ? md_attachment_name(absint($item['id'])) : '';
+        }
+        unset($item);
+    }
+    return $items;
+}
+
 /**
  * Data sent to the day editor modal.
  *
@@ -115,6 +127,9 @@ function md_challenge_get_day_payload($day) {
         'summary'         => $day->post_excerpt,
         'content'         => $day->post_content,
         'extra'           => (string) get_post_meta($day->ID, '_md_day_extra', true),
+        'tips'            => md_challenge_editor_items($day->ID, 'tips'),
+        'tasks'           => md_challenge_editor_items($day->ID, 'tasks'),
+        'files'           => md_challenge_editor_items($day->ID, 'files'),
         'tip_title'       => (string) get_post_meta($day->ID, '_md_day_tip_title', true),
         'tip'             => (string) get_post_meta($day->ID, '_md_day_tip', true),
         'exercise_title'  => (string) get_post_meta($day->ID, '_md_day_exercise_title', true),
@@ -240,6 +255,16 @@ function md_challenge_ajax_save_day() {
     $file_id     = isset($_POST['file_id']) ? absint($_POST['file_id']) : 0;
     $file_title  = isset($_POST['file_title']) ? sanitize_text_field(wp_unslash($_POST['file_title'])) : '';
 
+    // Verify every repeatable collection BEFORE touching the saved post.
+    $tips = md_challenge_posted_items('tips');
+    $tasks = md_challenge_posted_items('tasks');
+    $files = md_challenge_posted_items('files');
+    foreach (array($tips, $tasks, $files) as $list) {
+        if (is_wp_error($list)) {
+            wp_send_json_error(array('message' => $list->get_error_message()), 400);
+        }
+    }
+
     $status = (isset($_POST['status']) && 'publish' === $_POST['status']) ? 'publish' : 'draft';
 
     if ('publish' === $status && !current_user_can('publish_posts')) {
@@ -305,6 +330,11 @@ function md_challenge_ajax_save_day() {
 
     $saved_id = (int) $result;
 
+    // Writing an empty array is intentional: it suppresses legacy one-item
+    // fallbacks after an editor removes the final repeated block.
+    update_post_meta($saved_id, '_md_day_tips', $tips);
+    update_post_meta($saved_id, '_md_day_tasks', $tasks);
+    update_post_meta($saved_id, '_md_day_files', $files);
     md_challenge_update_meta($saved_id, '_md_day_extra', $extra);
     md_challenge_update_meta($saved_id, '_md_day_tip_title', $tip_title);
     md_challenge_update_meta($saved_id, '_md_day_tip', $tip);
