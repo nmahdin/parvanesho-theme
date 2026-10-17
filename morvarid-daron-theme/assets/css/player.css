@@ -545,3 +545,14 @@
         animation: none !important;
     }
 }
+
+/* Article level media (post meta box). */
+.md-post-media {
+    display: grid;
+    gap: 18px;
+    margin: 28px 0;
+}
+
+.md-post-media .md-player {
+    margin: 0;
+}

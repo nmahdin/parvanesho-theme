@@ -315,3 +315,172 @@ function md_player_assets() {
     wp_enqueue_script('md-player', MD_THEME_URI . '/assets/js/player.js', array(), MD_THEME_VERSION, true);
 }
 add_action('wp_enqueue_scripts', 'md_player_assets', 20);
+
+/* --------------------------------------------------------- post audio/video */
+
+/**
+ * Meta box: attach an audio file and a video to a regular article.
+ */
+function md_post_add_media_box() {
+    add_meta_box(
+        'md_post_media',
+        'صدا و ویدیوی مقاله',
+        'md_post_render_media_box',
+        'post',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'md_post_add_media_box');
+
+/**
+ * Render the article media meta box.
+ *
+ * @param WP_Post $post Post object.
+ */
+function md_post_render_media_box($post) {
+    wp_nonce_field('md_post_media', 'md_post_media_nonce');
+
+    $audio     = absint(get_post_meta($post->ID, '_md_post_audio_id', true));
+    $video     = absint(get_post_meta($post->ID, '_md_post_video_id', true));
+    $video_url = esc_url_raw(get_post_meta($post->ID, '_md_post_video_url', true));
+    $title     = sanitize_text_field(get_post_meta($post->ID, '_md_post_media_title', true));
+    ?>
+    <div class="md-admin-fields md-post-media-fields">
+        <p class="description">فایل صوتی یا ویدیوی این مقاله را انتخاب کنید. پخش‌کنندهٔ اختصاصی قالب زیر عنوان مقاله نمایش داده می‌شود.</p>
+
+        <div class="md-admin-field">
+            <label for="md-post-audio">فایل صوتی مقاله</label>
+            <div class="md-media-field">
+                <input type="hidden" id="md-post-audio" name="md_post_audio_id" value="<?php echo esc_attr($audio); ?>" data-media-id="<?php echo esc_attr($audio); ?>">
+                <button type="button" class="button md-media-select" data-target="md-post-audio" data-type="audio">انتخاب از رسانه</button>
+                <button type="button" class="button md-media-remove" data-target="md-post-audio">حذف</button>
+                <span class="md-media-name" id="md-post-audio_name"><?php echo esc_html(md_attachment_name($audio)); ?></span>
+            </div>
+        </div>
+
+        <div class="md-admin-field">
+            <label for="md-post-video">فایل ویدیوی مقاله</label>
+            <div class="md-media-field">
+                <input type="hidden" id="md-post-video" name="md_post_video_id" value="<?php echo esc_attr($video); ?>" data-media-id="<?php echo esc_attr($video); ?>">
+                <button type="button" class="button md-media-select" data-target="md-post-video" data-type="video">انتخاب از رسانه</button>
+                <button type="button" class="button md-media-remove" data-target="md-post-video">حذف</button>
+                <span class="md-media-name" id="md-post-video_name"><?php echo esc_html(md_attachment_name($video)); ?></span>
+            </div>
+        </div>
+
+        <div class="md-admin-field">
+            <label for="md-post-video-url">یا لینک ویدیوی خارجی</label>
+            <input type="url" id="md-post-video-url" name="md_post_video_url" class="regular-text" dir="ltr" placeholder="https://" value="<?php echo esc_attr($video_url); ?>">
+            <p class="description">برای آپارات، یوتیوب یا هر سرویس پشتیبانی‌شده.</p>
+        </div>
+
+        <div class="md-admin-field">
+            <label for="md-post-media-title">عنوان رسانه</label>
+            <input type="text" id="md-post-media-title" name="md_post_media_title" class="regular-text" value="<?php echo esc_attr($title); ?>">
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * Save the article media fields.
+ *
+ * @param int $post_id Post ID.
+ */
+function md_post_save_media($post_id) {
+    if (!isset($_POST['md_post_media_nonce'])) {
+        return;
+    }
+    if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['md_post_media_nonce'])), 'md_post_media')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $map = array(
+        '_md_post_audio_id'  => isset($_POST['md_post_audio_id']) ? absint($_POST['md_post_audio_id']) : 0,
+        '_md_post_video_id'  => isset($_POST['md_post_video_id']) ? absint($_POST['md_post_video_id']) : 0,
+        '_md_post_video_url' => isset($_POST['md_post_video_url']) ? esc_url_raw(wp_unslash($_POST['md_post_video_url'])) : '',
+        '_md_post_media_title' => isset($_POST['md_post_media_title']) ? sanitize_text_field(wp_unslash($_POST['md_post_media_title'])) : '',
+    );
+
+    foreach ($map as $key => $value) {
+        if ('' === $value || 0 === $value || '0' === $value) {
+            delete_post_meta($post_id, $key);
+        } else {
+            update_post_meta($post_id, $key, $value);
+        }
+    }
+}
+add_action('save_post_post', 'md_post_save_media');
+
+/**
+ * Media picker on the article editor.
+ *
+ * @param string $hook Current admin page.
+ */
+function md_post_media_admin_assets($hook) {
+    if (!in_array($hook, array('post.php', 'post-new.php'), true)) {
+        return;
+    }
+    $screen = get_current_screen();
+    if (!$screen || 'post' !== $screen->post_type) {
+        return;
+    }
+    wp_enqueue_media();
+    wp_enqueue_style('md-admin-fields', MD_THEME_URI . '/assets/css/admin-fields.css', array(), MD_THEME_VERSION);
+    wp_enqueue_script('md-admin-media', MD_THEME_URI . '/assets/js/admin-media.js', array('jquery'), MD_THEME_VERSION, true);
+}
+add_action('admin_enqueue_scripts', 'md_post_media_admin_assets');
+
+/**
+ * Player markup for the current article.
+ *
+ * @param int|null $post_id Post ID.
+ * @return string
+ */
+function md_post_media_html($post_id = null) {
+    $post_id = $post_id ? $post_id : get_the_ID();
+    if (!$post_id) {
+        return '';
+    }
+
+    $audio     = absint(get_post_meta($post_id, '_md_post_audio_id', true));
+    $video     = absint(get_post_meta($post_id, '_md_post_video_id', true));
+    $video_url = esc_url_raw(get_post_meta($post_id, '_md_post_video_url', true));
+    $title     = sanitize_text_field(get_post_meta($post_id, '_md_post_media_title', true));
+
+    $players = '';
+
+    if ($audio) {
+        $players .= md_audio_player(
+            array(
+                'src'      => $audio,
+                'title'    => $title ? $title : get_the_title($post_id),
+                'subtitle' => 'نسخهٔ صوتی این مقاله',
+            )
+        );
+    }
+
+    if ($video_url) {
+        $players .= md_video_embed($video_url, $title);
+    } elseif ($video) {
+        $players .= md_video_player(
+            array(
+                'src'   => $video,
+                'title' => $title,
+            )
+        );
+    }
+
+    if (!$players) {
+        return '';
+    }
+
+    return '<div class="md-post-media">' . $players . '</div>';
+}

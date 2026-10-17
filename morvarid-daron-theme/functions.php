@@ -10,10 +10,13 @@ if (!defined('MD_THEME_URI')) define('MD_THEME_URI', get_template_directory_uri(
 require_once MD_THEME_DIR . '/inc/helpers.php';
 require_once MD_THEME_DIR . '/inc/dates.php';
 require_once MD_THEME_DIR . '/inc/media.php';
+require_once MD_THEME_DIR . '/inc/forms.php';
 require_once MD_THEME_DIR . '/inc/blocks.php';
 require_once MD_THEME_DIR . '/inc/sidebars.php';
+require_once MD_THEME_DIR . '/inc/social.php';
 require_once MD_THEME_DIR . '/inc/post-types.php';
 require_once MD_THEME_DIR . '/inc/academy.php';
+require_once MD_THEME_DIR . '/inc/course-builder.php';
 require_once MD_THEME_DIR . '/inc/challenges/helpers.php';
 require_once MD_THEME_DIR . '/inc/challenges/ajax.php';
 require_once MD_THEME_DIR . '/inc/challenges/admin.php';
@@ -117,10 +120,14 @@ add_action('admin_init',function(){
  foreach(['magazine_title'=>'عنوان مجله','academy_title'=>'عنوان آکادمی','academy_intro'=>'توضیحات آکادمی','challenges_title'=>'عنوان چالش‌ها','challenges_intro'=>'توضیحات چالش‌ها','magazine_intro'=>'توضیحات مجله','primary_color'=>'رنگ اصلی (HEX)','items_per_page'=>'تعداد کارت در هر صفحه'] as $key=>$label){
  add_settings_field($key,$label,function($args){$o=get_option('md_theme_options',[]);$k=$args['key'];$v=$o[$k]??'';echo '<input class="regular-text" type="'.($k==='items_per_page'?'number':'text').'" name="md_theme_options['.esc_attr($k).']" value="'.esc_attr($v).'" '.($k==='items_per_page'?'min="3" max="24"':'').'/>';},'md-theme-options','md_general',['key'=>$key]);
  }
+ add_settings_section('md_social','شبکه‌های اجتماعی (کانال بله، تلگرام و اینستاگرام)','__return_false','md-theme-options');
+ foreach(['telegram_url'=>'لینک کانال تلگرام','bale_url'=>'لینک کانال بله','instagram_url'=>'لینک پیج اینستاگرام'] as $key=>$label){
+ add_settings_field($key,$label,function($args){$o=get_option('md_theme_options',[]);$k=$args['key'];$v=$o[$k]??'';echo '<input class="regular-text" type="url" dir="ltr" placeholder="https://" name="md_theme_options['.esc_attr($k).']" value="'.esc_attr($v).'"/>';},'md-theme-options','md_social',['key'=>$key]);
+ }
 });
-function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));return $out;}
+function md_sanitize_theme_options($input){$out=[];foreach(['magazine_title','academy_title','academy_intro','challenges_title','challenges_intro','magazine_intro'] as $k)$out[$k]=sanitize_text_field($input[$k]??'');$out['primary_color']=sanitize_hex_color($input['primary_color']??'')?:'#326d62';$out['items_per_page']=max(3,min(24,absint($input['items_per_page']??9)));foreach(['telegram_url','bale_url','instagram_url'] as $k)$out[$k]=esc_url_raw($input[$k]??'');return $out;}
 function md_theme_option($key,$default=''){ $o=get_option('md_theme_options',[]);return isset($o[$key])&&$o[$key]!==''?$o[$key]:$default;}
-function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی. ویرایش ترتیب صفحه اصلی از «برگه‌ها ← خانه» انجام می‌شود. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
+function md_theme_options_page(){if(!current_user_can('edit_theme_options'))return;echo '<div class="wrap"><h1>تنظیمات قالب مروارید درون</h1><p>مدیریت رنگ و عناوین مجله و آکادمی و لینک کانال‌های بله، تلگرام و اینستاگرام. ویرایش ترتیب صفحه اصلی از «برگه‌ها ← خانه» و مدیریت فرم درخواست از برگهٔ «فرم ثبت درخواست» انجام می‌شود. مدیریت سایدبار از نمایش ← ابزارک‌ها است.</p><form method="post" action="options.php">';settings_fields('md_theme_options');do_settings_sections('md-theme-options');submit_button('ذخیره تنظیمات');echo '</form></div>';}
 add_action('wp_enqueue_scripts',function(){ $c=md_theme_option('primary_color','#326d62');wp_add_inline_style('md-main',':root{--md-accent:'.esc_attr($c).';} .md-search-button,.md-academy-pill.is-active{background:var(--md-accent)}');},20);
 function md_pretty_search($only_posts=true){$action=home_url('/');$id=wp_unique_id('md-search-');return '<form role="search" method="get" class="md-pretty-search" action="'.esc_url($action).'"><label class="screen-reader-text" for="'.esc_attr($id).'">جستجو در مجله</label><span class="md-search-icon" aria-hidden="true">⌕</span><input id="'.esc_attr($id).'" type="search" name="s" placeholder="در مجله جستجو کنید…" value="'.esc_attr(get_search_query()).'" />'.($only_posts?'<input type="hidden" name="post_type" value="post">':'').'<button class="md-search-button" type="submit">جستجو ←</button></form>';}
 add_filter('get_search_form',function($form){if(is_home()||is_singular('post')||is_category()||is_tag())return md_pretty_search();return $form;});
@@ -183,4 +190,4 @@ add_action('init', function() {
  foreach($blocks as $slug=>$fields){$attributes=[];foreach($fields as $field=>$default)$attributes[$field]=['type'=>(is_int($default)?'number':(is_bool($default)?'boolean':(is_array($default)?'array':'string'))),'default'=>$default];
  register_block_type('morvarid/'.$slug,['api_version'=>2,'editor_script'=>$script,'attributes'=>$attributes,'render_callback'=>'md_design_block_render']);}
 });
-add_action('enqueue_block_assets', function(){wp_enqueue_style('md-gutenberg-shared',get_template_directory_uri().'/assets/css/gutenberg-blocks.css',[], MD_THEME_VERSION);});
+add_action('enqueue_block_assets', function(){wp_enqueue_style('md-gutenberg-shared',get_template_directory_uri().'/assets/css/gutenberg-blocks.css',[], MD_THEME_VERSION);wp_enqueue_style('md-forms',get_template_directory_uri().'/assets/css/forms.css',['md-gutenberg-shared'], MD_THEME_VERSION);});

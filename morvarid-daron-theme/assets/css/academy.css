@@ -250,3 +250,46 @@
     font-size: clamp(23px, 3vw, 34px);
     margin-bottom: 8px;
 }
+
+/* Course lessons grouped by chapter. */
+.md-lesson-chapters {
+    display: grid;
+    gap: 6px;
+}
+
+.md-lesson-chapter-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 26px 0 4px;
+    font-size: 17px;
+    color: var(--green, #28594b);
+}
+
+.md-lesson-chapter-title:first-child {
+    margin-top: 8px;
+}
+
+.md-lesson-chapter-title span {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--sage, #dce8dd);
+    color: var(--green, #28594b);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.md-lesson-chapters .md-lesson-list {
+    margin-top: 6px;
+}
+
+.md-filter-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 4px;
+    color: var(--muted, #60716a);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}

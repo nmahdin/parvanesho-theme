@@ -1,0 +1,224 @@
+/*
+ * Morvarid Daron — request form and form builder previews.
+ */
+
+.md-request-form {
+    margin: 34px 0;
+    padding: clamp(22px, 4vw, 42px);
+    background: linear-gradient(160deg, #fffdfa 0%, #f7f1e7 100%);
+    border: 1px solid var(--line, #e5e9e2);
+    border-radius: 28px;
+    box-shadow: 0 18px 44px rgba(35, 59, 53, 0.07);
+}
+
+.md-request-head {
+    max-width: 680px;
+    margin-bottom: 26px;
+}
+
+.md-request-head h2 {
+    margin: 8px 0 10px;
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.5;
+    color: var(--ink, #233b35);
+}
+
+.md-request-head p {
+    margin: 0;
+    color: var(--muted, #60716a);
+    line-height: 2;
+}
+
+.md-request-service {
+    margin-top: 10px !important;
+    padding: 10px 16px;
+    display: inline-block;
+    border-radius: 999px;
+    background: var(--sage, #dce8dd);
+    color: var(--green, #28594b) !important;
+    font-size: 13px;
+}
+
+/* ------------------------------------------------------------------- form */
+
+.md-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+}
+
+.md-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.md-form-field-wide {
+    grid-column: 1 / -1;
+}
+
+.md-form-field label {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--ink, #233b35);
+}
+
+.md-form-required {
+    color: #b4553f;
+}
+
+.md-form-hint {
+    margin: -2px 0 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted, #60716a);
+}
+
+.md-form-date {
+    letter-spacing: 0.04em;
+}
+
+.md-form-field input,
+.md-form-field select,
+.md-form-field textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #d9e3dd;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink, #233b35);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.7;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.md-form-field textarea {
+    resize: vertical;
+    min-height: 130px;
+}
+
+.md-form-field input:focus,
+.md-form-field select:focus,
+.md-form-field textarea:focus {
+    outline: none;
+    border-color: var(--green, #28594b);
+    box-shadow: 0 0 0 4px rgba(40, 89, 75, 0.12);
+}
+
+.md-form-field input::placeholder,
+.md-form-field textarea::placeholder {
+    color: #9caaa3;
+}
+
+.md-form-field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #5b7a6f 50%), linear-gradient(135deg, #5b7a6f 50%, transparent 50%);
+    background-position: calc(1.1em) calc(50% + 1px), calc(1.1em + 6px) calc(50% + 1px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-inline-start: 38px;
+}
+
+.md-form-honeypot {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.md-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 26px;
+}
+
+.md-form-submit {
+    min-width: 190px;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.md-form-privacy {
+    margin: 0;
+    color: var(--muted, #60716a);
+    font-size: 12.5px;
+}
+
+/* ----------------------------------------------------------------- notices */
+
+.md-form-notice {
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+}
+
+.md-form-notice strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.md-form-notice p {
+    margin: 0;
+    line-height: 1.9;
+    font-size: 14px;
+}
+
+.md-form-notice-success {
+    background: #e8f4ec;
+    border-color: #c6e3d1;
+    color: #1f5b42;
+}
+
+.md-form-notice-error {
+    background: #fbeeea;
+    border-color: #efcfc5;
+    color: #8d3b28;
+}
+
+/* --------------------------------------------------------- editor preview */
+
+.wp-block .md-request-form form,
+.block-editor-block-list__block .md-request-form form {
+    pointer-events: none;
+}
+
+.md-form-fields-editor {
+    display: grid;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.md-form-field-row {
+    padding: 12px;
+    border: 1px solid #e1e6e0;
+    border-radius: 12px;
+    background: #fafbf8;
+}
+
+.md-form-field-row .components-base-control {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+    .md-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .md-request-form {
+        padding: 22px 18px;
+        border-radius: 22px;
+    }
+
+    .md-form-submit {
+        width: 100%;
+    }
+}

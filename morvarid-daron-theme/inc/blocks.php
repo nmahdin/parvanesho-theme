@@ -487,6 +487,19 @@ function md_register_extra_blocks() {
                 'count'    => array('type' => 'number', 'default' => 3),
             ),
         ),
+        'request-form'   => array(
+            'render'     => 'md_block_request_form',
+            'attributes' => array(
+                'title'          => array('type' => 'string', 'default' => 'درخواست جلسه'),
+                'intro'          => array('type' => 'string', 'default' => 'برای هماهنگی جلسه، فرم زیر را پر کنید؛ در اولین فرصت با شما تماس می‌گیریم.'),
+                'submitLabel'    => array('type' => 'string', 'default' => 'ارسال درخواست'),
+                'successMessage' => array('type' => 'string', 'default' => 'درخواست شما با موفقیت ثبت شد. به‌زودی با شما تماس می‌گیریم.'),
+                'fields'         => array(
+                    'type'    => 'array',
+                    'default' => md_request_default_fields(),
+                ),
+            ),
+        ),
     );
 
     foreach ($blocks as $slug => $config) {

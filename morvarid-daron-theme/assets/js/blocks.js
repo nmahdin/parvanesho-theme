@@ -92,6 +92,99 @@
         );
     }
 
+    var requestFieldTypes = [
+        { label: 'متن کوتاه', value: 'text' },
+        { label: 'ایمیل', value: 'email' },
+        { label: 'شماره تماس', value: 'tel' },
+        { label: 'عدد', value: 'number' },
+        { label: 'نشانی وب', value: 'url' },
+        { label: 'تاریخ', value: 'date' },
+        { label: 'انتخابی', value: 'select' },
+        { label: 'متن بلند', value: 'textarea' }
+    ];
+
+    function updateRequestField(props, index, key, value) {
+        var fields = (props.attributes.fields || []).slice();
+        var patch = {};
+        patch[key] = value;
+        fields[index] = Object.assign({}, fields[index], patch);
+        props.setAttributes({ fields: fields });
+    }
+
+    function addRequestField(props) {
+        var fields = (props.attributes.fields || []).slice();
+        fields.push({ label: 'فیلد تازه', type: 'text', required: false, placeholder: '', options: '' });
+        props.setAttributes({ fields: fields });
+    }
+
+    function removeRequestField(props, index) {
+        var fields = (props.attributes.fields || []).slice();
+        fields.splice(index, 1);
+        props.setAttributes({ fields: fields });
+    }
+
+    function requestFieldsEditor(props) {
+        var fields = props.attributes.fields || [];
+        var rows = fields.map(function (item, index) {
+            var controls = [
+                el(TextControl, {
+                    key: 'label',
+                    label: 'عنوان فیلد ' + (index + 1),
+                    value: item.label || '',
+                    onChange: function (value) { updateRequestField(props, index, 'label', value); }
+                }),
+                el(SelectControl, {
+                    key: 'type',
+                    label: 'نوع فیلد',
+                    value: item.type || 'text',
+                    options: requestFieldTypes,
+                    onChange: function (value) { updateRequestField(props, index, 'type', value); }
+                }),
+                el(ToggleControl, {
+                    key: 'required',
+                    label: 'فیلد الزامی باشد',
+                    checked: !!item.required,
+                    onChange: function (value) { updateRequestField(props, index, 'required', value); }
+                }),
+                el(TextControl, {
+                    key: 'placeholder',
+                    label: 'متن راهنمای داخل فیلد',
+                    value: item.placeholder || '',
+                    onChange: function (value) { updateRequestField(props, index, 'placeholder', value); }
+                })
+            ];
+
+            if ('select' === item.type) {
+                controls.push(el(TextareaControl, {
+                    key: 'options',
+                    label: 'گزینه‌ها (هر خط یک مورد)',
+                    value: item.options || '',
+                    onChange: function (value) { updateRequestField(props, index, 'options', value); }
+                }));
+            }
+
+            controls.push(el(Button, {
+                key: 'remove',
+                variant: 'link',
+                isDestructive: true,
+                onClick: function () { removeRequestField(props, index); }
+            }, 'حذف این فیلد'));
+
+            return el('div', { key: 'request-field-' + index, className: 'md-form-field-row' }, controls);
+        });
+
+        rows.push(el(Button, {
+            key: 'add-request-field',
+            variant: 'secondary',
+            onClick: function () { addRequestField(props); }
+        }, '+ افزودن فیلد'));
+
+        return el('div', { className: 'md-form-fields-editor' },
+            el('p', { className: 'components-base-control__help' }, 'فیلدهای فرم را همین‌جا مدیریت کنید؛ هر فیلد در سایت نمایش داده می‌شود.'),
+            rows
+        );
+    }
+
     var attributeMap = {
         'course-grid': {
             title: { type: 'string', default: 'دوره‌های آکادمی' },
@@ -139,6 +232,22 @@
             title: { type: 'string', default: 'خدمات کوچینگ' },
             subtitle: { type: 'string', default: '' },
             count: { type: 'number', default: 3 }
+        },
+        'request-form': {
+            title: { type: 'string', default: 'درخواست جلسه' },
+            intro: { type: 'string', default: '' },
+            submitLabel: { type: 'string', default: 'ارسال درخواست' },
+            successMessage: { type: 'string', default: '' },
+            fields: {
+                type: 'array',
+                default: [
+                    { label: 'نام و نام خانوادگی', type: 'text', required: true, placeholder: 'نام شما', options: '' },
+                    { label: 'شماره تماس', type: 'tel', required: true, placeholder: '۰۹۱۲…', options: '' },
+                    { label: 'ایمیل', type: 'email', required: false, placeholder: '', options: '' },
+                    { label: 'خدمت مورد نظر', type: 'select', required: false, placeholder: '', options: 'مشاوره فردی\nمشاوره خانواده\nهمراهی نوجوان' },
+                    { label: 'توضیح درخواست', type: 'textarea', required: true, placeholder: 'کمی از موقعیت خود و زمان مناسب بنویسید…', options: '' }
+                ]
+            }
         }
     };
 
@@ -314,6 +423,29 @@
                         max: 12,
                         onChange: function (value) { props.setAttributes({ count: value }); }
                     })
+                ];
+            }
+        },
+        {
+            slug: 'request-form',
+            title: 'فرم ثبت درخواست',
+            icon: 'feedback',
+            description: 'فرم درخواست جلسه با فیلدهای کاملاً قابل ویرایش.',
+            fields: function (props) {
+                return [
+                    field(props, 'title', 'عنوان فرم'),
+                    el(TextareaControl, {
+                        label: 'توضیح بالای فرم',
+                        value: props.attributes.intro || '',
+                        onChange: function (value) { props.setAttributes({ intro: value }); }
+                    }),
+                    field(props, 'submitLabel', 'متن دکمه ارسال'),
+                    el(TextareaControl, {
+                        label: 'پیام پس از ثبت موفق',
+                        value: props.attributes.successMessage || '',
+                        onChange: function (value) { props.setAttributes({ successMessage: value }); }
+                    }),
+                    requestFieldsEditor(props)
                 ];
             }
         }

@@ -68,7 +68,7 @@ function md_sidebar_context() {
     if (
         is_singular(array('md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
         is_post_type_archive(array('md_course', 'md_lesson', 'md_podcast', 'md_resource')) ||
-        is_tax('md_academy_cat')
+        is_tax('md_academy_cat') || is_tax('md_resource_cat')
     ) {
         return 'academy';
     }
@@ -106,6 +106,9 @@ function md_render_sidebar($context = '', $layout = 'right') {
     } else {
         md_sidebar_fallback($context);
     }
+
+    // The social channels always close the sidebar, even with custom widgets.
+    md_sidebar_social();
 
     echo '</aside>';
 }
@@ -470,7 +473,13 @@ function md_sidebar_lesson_promo() {
  * Academy taxonomy list.
  */
 function md_sidebar_academy_categories() {
-    md_sidebar_categories('md_academy_cat', 'دسته‌های آکادمی');
+    $is_resource = is_singular('md_resource') || is_post_type_archive('md_resource') || is_tax('md_resource_cat');
+    if ($is_resource) {
+        md_sidebar_categories('md_resource_cat', 'دسته‌بندی منابع');
+        return;
+    }
+
+    md_sidebar_categories('md_academy_cat', 'دسته‌بندی دوره‌ها');
 }
 
 /**

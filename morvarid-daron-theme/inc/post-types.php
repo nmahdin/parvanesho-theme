@@ -103,6 +103,30 @@ function md_register_content_types() {
     }
 
     /*
+     * Coaching requests are stored privately. The form is a Gutenberg block on
+     * the «فرم ثبت درخواست» page, so no new request can be added manually.
+     */
+    if (!post_type_exists('md_request')) {
+        register_post_type('md_request', array(
+            'labels'             => md_post_type_labels('درخواست', 'درخواست‌ها', 'درخواست‌ها'),
+            'public'             => false,
+            'publicly_queryable' => false,
+            'exclude_from_search'=> true,
+            'show_ui'            => true,
+            'show_in_menu'       => 'edit.php?post_type=md_service',
+            'show_in_rest'       => false,
+            'menu_icon'          => 'dashicons-email-alt',
+            'capability_type'    => 'post',
+            'map_meta_cap'       => true,
+            'hierarchical'       => false,
+            'supports'           => array('title'),
+            'capabilities'       => array('create_posts' => 'do_not_allow'),
+            'rewrite'            => false,
+            'query_var'          => false,
+        ));
+    }
+
+    /*
      * Challenge days are deliberately hidden from the admin menu. They are
      * managed from the parent challenge screen, exactly as the requirements
      * document asks for.
@@ -142,7 +166,7 @@ function md_register_content_taxonomies() {
 
     if (!taxonomy_exists('md_academy_cat')) {
         register_taxonomy('md_academy_cat', array('md_course', 'md_lesson', 'md_podcast'), array_merge($common, array(
-            'labels'       => md_taxonomy_labels('دسته آکادمی', 'دسته‌های آکادمی'),
+            'labels'       => md_taxonomy_labels('دسته دوره و آکادمی', 'دسته‌های دوره و آکادمی'),
             'rewrite'      => array('slug' => 'academy/category', 'with_front' => false),
             'show_in_menu' => 'edit.php?post_type=md_course',
         )));

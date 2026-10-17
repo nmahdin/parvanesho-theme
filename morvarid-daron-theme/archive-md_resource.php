@@ -15,6 +15,8 @@ get_header();
             <p>تمرین مورد علاقه‌ات را انتخاب کن و قدم بعدی را بردار.</p>
         </header>
 
+        <?php echo md_resource_categories_nav(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
         <div class="md-exercise-filters" role="group" aria-label="فیلتر تمرین‌ها">
             <button type="button" class="active" data-md-filter="all" aria-pressed="true">همه تمرین‌ها</button>
             <button type="button" data-md-filter="reflection" aria-pressed="false">تأمل و خودشناسی</button>
@@ -27,23 +29,9 @@ get_header();
                 <?php
                 while (have_posts()) :
                     the_post();
-                    $id      = get_the_ID();
-                    $kind    = get_post_meta($id, '_md_resource_kind', true);
-                    $kind    = $kind ? $kind : 'reflection';
-                    $minutes = absint(get_post_meta($id, '_md_resource_minutes', true));
-                    $minutes = $minutes ? $minutes : 5;
-                    ?>
-                    <article class="md-exercise-card" data-kind="<?php echo esc_attr($kind); ?>">
-                        <div class="md-exercise-top">
-                            <span class="md-exercise-symbol" aria-hidden="true"><?php echo 'download' === $kind ? '↓' : ('practice' === $kind ? '✓' : '✦'); ?></span>
-                            <span class="md-exercise-time">حدود <?php echo esc_html(md_fa_num($minutes)); ?> دقیقه</span>
-                        </div>
-                        <span class="md-exercise-type"><?php echo esc_html(md_resource_kind_label($kind)); ?></span>
-                        <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-                        <p><?php echo esc_html(md_trim_text(get_the_excerpt() ? get_the_excerpt() : get_the_content(), 20)); ?></p>
-                        <a class="md-exercise-start" href="<?php the_permalink(); ?>">شروع این تمرین <span aria-hidden="true">←</span></a>
-                    </article>
-                <?php endwhile; ?>
+                    md_resource_card(get_the_ID());
+                endwhile;
+                ?>
             <?php else : ?>
                 <p class="md-exercise-empty">هنوز تمرینی منتشر نشده است.</p>
             <?php endif; ?>

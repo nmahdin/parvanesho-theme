@@ -66,7 +66,8 @@ function md_academy_meta_fields($post_type) {
 
     if ('md_lesson' === $post_type) {
         $fields['_md_course_id'] = array('label' => 'دوره والد', 'type' => 'post_select', 'post_type' => 'md_course');
-        $fields['_md_lesson_order'] = array('label' => 'ترتیب جلسه', 'type' => 'number', 'help' => 'عدد کوچک‌تر، جلسه را بالاتر نشان می‌دهد.');
+        $fields['_md_lesson_chapter'] = array('label' => 'فصل دوره', 'type' => 'chapter', 'help' => 'فصل‌ها از پنل «ساخت دوره» در ویرایشگر دوره ساخته می‌شوند.');
+        $fields['_md_lesson_order'] = array('label' => 'ترتیب جلسه', 'type' => 'number', 'help' => 'ترتیب در پنل «ساخت دوره» به‌صورت خودکار مدیریت می‌شود.');
         $fields['_md_duration'] = array('label' => 'مدت جلسه', 'type' => 'text', 'help' => 'مثلاً ۱۸ دقیقه');
         $fields['_md_media_kind'] = array(
             'label'   => 'نوع محتوا',
@@ -152,12 +153,12 @@ function md_course_lessons($course_id, $statuses = array('publish', 'draft', 'pe
         return array();
     }
 
-    return get_posts(array(
+    $lessons = get_posts(array(
         'post_type'      => 'md_lesson',
         'posts_per_page' => -1,
         'post_status'    => $statuses,
-        'meta_key'       => '_md_lesson_order',
-        'orderby'        => array('meta_value_num' => 'ASC', 'date' => 'ASC'),
+        // No meta_key join: a legacy lesson without _md_lesson_order must still show up.
+        'orderby'        => array('date' => 'ASC', 'ID' => 'ASC'),
         'meta_query'     => array(
             array(
                 'key'     => '_md_course_id',
@@ -168,234 +169,16 @@ function md_course_lessons($course_id, $statuses = array('publish', 'draft', 'pe
         ),
         'no_found_rows'  => true,
     ));
+
+    if (function_exists('md_course_sort_lessons') && function_exists('md_course_chapters')) {
+        $lessons = md_course_sort_lessons($lessons, md_course_chapters($course_id));
+    }
+
+    return $lessons;
 }
 
-/**
- * Add the "course lessons" meta box.
- *
- * @param string  $post_type Post type.
- * @param WP_Post $post      Post object.
- */
-function md_course_add_lessons_meta_box($post_type, $post) {
-    if ('md_course' !== $post_type) {
-        return;
-    }
-
-    add_meta_box(
-        'md_course_lessons',
-        'جلسات دوره',
-        'md_course_lessons_box',
-        'md_course',
-        'normal',
-        'high'
-    );
-}
-add_action('add_meta_boxes', 'md_course_add_lessons_meta_box', 11, 2);
-
-/**
- * Render the lessons manager on the course screen.
- *
- * @param WP_Post $post Course post.
- */
-function md_course_lessons_box($post) {
-    if ('auto-draft' === $post->post_status) {
-        echo '<p>ابتدا دوره را ذخیره کنید تا بتوانید جلسه‌ها را اضافه کنید.</p>';
-        return;
-    }
-
-    $lessons = md_course_lessons($post->ID);
-    $new_url = add_query_arg(
-        array('post_type' => 'md_lesson', 'md_course_id' => $post->ID),
-        admin_url('post-new.php')
-    );
-    ?>
-    <div class="md-course-lessons">
-        <?php if ($lessons) : ?>
-            <table class="widefat striped md-lessons-table">
-                <thead>
-                    <tr>
-                        <th class="md-col-number">#</th>
-                        <th>عنوان جلسه</th>
-                        <th class="md-col-status">وضعیت</th>
-                        <th class="md-col-actions">عملیات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($lessons as $index => $lesson) : ?>
-                        <?php
-                        $status_object = get_post_status_object($lesson->post_status);
-                        $edit_url      = get_edit_post_link($lesson->ID, 'raw');
-                        ?>
-                        <tr>
-                            <td class="md-col-number"><?php echo esc_html(md_fa_num($index + 1)); ?></td>
-                            <td>
-                                <strong><a href="<?php echo esc_url($edit_url); ?>"><?php echo esc_html(get_the_title($lesson)); ?></a></strong>
-                            </td>
-                            <td class="md-col-status">
-                                <span class="md-status-pill md-status-<?php echo esc_attr($lesson->post_status); ?>">
-                                    <?php echo esc_html($status_object ? $status_object->label : $lesson->post_status); ?>
-                                </span>
-                            </td>
-                            <td class="md-col-actions">
-                                <a class="button button-small" href="<?php echo esc_url($edit_url); ?>">ویرایش</a>
-
-                                <?php if ($index > 0) : ?>
-                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-inline-form">
-                                        <input type="hidden" name="action" value="md_course_move_lesson">
-                                        <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
-                                        <input type="hidden" name="lesson_id" value="<?php echo esc_attr($lesson->ID); ?>">
-                                        <input type="hidden" name="direction" value="up">
-                                        <?php wp_nonce_field('md_course_move_lesson_' . $post->ID); ?>
-                                        <button type="submit" class="button button-small" aria-label="انتقال به بالا">↑</button>
-                                    </form>
-                                <?php endif; ?>
-
-                                <?php if ($index < count($lessons) - 1) : ?>
-                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-inline-form">
-                                        <input type="hidden" name="action" value="md_course_move_lesson">
-                                        <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
-                                        <input type="hidden" name="lesson_id" value="<?php echo esc_attr($lesson->ID); ?>">
-                                        <input type="hidden" name="direction" value="down">
-                                        <?php wp_nonce_field('md_course_move_lesson_' . $post->ID); ?>
-                                        <button type="submit" class="button button-small" aria-label="انتقال به پایین">↓</button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p class="md-lessons-empty">هنوز جلسه‌ای برای این دوره ثبت نشده است. از فرم پایین اولین جلسه را بسازید.</p>
-        <?php endif; ?>
-
-        <div class="md-lessons-add">
-            <h3>افزودن جلسه تازه</h3>
-            <p class="description">عنوان جلسه را وارد کنید؛ یک درس پیش‌نویس ساخته می‌شود و شما را به ویرایشگر آن می‌برد. متن، ویدیو، صوت و مدت جلسه را همان‌جا کامل کنید.</p>
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-lesson-add-form">
-                <input type="hidden" name="action" value="md_course_add_lesson">
-                <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
-                <?php wp_nonce_field('md_course_add_lesson_' . $post->ID); ?>
-                <input type="text" name="lesson_title" class="regular-text" placeholder="مثلاً: جلسه اول — شناخت الگوها" required>
-                <button type="submit" class="button button-primary">افزودن جلسه</button>
-                <a class="button" href="<?php echo esc_url($new_url); ?>">افزودن با ویرایشگر کامل</a>
-            </form>
-        </div>
-
-        <p class="description">ترتیب نمایش جلسه‌ها در سایت با همین ترتیب جدول تعیین می‌شود و در صفحه دوره به‌صورت فهرست شماره‌دار نمایش داده می‌شود.</p>
-    </div>
-    <?php
-}
-
-/**
- * Handle "add lesson" submissions from the course screen.
- */
-function md_course_add_lesson_handler() {
-    $course_id = isset($_POST['course_id']) ? absint($_POST['course_id']) : 0;
-
-    check_admin_referer('md_course_add_lesson_' . $course_id);
-
-    if (!$course_id || !current_user_can('edit_post', $course_id)) {
-        wp_die('اجازه دسترسی به این دوره را ندارید.', '', array('response' => 403));
-    }
-
-    $title = isset($_POST['lesson_title']) ? sanitize_text_field(wp_unslash($_POST['lesson_title'])) : '';
-
-    if ('' === $title) {
-        wp_safe_redirect(add_query_arg('md_notice', 'empty_title', get_edit_post_link($course_id, 'raw')));
-        exit;
-    }
-
-    $lessons = md_course_lessons($course_id);
-    $order   = 0;
-    foreach ($lessons as $lesson) {
-        $order = max($order, (int) get_post_meta($lesson->ID, '_md_lesson_order', true));
-    }
-
-    $lesson_id = wp_insert_post(
-        array(
-            'post_type'   => 'md_lesson',
-            'post_title'  => $title,
-            'post_status' => 'draft',
-        ),
-        true
-    );
-
-    if (is_wp_error($lesson_id)) {
-        wp_safe_redirect(add_query_arg('md_notice', 'error', get_edit_post_link($course_id, 'raw')));
-        exit;
-    }
-
-    update_post_meta($lesson_id, '_md_course_id', $course_id);
-    update_post_meta($lesson_id, '_md_lesson_order', $order + 1);
-
-    wp_safe_redirect(get_edit_post_link($lesson_id, 'raw'));
-    exit;
-}
-add_action('admin_post_md_course_add_lesson', 'md_course_add_lesson_handler');
-
-/**
- * Move a lesson up or down inside its course.
- */
-function md_course_move_lesson_handler() {
-    $course_id = isset($_POST['course_id']) ? absint($_POST['course_id']) : 0;
-
-    check_admin_referer('md_course_move_lesson_' . $course_id);
-
-    if (!$course_id || !current_user_can('edit_post', $course_id)) {
-        wp_die('اجازه دسترسی به این دوره را ندارید.', '', array('response' => 403));
-    }
-
-    $lesson_id = isset($_POST['lesson_id']) ? absint($_POST['lesson_id']) : 0;
-    $direction = isset($_POST['direction']) && 'up' === $_POST['direction'] ? 'up' : 'down';
-
-    $lessons = md_course_lessons($course_id);
-    $ids     = wp_list_pluck($lessons, 'ID');
-    $index   = array_search($lesson_id, $ids, true);
-
-    if (false !== $index) {
-        $target = 'up' === $direction ? $index - 1 : $index + 1;
-        if ($target >= 0 && $target < count($ids)) {
-            $ids[$index] = $ids[$target];
-            $ids[$target] = $lesson_id;
-        }
-    }
-
-    foreach ($ids as $position => $id) {
-        update_post_meta($id, '_md_lesson_order', $position + 1);
-    }
-
-    wp_safe_redirect(add_query_arg('md_notice', 'moved', get_edit_post_link($course_id, 'raw')));
-    exit;
-}
-add_action('admin_post_md_course_move_lesson', 'md_course_move_lesson_handler');
-
-/**
- * Notices for the course lessons manager.
- */
-function md_course_lessons_notices() {
-    if (!isset($_GET['md_notice'])) {
-        return;
-    }
-
-    $messages = array(
-        'empty_title' => array('error', 'عنوان جلسه را وارد کنید.'),
-        'error'       => array('error', 'ساخت جلسه انجام نشد. دوباره تلاش کنید.'),
-        'moved'       => array('success', 'ترتیب جلسه‌ها به‌روزرسانی شد.'),
-    );
-
-    $key = sanitize_key(wp_unslash($_GET['md_notice']));
-    if (!isset($messages[$key])) {
-        return;
-    }
-
-    printf(
-        '<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
-        esc_attr($messages[$key][0]),
-        esc_html($messages[$key][1])
-    );
-}
-add_action('admin_notices', 'md_course_lessons_notices');
+// Lessons and chapters are managed in the Gutenberg course builder.
+// See inc/course-builder.php for the panel, the modal and the AJAX handlers.
 
 /**
  * Render the academy meta box.
@@ -468,6 +251,15 @@ function md_academy_render_field($key, $field, $post_id) {
         echo '<button type="button" class="button md-media-remove" data-target="' . esc_attr($id) . '">حذف</button>';
         echo '<span class="md-media-name" id="' . esc_attr($id) . '_name">' . esc_html($media_name) . '</span>';
         echo '</div>';
+    } elseif ('chapter' === $type) {
+        $course_id = absint(get_post_meta($post_id, '_md_course_id', true));
+        $chapters  = function_exists('md_course_chapters') ? md_course_chapters($course_id) : array();
+        echo '<select id="' . esc_attr($id) . '" name="' . esc_attr($key) . '">';
+        echo '<option value="">— بدون فصل —</option>';
+        foreach ($chapters as $chapter) {
+            echo '<option value="' . esc_attr($chapter) . '" ' . selected($value, $chapter, false) . '>' . esc_html($chapter) . '</option>';
+        }
+        echo '</select>';
     } elseif ('number' === $type) {
         echo '<input type="number" min="0" step="1" id="' . esc_attr($id) . '" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="small-text">';
     } else {
@@ -597,7 +389,7 @@ function md_academy_queried_type() {
  * @return string
  */
 function md_academy_archive_title() {
-    if (is_tax('md_academy_cat')) {
+    if (is_tax('md_academy_cat') || is_tax('md_resource_cat')) {
         return single_term_title('', false);
     }
     $type = md_academy_queried_type();
@@ -622,12 +414,12 @@ function md_academy_archive_title() {
  * @return string
  */
 function md_academy_archive_intro() {
-    if (is_tax('md_academy_cat')) {
+    if (is_tax('md_academy_cat') || is_tax('md_resource_cat')) {
         $term = get_queried_object();
         if ($term && !empty($term->description)) {
             return $term->description;
         }
-        return 'محتوای آکادمی با موضوع ' . single_term_title('', false);
+        return (is_tax('md_resource_cat') ? 'منابع و تمرین‌های دستهٔ ' : 'محتوای آکادمی با موضوع ') . single_term_title('', false);
     }
     $type = md_academy_queried_type();
     if ('md_lesson' === $type) {
@@ -651,14 +443,19 @@ function md_academy_archive_intro() {
 if (!function_exists('md_academy_filters')) {
 function md_academy_filters() {
     $types = array(
-        'md_course'  => 'دوره‌ها',
-        'md_lesson'  => 'جلسه‌ها',
-        'md_podcast' => 'پادکست‌ها',
+        'md_course'   => 'دوره‌ها',
+        'md_lesson'   => 'جلسه‌ها',
+        'md_podcast'  => 'پادکست‌ها',
+        'md_resource' => 'منابع',
     );
 
     $current_type = md_academy_queried_type();
     if (is_tax('md_academy_cat')) {
-        $current_type = 'md_course';
+        // A category archive holds courses, lessons and podcasts together,
+        // so none of the type tabs is the active one.
+        $current_type = '';
+    } elseif (is_tax('md_resource_cat')) {
+        $current_type = 'md_resource';
     }
 
     echo '<nav class="md-academy-tabs" aria-label="نوع محتوای آکادمی">';
@@ -672,8 +469,9 @@ function md_academy_filters() {
     }
     echo '</nav>';
 
+    $taxonomy = ('md_resource' === $current_type) ? 'md_resource_cat' : 'md_academy_cat';
     $terms = get_terms(array(
-        'taxonomy'   => 'md_academy_cat',
+        'taxonomy'   => $taxonomy,
         'hide_empty' => true,
     ));
     if (is_wp_error($terms) || !$terms) {
@@ -681,10 +479,19 @@ function md_academy_filters() {
     }
 
     $all_url = $current_type ? get_post_type_archive_link($current_type) : get_post_type_archive_link('md_course');
+    if ('md_resource_cat' === $taxonomy) {
+        $label = 'دسته‌بندی منابع';
+    } elseif ('md_course' === $current_type) {
+        $label = 'دسته‌بندی دوره‌ها';
+    } else {
+        $label = 'موضوع‌های آکادمی';
+    }
+
     echo '<div class="md-filter-bar md-academy-terms">';
-    echo '<a class="md-academy-pill' . (is_tax('md_academy_cat') ? '' : ' is-active') . '" href="' . esc_url($all_url ? $all_url : home_url('/')) . '">همه موضوع‌ها</a>';
+    echo '<span class="md-filter-label">' . esc_html($label) . '</span>';
+    echo '<a class="md-academy-pill' . (is_tax($taxonomy) ? '' : ' is-active') . '" href="' . esc_url($all_url ? $all_url : home_url('/')) . '">' . ('md_resource_cat' === $taxonomy ? 'همه منابع' : 'همه موضوع‌ها') . '</a>';
     foreach ($terms as $term) {
-        $active = is_tax('md_academy_cat', $term->term_id) ? ' is-active' : '';
+        $active = is_tax($taxonomy, $term->term_id) ? ' is-active' : '';
         $link   = get_term_link($term);
         if (is_wp_error($link)) {
             continue;
@@ -847,7 +654,7 @@ if (!function_exists('md_academy_media')) {
 /**
  * List the lessons that belong to a course.
  *
- * The plugin used to provide md_academy_lessons(). This is the native fallback.
+ * Native replacement for the old plugin helper; groups the lessons by chapter.
  *
  * @param int|null $course_id Course ID.
  * @return string
@@ -860,40 +667,64 @@ if (!function_exists('md_academy_lessons')) {
         }
 
         $can_edit = current_user_can('edit_post', $course_id);
-        $lessons  = get_posts(array(
-            'post_type'      => 'md_lesson',
-            'posts_per_page' => -1,
-            'post_status'    => $can_edit ? array('publish', 'draft', 'pending', 'private') : 'publish',
-            'meta_key'       => '_md_lesson_order',
-            'orderby'        => array('meta_value_num' => 'ASC', 'date' => 'ASC'),
-            'meta_query'     => array(
-                array(
-                    'key'     => '_md_course_id',
-                    'value'   => $course_id,
-                    'compare' => '=',
-                    'type'    => 'NUMERIC',
-                ),
-            ),
-            'no_found_rows'  => true,
-        ));
+        $lessons  = md_get_course_lessons($course_id, $can_edit);
 
         if (!$lessons) {
             return '<p class="empty-note">هنوز جلسه‌ای برای این دوره ثبت نشده است.</p>';
         }
 
-        $html = '<ol class="md-lesson-list">';
-        foreach ($lessons as $index => $lesson) {
-            $duration = get_post_meta($lesson->ID, '_md_duration', true);
-            $badge    = ('draft' !== $lesson->post_status) ? '' : ' <span class="md-inline-status">پیش‌نویس</span>';
-            $html .= '<li><a href="' . esc_url(get_permalink($lesson)) . '">';
-            $html .= '<span class="md-lesson-number">' . esc_html(md_fa_num($index + 1)) . '</span>';
-            $html .= '<span class="md-lesson-title">' . esc_html(get_the_title($lesson)) . $badge . '</span>';
-            if ($duration) {
-                $html .= '<span class="md-lesson-meta">' . esc_html($duration) . '</span>';
-            }
-            $html .= '</a></li>';
+        $chapters = function_exists('md_course_chapters') ? md_course_chapters($course_id) : array();
+        $groups   = array();
+        foreach ($chapters as $chapter) {
+            $groups[$chapter] = array();
         }
-        $html .= '</ol>';
+
+        foreach ($lessons as $lesson) {
+            $chapter = function_exists('md_lesson_chapter') ? md_lesson_chapter($lesson->ID) : '';
+            if ($chapters && !in_array($chapter, $chapters, true)) {
+                $chapter = '';
+            }
+            if (!$chapters) {
+                $chapter = '';
+            }
+            if (!isset($groups[$chapter])) {
+                $groups[$chapter] = array();
+            }
+            $groups[$chapter][] = $lesson;
+        }
+
+        $html  = '<div class="md-lesson-chapters">';
+        $index = 0;
+        $chapter_index = 0;
+
+        foreach ($groups as $chapter => $items) {
+            if (!$items) {
+                continue;
+            }
+
+            if ('' !== $chapter) {
+                ++$chapter_index;
+                $html .= '<h3 class="md-lesson-chapter-title"><span>' . esc_html('فصل ' . md_fa_num($chapter_index)) . '</span>' . esc_html($chapter) . '</h3>';
+            } elseif ($chapters) {
+                $html .= '<h3 class="md-lesson-chapter-title"><span>بدون فصل</span> جلسه‌های پراکنده</h3>';
+            }
+
+            $html .= '<ol class="md-lesson-list">';
+            foreach ($items as $lesson) {
+                ++$index;
+                $duration = get_post_meta($lesson->ID, '_md_duration', true);
+                $badge    = ('draft' !== $lesson->post_status) ? '' : ' <span class="md-inline-status">پیش‌نویس</span>';
+                $html .= '<li><a href="' . esc_url(get_permalink($lesson)) . '">';
+                $html .= '<span class="md-lesson-number">' . esc_html(md_fa_num($index)) . '</span>';
+                $html .= '<span class="md-lesson-title">' . esc_html(get_the_title($lesson)) . $badge . '</span>';
+                if ($duration) {
+                    $html .= '<span class="md-lesson-meta">' . esc_html($duration) . '</span>';
+                }
+                $html .= '</a></li>';
+            }
+            $html .= '</ol>';
+        }
+        $html .= '</div>';
         return $html;
     }
 }
@@ -910,12 +741,12 @@ function md_get_course_lessons($course_id, $include_unpublished = false) {
     if ($include_unpublished && current_user_can('edit_post', $course_id)) {
         $status = array('publish', 'draft', 'pending', 'private');
     }
-    return get_posts(array(
+    $lessons = get_posts(array(
         'post_type'      => 'md_lesson',
         'posts_per_page' => -1,
         'post_status'    => $status,
-        'meta_key'       => '_md_lesson_order',
-        'orderby'        => array('meta_value_num' => 'ASC', 'date' => 'ASC'),
+        // No meta_key join: unpublished or legacy lessons are sorted in PHP.
+        'orderby'        => array('date' => 'ASC', 'ID' => 'ASC'),
         'meta_query'     => array(
             array(
                 'key'     => '_md_course_id',
@@ -926,6 +757,12 @@ function md_get_course_lessons($course_id, $include_unpublished = false) {
         ),
         'no_found_rows'  => true,
     ));
+
+    if (function_exists('md_course_sort_lessons') && function_exists('md_course_chapters')) {
+        $lessons = md_course_sort_lessons($lessons, md_course_chapters($course_id));
+    }
+
+    return $lessons;
 }
 
 /**
@@ -1052,6 +889,75 @@ function md_resource_kind_label($kind) {
 }
 
 /**
+ * One resource card, shared by the archive and the resource category page.
+ *
+ * @param int|null $post_id Resource ID.
+ */
+function md_resource_card($post_id = null) {
+    $post_id = $post_id ? $post_id : get_the_ID();
+    if (!$post_id) {
+        return;
+    }
+
+    $kind    = get_post_meta($post_id, '_md_resource_kind', true);
+    $kind    = $kind ? $kind : 'reflection';
+    $minutes = absint(get_post_meta($post_id, '_md_resource_minutes', true));
+    $minutes = $minutes ? $minutes : 5;
+    $symbols = array('download' => '↓', 'practice' => '✓', 'reflection' => '✦');
+    $symbol  = isset($symbols[$kind]) ? $symbols[$kind] : '✦';
+
+    $excerpt = get_post_field('post_excerpt', $post_id);
+    if (!$excerpt) {
+        $excerpt = get_post_field('post_content', $post_id);
+    }
+    ?>
+    <article class="md-exercise-card" data-kind="<?php echo esc_attr($kind); ?>">
+        <div class="md-exercise-top">
+            <span class="md-exercise-symbol" aria-hidden="true"><?php echo esc_html($symbol); ?></span>
+            <span class="md-exercise-time">حدود <?php echo esc_html(md_fa_num($minutes)); ?> دقیقه</span>
+        </div>
+        <span class="md-exercise-type"><?php echo esc_html(md_resource_kind_label($kind)); ?></span>
+        <h2><a href="<?php echo esc_url(get_permalink($post_id)); ?>"><?php echo esc_html(get_the_title($post_id)); ?></a></h2>
+        <p><?php echo esc_html(md_trim_text($excerpt, 20)); ?></p>
+        <a class="md-exercise-start" href="<?php echo esc_url(get_permalink($post_id)); ?>">شروع این تمرین <span aria-hidden="true">←</span></a>
+    </article>
+    <?php
+}
+
+/**
+ * Category pills for resources.
+ *
+ * @return string
+ */
+function md_resource_categories_nav() {
+    $terms = get_terms(
+        array(
+            'taxonomy'   => 'md_resource_cat',
+            'hide_empty' => true,
+        )
+    );
+    if (is_wp_error($terms) || !$terms) {
+        return '';
+    }
+
+    $html  = '<nav class="md-filter-bar md-resource-categories" aria-label="دسته‌بندی منابع">';
+    $html .= '<span class="md-filter-label">دسته‌بندی منابع</span>';
+    $html .= '<a class="md-academy-pill' . (is_tax('md_resource_cat') ? '' : ' is-active') . '" href="' . esc_url(get_post_type_archive_link('md_resource')) . '">همه منابع</a>';
+
+    foreach ($terms as $term) {
+        $link = get_term_link($term);
+        if (is_wp_error($link)) {
+            continue;
+        }
+        $active = is_tax('md_resource_cat', $term->term_id) ? ' is-active' : '';
+        $html  .= '<a class="md-academy-pill' . esc_attr($active) . '" href="' . esc_url($link) . '">' . esc_html($term->name) . '</a>';
+    }
+
+    $html .= '</nav>';
+    return $html;
+}
+
+/**
  * Download button for a resource.
  *
  * @param int|null $post_id Post ID.
@@ -1078,9 +984,20 @@ function md_resource_file_link($post_id = null) {
  */
 function md_service_booking_url($post_id = null) {
     $post_id = $post_id ? $post_id : get_the_ID();
-    $url     = esc_url_raw(get_post_meta($post_id, '_md_service_booking_url', true));
-    if (!$url) {
-        $url = get_theme_mod('md_booking_url', home_url('/contact/'));
+
+    $url = esc_url_raw(get_post_meta($post_id, '_md_service_booking_url', true));
+    if ($url) {
+        return $url;
     }
-    return $url;
+
+    $custom = get_theme_mod('md_booking_url', '');
+    if ($custom) {
+        return $custom;
+    }
+
+    if (function_exists('md_request_page_url')) {
+        return add_query_arg('md_service', $post_id, md_request_page_url());
+    }
+
+    return home_url('/request/');
 }
