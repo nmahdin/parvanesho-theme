@@ -52,7 +52,7 @@ $md_comment_count = (int) get_comments_number();
             'label_submit'         => 'ارسال دیدگاه',
             'comment_notes_before' => '<p class="md-comment-notes">دیدگاه‌ها پس از تأیید مدیر منتشر می‌شوند. نیازی به ارائه ایمیل نیست.</p>',
             'comment_field'        => '<p class="comment-form-comment"><label for="comment">دیدگاه شما</label><textarea id="comment" name="comment" cols="45" rows="6" required></textarea></p>',
-            'fields'               => array(
+            'fields'               => (function_exists('md_comment_learner') && md_comment_learner()) ? array() : array(
                 'author'  => '<p class="comment-form-author"><label for="author">نام <span class="required">*</span></label><input id="author" name="author" type="text" required autocomplete="name" /></p>',
                 'url'     => '<p class="comment-form-url"><label for="url">وب‌سایت</label><input id="url" name="url" type="url" autocomplete="url" /></p>',
 
