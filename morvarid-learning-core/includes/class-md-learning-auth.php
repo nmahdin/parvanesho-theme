@@ -404,9 +404,15 @@ final class MD_Learning_Auth {
         if (is_wp_error($session)) {
             wp_die(esc_html($session->get_error_message()), '', array('response' => 500));
         }
-        wp_safe_redirect($challenge_id ? get_permalink($challenge_id)
+        $destination = $challenge_id ? get_permalink($challenge_id)
             : ($resource_id ? get_permalink($resource_id)
-            : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard'))));
+            : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard')));
+        // Return to the enrollment form after code login. If already a member,
+        // the challenge template resolves directly to the member dashboard.
+        if ($challenge_id) {
+            $destination .= '#md-challenge-enroll';
+        }
+        wp_safe_redirect($destination);
         exit;
     }
 
