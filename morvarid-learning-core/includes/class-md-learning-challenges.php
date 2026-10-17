@@ -167,21 +167,38 @@ final class MD_Learning_Challenges {
         return get_post($member_id);
     }
 
+    /**
+     * One POST -> redirect flow. Keep guests and suspended sessions away from
+     * private challenge membership, with a visible localized form error.
+     */
     public static function join() {
         $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
-        check_admin_referer('md_learning_challenge_join_' . $challenge_id);
+        $return_url = self::valid_challenge($challenge_id)
+            ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard');
+        $return_error = function ($code) use ($return_url) {
+            wp_safe_redirect(add_query_arg('md_join_error', $code, $return_url) . '#md-challenge-enroll', 303);
+            exit;
+        };
         $learner_id = MD_Learning_Auth::current_learner_id();
         if (!$learner_id) {
-            wp_die('برای عضویت، ابتدا با کد اصلی خود وارد شوید.', '', array('response' => 403));
+            $return_error('login');
+        }
+        $nonce = isset($_POST['_wpnonce']) && is_string($_POST['_wpnonce'])
+            ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'md_learning_challenge_join_' . $challenge_id)) {
+            $return_error('expired');
+        }
+        if (!self::enabled() || !self::valid_challenge($challenge_id)) {
+            $return_error('unavailable');
         }
         if (empty($_POST['md_join_consent'])) {
-            wp_die('برای عضویت، رضایت به ذخیره پاسخ‌ها ضروری است.', '', array('response' => 400));
+            $return_error('consent');
         }
         $member = self::enroll($challenge_id, $learner_id);
         if (is_wp_error($member)) {
-            wp_die(esc_html($member->get_error_message()), '', array('response' => 409));
+            $return_error('failed');
         }
-        wp_safe_redirect(get_permalink($challenge_id), 303);
+        wp_safe_redirect(add_query_arg('md_joined', '1', get_permalink($challenge_id)) . '#md-member-days', 303);
         exit;
     }
 
@@ -192,6 +209,18 @@ final class MD_Learning_Challenges {
         $learner_id = MD_Learning_Auth::current_learner_id();
         echo '<section class="md-member-registration md-learning-challenge-join" id="md-challenge-enroll" dir="rtl">';
         echo '<h2>عضویت در چالش</h2>';
+        $error = isset($_GET['md_join_error']) && is_string($_GET['md_join_error'])
+            ? sanitize_key(wp_unslash($_GET['md_join_error'])) : '';
+        $errors = array(
+            'login' => 'برای عضویت ابتدا با کد اصلی وارد شوید.',
+            'expired' => 'اعتبار فرم پایان یافته است. صفحه را تازه کنید و دوباره اقدام کنید.',
+            'unavailable' => 'این چالش فعلاً برای عضویت در دسترس نیست.',
+            'consent' => 'پیش از عضویت، موافقت با ذخیره پیشرفت را انتخاب کنید.',
+            'failed' => 'ثبت عضویت انجام نشد. دوباره تلاش کنید یا با مدیر تماس بگیرید.',
+        );
+        if (isset($errors[$error])) {
+            echo '<p class="md-join-error" role="alert">' . esc_html($errors[$error]) . '</p>';
+        }
         if (!$learner_id) {
             $redirect_login = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('login'));
             $redirect_register = add_query_arg('md_challenge', absint($challenge_id), MD_Learning_Schema::url('register'));
@@ -200,11 +229,11 @@ final class MD_Learning_Challenges {
             echo '<a class="btn btn-light" href="' . esc_url($redirect_register) . '">ساخت پروفایل یادگیری</a></p>';
         } else {
             echo '<p>شما وارد پروفایل یکپارچه هستید؛ با تأیید، این چالش به داشبوردتان اضافه می‌شود.</p>';
-            echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+            echo '<form class="md-learning-challenge-join-form" method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="md_learning_challenge_join">';
             echo '<input type="hidden" name="challenge_id" value="' . esc_attr($challenge_id) . '">';
             wp_nonce_field('md_learning_challenge_join_' . $challenge_id);
-            echo '<label class="md-enroll-consent"><input type="checkbox" name="md_join_consent" value="1" required> با ثبت پیشرفت و پاسخ‌های این چالش در پروفایل خودم موافقم.</label>';
+            echo '<label class="md-enroll-consent"><input type="checkbox" name="md_join_consent" value="1" required> <span>با ذخیرهٔ پیشرفت و پاسخ‌های این چالش در پروفایل خودم موافقم.</span></label>';
             echo '<button type="submit" class="btn btn-primary">پیوستن به چالش</button></form>';
         }
         echo '</section>';
