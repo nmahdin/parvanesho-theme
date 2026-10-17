@@ -122,6 +122,11 @@ final class MD_Learning_Admin {
         <div class="wrap md-learning-admin" dir="rtl">
             <h1>یادگیرندگان · هویت مرکزی</h1>
             <p>مدیریت مستقل از چالش‌ها و دوره‌ها؛ بدون ایمیل و بدون حساب کاربری وردپرس.</p>
+            <p class="md-learning-admin-page-links">
+                <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('register')); ?>" target="_blank" rel="noopener">صفحه ثبت‌نام</a>
+                <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('login')); ?>" target="_blank" rel="noopener">صفحه ورود</a>
+                <a class="button" href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>" target="_blank" rel="noopener">داشبورد یادگیرنده</a>
+            </p>
 
             <?php if ($receipt && is_array($receipt)) : ?>
                 <div class="notice notice-success md-learning-admin-receipt">
