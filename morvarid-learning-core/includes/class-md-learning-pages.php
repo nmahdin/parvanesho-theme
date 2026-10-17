@@ -53,8 +53,9 @@ final class MD_Learning_Pages {
     public static function register_shortcode() {
         $challenge_id = MD_Learning_Auth::requested_challenge();
         $resource_id = MD_Learning_Auth::requested_resource();
+        $course_id = MD_Learning_Auth::requested_course();
         if (MD_Learning_Auth::current_learner_id()) {
-            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : MD_Learning_Schema::url('dashboard'));
+            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard')));
             return self::shell_start('پروفایل شما آماده است')
                 . '<p>پیش‌تر وارد حساب یادگیری خود شده‌اید.</p>'
                 . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
@@ -67,6 +68,7 @@ final class MD_Learning_Pages {
             <input type="hidden" name="action" value="md_learning_register">
             <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
             <?php if ($resource_id) : ?><input type="hidden" name="md_resource" value="<?php echo esc_attr($resource_id); ?>"><?php endif; ?>
+            <?php if ($course_id) : ?><input type="hidden" name="md_course" value="<?php echo esc_attr($course_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_register'); ?>
             <label>نام و نام خانوادگی
                 <input type="text" name="md_name" maxlength="120" autocomplete="name" required placeholder="نام شما">
@@ -80,7 +82,7 @@ final class MD_Learning_Pages {
             </div>
             <button class="md-learning-button" type="submit">ثبت‌نام و دریافت کد ۸ رقمی</button>
         </form>
-        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('login')) : MD_Learning_Schema::url('login'))); ?>">با کد قبلی وارد شوید</a>.</p>
+        <p class="md-learning-note">حساب دارید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('login')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('login')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('login')) : MD_Learning_Schema::url('login')))); ?>">با کد قبلی وارد شوید</a>.</p>
         <p class="md-learning-note">نام، راه بازیابی حساب نیست. کد و لینک را نزد خود نگه دارید؛ اگر هر دو را گم کنید، باید از مدیر کمک بگیرید.</p>
         <?php echo self::shell_end(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php
@@ -90,8 +92,9 @@ final class MD_Learning_Pages {
     public static function login_shortcode() {
         $challenge_id = MD_Learning_Auth::requested_challenge();
         $resource_id = MD_Learning_Auth::requested_resource();
+        $course_id = MD_Learning_Auth::requested_course();
         if (MD_Learning_Auth::current_learner_id()) {
-            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : MD_Learning_Schema::url('dashboard'));
+            $dest = $challenge_id ? get_permalink($challenge_id) : ($resource_id ? get_permalink($resource_id) : ($course_id ? get_permalink($course_id) : MD_Learning_Schema::url('dashboard')));
             return self::shell_start('شما وارد شده‌اید')
                 . '<p>می‌توانید مسیر یادگیری خود را ادامه دهید.</p>'
                 . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
@@ -111,6 +114,7 @@ final class MD_Learning_Pages {
             <input type="hidden" name="action" value="md_learning_login">
             <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
             <?php if ($resource_id) : ?><input type="hidden" name="md_resource" value="<?php echo esc_attr($resource_id); ?>"><?php endif; ?>
+            <?php if ($course_id) : ?><input type="hidden" name="md_course" value="<?php echo esc_attr($course_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_login'); ?>
             <label>کد ورود ۸ رقمی
                 <input type="text" name="md_code" inputmode="numeric" autocomplete="off" minlength="8" maxlength="8"
@@ -120,7 +124,7 @@ final class MD_Learning_Pages {
             <button class="md-learning-button" type="submit">ورود به داشبورد من</button>
         </form>
         <p class="md-learning-note">لینک اختصاصی خود را دارید؟ کافی است آن را باز کنید؛ نیازی به واردکردن کد نیست.</p>
-        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('register')) : MD_Learning_Schema::url('register'))); ?>">ایجاد پروفایل جدید</a>.</p>
+        <p class="md-learning-note">هنوز عضو نشده‌اید؟ <a href="<?php echo esc_url($challenge_id ? add_query_arg('md_challenge', $challenge_id, MD_Learning_Schema::url('register')) : ($resource_id ? add_query_arg('md_resource', $resource_id, MD_Learning_Schema::url('register')) : ($course_id ? add_query_arg('md_course', $course_id, MD_Learning_Schema::url('register')) : MD_Learning_Schema::url('register')))); ?>">ایجاد پروفایل جدید</a>.</p>
         <?php echo self::shell_end(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <?php
         return ob_get_clean();
