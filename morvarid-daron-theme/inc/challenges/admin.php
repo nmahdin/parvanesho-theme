@@ -119,8 +119,8 @@ function md_challenge_days_box($post) {
         ?>
         <div class="md-days-manager md-days-manager-new" id="md-challenge-days" data-challenge-id="0">
             <div class="md-days-toolbar">
-                <a class="button button-primary" href="#md-day-inline-form">افزودن روز جدید</a>
-                <span class="md-days-summary">پیش‌نویس چالش به‌صورت خودکار ساخته می‌شود.</span>
+                <button type="submit" class="button button-primary" form="post">ابتدا پیش‌نویس چالش را ذخیره کنید</button>
+                <span class="md-days-summary">پس از ذخیره، روزها و پرسش‌ها را تعریف کنید.</span>
             </div>
             <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
             <p class="md-days-save-first">
@@ -166,6 +166,8 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         </div>
 
         <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
+
+        <p><a class="button button-secondary" href="<?php echo esc_url(md_challenge_admin_dashboard_url($challenge_id)); ?>">داشبورد ثبت‌نام‌ها، لینک‌ها و گزارش شرکت‌کنندگان ←</a></p>
 
         <section class="md-days-overview" aria-label="وضعیت تولید محتوای چالش">
             <div class="md-days-kpis" id="md-days-kpis" aria-live="polite">
