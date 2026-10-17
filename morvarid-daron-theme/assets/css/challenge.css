@@ -1061,3 +1061,24 @@ margin:13px 0 0;
 .md-challenge-page .md-challenge-progress+a.btn{display:inline-flex;margin-top:24px!important}
 .md-challenge-page .md-challenge-hero-copy>.btn{margin-top:23px}
 .md-challenge-page .btn,.md-challenge-page button[type=submit]{border-radius:999px!important;box-shadow:none!important;transform:none}
+
+/* Soft ivory border and light warm shadow on all challenge day cards. */
+.md-challenge-page .md-day.md-day-accordion{
+  border:1px solid #e9dfcf!important;
+  box-shadow:0 8px 22px rgba(91,72,42,.06)!important;
+  background:#fffcf6!important;
+  border-radius:24px!important;
+}
+.md-challenge-page .md-day.md-day-accordion[open]{
+  box-shadow:0 11px 26px rgba(91,72,42,.075)!important;
+}
+.md-challenge-page .md-day.md-day-locked{
+  border-color:#ece3d5!important;
+  box-shadow:0 6px 18px rgba(91,72,42,.045)!important;
+}
+@media(max-width:650px){
+  .md-challenge-page .md-day.md-day-accordion{
+    border-radius:20px!important;
+    box-shadow:0 6px 16px rgba(91,72,42,.05)!important;
+  }
+}
