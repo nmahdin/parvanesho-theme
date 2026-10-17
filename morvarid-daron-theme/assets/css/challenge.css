@@ -991,3 +991,32 @@ body.admin-bar .md-day-nav {
 .md-challenge-grid{grid-template-columns:1fr;gap:17px}
 .md-challenge-card-body{padding:18px 19px 21px}
 }
+
+
+/* Challenge days: softly rounded containers and spacious inner sections. */
+.md-day.md-day-accordion{border-radius:25px;overflow:hidden;border-color:#e3ece5}
+.md-day.md-day-accordion>.md-day-header{border-radius:24px 24px 0 0;padding:19px 23px}
+.md-day-accordion:not([open])>.md-day-header{border-radius:24px}
+.md-day-body{border-radius:0 0 24px 24px;padding:24px 29px 31px}
+.md-day-body .md-day-content,.md-day-body .entry-content{border-radius:19px}
+.md-day-tips,.md-day-tasks{gap:13px}
+.md-day-tips .md-day-tip,.md-day-tasks .md-day-exercise{border:0!important;border-right:0!important;border-inline:0!important;box-shadow:none!important;border-radius:24px;padding:20px 23px}
+.md-day-tips .md-day-tip{background:#fff4df}
+.md-day-tasks .md-day-exercise{background:#eaf5ee}
+.md-day-tips .md-day-tip .md-day-label{border:0;background:#fce7c3;border-radius:999px}
+.md-day-tasks .md-day-exercise .md-day-label{border:0;background:#d8eadd;border-radius:999px}
+.md-day-tips .md-day-tip .md-day-label:before{content:none}
+.md-day-media{border-radius:23px;overflow:visible}
+.md-day-media-item{min-width:0;border-radius:20px}
+.md-challenge-auth-actions .md-challenge-join-button,.md-learning-challenge-join .md-challenge-join-button,.md-challenge-final-cta .btn{border:none!important;border-radius:999px!important;padding:12px 24px;min-height:48px}
+.md-challenge-join-options{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.md-challenge-join-options .btn{margin:0}
+@media(max-width:720px){
+.md-day.md-day-accordion{border-radius:21px}
+.md-day.md-day-accordion>.md-day-header{border-radius:20px 20px 0 0;padding:15px 17px}
+.md-day-accordion:not([open])>.md-day-header{border-radius:20px}
+.md-day-body{padding:18px 19px 23px;border-radius:0 0 20px 20px}
+.md-day-tips .md-day-tip,.md-day-tasks .md-day-exercise{border-radius:20px;padding:17px 18px}
+.md-day-media{border-radius:19px}
+.md-challenge-auth-actions .md-challenge-join-button{padding:12px 17px}
+}
