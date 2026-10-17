@@ -12,12 +12,12 @@ jobs:
       - name: Build installable ZIPs
         run: |
           mkdir -p dist
-          zip -q -r dist/morvarid-daron-theme-1.4.9.zip morvarid-daron-theme -x '*/tests/*'
-          zip -q -r dist/morvarid-learning-core-0.6.6.zip morvarid-learning-core -x '*/tests/*'
-          unzip -l dist/morvarid-daron-theme-1.4.9.zip | grep 'morvarid-daron-theme/style.css'
-          unzip -l dist/morvarid-learning-core-0.6.6.zip | grep 'morvarid-learning-core/morvarid-learning-core.php'
+          zip -q -r dist/morvarid-daron-theme-1.5.0.zip morvarid-daron-theme -x '*/tests/*'
+          zip -q -r dist/morvarid-learning-core-0.6.7.zip morvarid-learning-core -x '*/tests/*'
+          unzip -l dist/morvarid-daron-theme-1.5.0.zip | grep 'morvarid-daron-theme/style.css'
+          unzip -l dist/morvarid-learning-core-0.6.7.zip | grep 'morvarid-learning-core/morvarid-learning-core.php'
       - uses: actions/upload-artifact@v4
         with:
-          name: morvarid-wordpress-1.4.9-0.6.6
+          name: morvarid-wordpress-1.5.0-0.6.7
           path: dist/*.zip
           if-no-files-found: error
