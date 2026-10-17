@@ -249,17 +249,22 @@ final class MD_Learning_Courses {
         $table = self::table('lesson_progress');
         $now = gmdate('Y-m-d H:i:s');
         $status = $completed ? 'completed' : 'incomplete';
+        // Use a SQL NULL literal when reversing a completion; preparing
+        // nullable datetime via %s would turn NULL into an invalid '' date.
+        $date_sql = $completed ? '%s' : 'NULL';
         $sql = "INSERT INTO {$table}
             (learner_id, course_id, lesson_id, status, completed_at, updated_at)
-            VALUES (%d,%d,%d,%s,%s,%s)
+            VALUES (%d,%d,%d,%s,{$date_sql},%s)
             ON DUPLICATE KEY UPDATE
               status = VALUES(status),
               completed_at = VALUES(completed_at),
               updated_at = VALUES(updated_at)";
-        // Keep completed_at nullable for incomplete records.
-        $completed_at = $completed ? $now : null;
-        $updated = $wpdb->query($wpdb->prepare($sql,
-            $learner_id, $course_id, $lesson_id, $status, $completed_at, $now));
+        $args = array($learner_id, $course_id, $lesson_id, $status);
+        if ($completed) {
+            $args[] = $now;
+        }
+        $args[] = $now;
+        $updated = $wpdb->query($wpdb->prepare($sql, $args));
         return $updated === false ? new WP_Error('failed', 'وضعیت این درس ذخیره نشد.') : true;
     }
 
