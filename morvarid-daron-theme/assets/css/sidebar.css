@@ -697,3 +697,55 @@
 @media(max-width:1140px){.md-widget-newsletter .md-social-family{grid-template-columns:1fr}}
 @media(max-width:720px){.md-widget-newsletter .md-social-family{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:370px){.md-widget-newsletter .md-social-family{grid-template-columns:1fr}}
+
+/* Widget-managed sidebars + perfectly centered search icon (v1.4.2).
+ * Theme-level ".md-widget button" has horizontal padding by default.
+ * Clear it here to keep the 36px search button truly square.
+ */
+.md-sidebar .md-sidebar-search button[type="submit"]{
+  box-sizing:border-box;
+  width:38px;
+  height:38px;
+  min-width:38px;
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0!important;
+  margin:0;
+  line-height:1;
+  text-align:center;
+  flex:0 0 38px;
+  border-radius:10px;
+}
+.md-sidebar .md-sidebar-search button[type="submit"] svg{
+  display:block;
+  position:static;
+  width:19px;
+  height:19px;
+  margin:0;
+  padding:0;
+  flex:0 0 19px;
+  vertical-align:middle;
+}
+.md-sidebar .md-sidebar-search button[type="submit"]:focus-visible{
+  outline:3px solid #9bc7aa;
+  outline-offset:2px;
+}
+.md-sidebar .md-sidebar-search input[type="search"]{
+  min-width:0;
+  width:auto;
+  flex:1 1 auto;
+}
+.md-sidebar .md-widget{
+  min-width:0;
+}
+@media(max-width:720px){
+  .md-sidebar .md-sidebar-search button[type="submit"]{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    min-height:42px;
+    flex-basis:42px;
+  }
+}
