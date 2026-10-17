@@ -419,9 +419,6 @@ function md_challenge_save_details($post_id, $post) {
     if (!in_array($mode, array('all', 'schedule'), true)) {
         $mode = 'schedule';
     }
-    if (!$start || !$end) {
-        $mode = 'all';
-    }
     update_post_meta($post_id, '_md_access_mode', $mode);
     update_post_meta($post_id, '_md_show_locked_title', empty($_POST['md_show_locked_title']) ? 0 : 1);
 
