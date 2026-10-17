@@ -30,7 +30,7 @@
 .md-member-registration p { color: #526b5d; line-height: 1.9; }
 .md-member-registration-form { display: grid; gap: 15px; max-width: 570px; }
 .md-member-registration-form > label { display: grid; gap: 7px; font-size: 14px; font-weight: 700; }
-.md-member-registration-form input[type="text"], .md-member-registration-form input[type="email"] { width: 100%; min-height: 44px; background: #fff; border: 1px solid #cddfd5; border-radius: 10px; padding: 9px 12px; }
+.md-member-registration-form input[type="text"] { width: 100%; min-height: 44px; background: #fff; border: 1px solid #cddfd5; border-radius: 10px; padding: 9px 12px; }
 .md-member-registration-form .md-enroll-consent { display: flex; align-items: flex-start; font-size: 13px; font-weight: normal; gap: 9px; }
 .md-member-registration-form .btn { justify-self: start; }
 .md-enroll-honeypot { position: absolute; left: -10000px; height: 1px; overflow: hidden; }
