@@ -34,6 +34,8 @@ jobs:
         run: php morvarid-learning-core/tests/phase-d-save-smoke.php
       - name: Smoke-test private administrator response reporting
         run: php morvarid-learning-core/tests/phase-e-smoke.php
+      - name: Smoke-test per-block manager visibility changes
+        run: php morvarid-learning-core/tests/phase-e-visibility-smoke.php
       - name: Parse standalone academy question block script
         run: node --check morvarid-learning-core/assets/questions-editor.js
       - name: Check plugin source contracts
