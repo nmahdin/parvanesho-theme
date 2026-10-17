@@ -110,3 +110,8 @@ body,button,input,select,textarea{font-family:'Vazirmatn',Tahoma,sans-serif}
 .md-standard-page .md-page-regular:empty,.md-standard-page .entry-content:empty{display:none}
 .md-standard-page:has(.md-page-learning){max-width:1140px}
 @media(max-width:650px){.md-article-header-card{padding:16px}.md-article-content-card{padding:6px 0}.md-article-header-card h1{font-size:25px}}
+
+/* Header: profile/login uses the same primary CTA treatment as booking. */
+.md-header-actions .md-header-profile{display:inline-flex;background:var(--green);border:1px solid var(--green);color:#fff;border-radius:40px;min-height:46px;padding:10px 22px;font-size:14px;font-weight:700}
+.md-header-actions .md-header-profile:hover,.md-header-actions .md-header-profile:focus-visible{background:#1c4639;border-color:#1c4639;color:#fff}
+@media(max-width:650px){.md-header-actions .md-header-profile{min-height:40px;padding:8px 11px;font-size:12px;gap:5px}}
