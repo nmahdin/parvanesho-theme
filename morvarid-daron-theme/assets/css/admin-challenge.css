@@ -509,3 +509,57 @@ body.md-modal-open {
         padding: 14px;
     }
 }
+
+
+/* Day production workspace: intentionally scoped to the challenge editor. */
+.md-days-overview {
+    padding: 18px;
+    margin: 12px 0 18px;
+    border: 1px solid #dce7e1;
+    background: linear-gradient(145deg, #f5faf7, #fff);
+    border-radius: 14px;
+}
+.md-days-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.md-days-kpi {
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e2e8e4;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+.md-days-kpi span { color: #58665e; font-size: 12px; }
+.md-days-kpi strong { color: #235a48; font-size: 23px; font-variant-numeric: tabular-nums; }
+.md-days-progress-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; color: #315343; }
+.md-days-progress { height: 9px; background: #e1eae5; border-radius: 30px; overflow: hidden; }
+.md-days-progress > span { display: block; height: 100%; background: #2d8063; border-radius: inherit; transition: width .2s ease; }
+.md-days-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 0 0 8px; }
+.md-days-filter-label { display: flex; flex: 1 1 175px; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: #375445; }
+.md-days-filter-label input,
+.md-days-filter-label select { width: 100%; max-width: none; min-height: 36px; background: #fff; }
+.md-days-controls .md-generate-days { min-height: 36px; border-color: #2d8063; color: #206a4e; font-weight: 600; }
+.md-days-controls .md-generate-days:hover { background: #f1f8f4; }
+.md-days-controls .md-generate-days.is-busy { opacity: .6; cursor: progress; }
+.md-days-control-note { color: #646970; margin: 0 0 16px; font-size: 12px; line-height: 1.8; }
+.md-day-unlock-date { display: block; margin-top: 4px; color: #627a6b; font-size: 10px; white-space: nowrap; }
+.md-day-resources { display: block; margin-top: 4px; color: #557566; font-size: 11px; }
+#md-days-no-match[hidden] { display: none !important; }
+.md-days-table tbody tr:hover { background: #f9fcfa; }
+.md-days-table .md-col-title { overflow-wrap: anywhere; }
+@media (max-width: 1000px) {
+    .md-days-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+    .md-days-kpis { gap: 8px; }
+    .md-days-overview { padding: 12px; }
+    .md-days-kpi { padding: 10px; }
+    .md-days-kpi strong { font-size: 19px; }
+    .md-days-controls .md-generate-days { flex: 1 1 100%; }
+}
