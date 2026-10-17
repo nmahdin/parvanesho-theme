@@ -40,3 +40,11 @@ jobs:
           name: morvarid-learning-core-plugin
           path: morvarid-learning-core.zip
           retention-days: 30
+      - name: Build installable theme ZIP
+        run: zip -q -r morvarid-daron-theme.zip morvarid-daron-theme
+      - name: Publish installable theme artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: morvarid-daron-theme
+          path: morvarid-daron-theme.zip
+          retention-days: 30
