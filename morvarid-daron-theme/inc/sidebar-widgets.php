@@ -187,7 +187,8 @@ add_action('widgets_init', function () {
  * Once set, removing every widget stays intentional on all future requests.
  */
 function md_seed_default_sidebar_widgets() {
-    if (get_option('md_sidebar_widgets_seeded_v2')) {
+    if (!is_admin() || !current_user_can('edit_theme_options')
+        || get_option('md_sidebar_widgets_seeded_v2')) {
         return;
     }
     $layouts = array(
@@ -211,9 +212,9 @@ function md_seed_default_sidebar_widgets() {
     }
     foreach ($layouts as $area => $types) {
         $existing = isset($config[$area]) && is_array($config[$area]) ? $config[$area] : array();
-        // Preserve every user-installed widget. The family card was formerly
-        // unconditional, so append it only when this area has no family card.
-        $seed_types = $existing ? array('family') : $types;
+        // Never modify an already customized sidebar. A previously empty
+        // area gets real editable defaults once, without touching user data.
+        $seed_types = $existing ? array() : $types;
         foreach ($seed_types as $type) {
             if ($type === 'family') {
                 $found = false;
@@ -246,4 +247,4 @@ function md_seed_default_sidebar_widgets() {
     wp_set_sidebars_widgets($config);
     update_option('md_sidebar_widgets_seeded_v2', '1', false);
 }
-add_action('init', 'md_seed_default_sidebar_widgets', 30);
+add_action('admin_init', 'md_seed_default_sidebar_widgets', 20);
