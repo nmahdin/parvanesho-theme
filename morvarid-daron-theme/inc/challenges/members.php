@@ -373,6 +373,9 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
     $token = $central ? '' : (string) get_post_meta($member->ID, '_md_member_key', true);
     ?>
     <main class="md-member-page container" dir="rtl">
+        <?php if (isset($_GET['md_joined']) && $_GET['md_joined'] === '1' && $central) : ?>
+            <p class="md-enroll-message" role="status">عضویت شما در چالش با موفقیت ثبت شد. از اینجا می‌توانید گام‌های چالش را دنبال کنید.</p>
+        <?php endif; ?>
         <nav class="md-member-breadcrumb"><a href="<?php echo esc_url(get_post_type_archive_link('md_challenge')); ?>">همه چالش‌ها</a>
         <?php if ($central) : ?> / <a href="<?php echo esc_url(MD_Learning_Schema::url('dashboard')); ?>">داشبورد یادگیری من</a><?php endif; ?>
         / چالش من</nav>
@@ -395,7 +398,7 @@ function md_challenge_render_member_dashboard($challenge_id, $member) {
             </label>
             <?php endif; ?>
         </header>
-        <section class="md-member-days">
+        <section class="md-member-days" id="md-member-days">
             <h2>گام‌های من</h2>
             <?php if (!$days) : ?><p>هنوز محتوای روزهای این چالش منتشر نشده است.</p><?php endif; ?>
             <?php foreach ($days as $day) :
