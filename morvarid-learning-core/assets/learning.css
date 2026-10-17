@@ -53,3 +53,22 @@
 .md-learning-admin-receipt input { padding: 7px 11px; }
 .md-learning-admin-receipt input.large-text { max-width: 700px; }
 @media (max-width: 760px) { .md-learning-overview { grid-template-columns: 1fr; } .md-learning-status { grid-template-columns: 1fr; } .md-learning-form { padding: 20px; } }
+
+/* Phase B — central challenge enrollment and personal challenge progress */
+.md-learning-my-challenges { margin: 28px 0; }
+.md-learning-my-challenges > h2 { color: #2c644a; font-size: 22px; margin-bottom: 16px; }
+.md-learning-challenge-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 15px; }
+.md-learning-challenge-card { background: #fff; border: 1px solid #d9e7dc; border-radius: 18px; padding: 22px; box-shadow: 0 6px 30px rgba(47,95,63,.04); }
+.md-learning-challenge-card h3 { margin: 0 0 9px; color: #2d634a; font-size: 18px; }
+.md-learning-challenge-card p { color: #677e6c; font-size: 13px; margin: 7px 0 14px; }
+.md-learning-challenge-card a { display: inline-block; color: #226b48; font-weight: 700; text-decoration: none; margin-top: 14px; }
+.md-learning-challenge-card a:hover { text-decoration: underline; }
+.md-learning-challenge-progress { background: #e8f0e9; height: 8px; border-radius: 999px; overflow: hidden; }
+.md-learning-challenge-progress > span { background: #3e9463; height: 100%; display: block; border-radius: inherit; }
+.md-learning-challenge-next { padding: 20px 26px; border-radius: 18px; border: 1px solid #b6d6be; background: #eff8ef; margin: 24px 0; }
+.md-learning-challenge-next h2 { margin: 0 0 10px; font-size: 20px; color: #2d674a; }
+.md-learning-challenge-next p { font-size: 14px; color: #566f5b; line-height: 1.9; }
+.md-learning-challenge-join { margin: 25px 0; }
+.md-learning-challenge-join form { display: grid; gap: 15px; max-width: 550px; }
+.md-learning-challenge-join p { line-height: 1.9; }
+.md-learning-challenge-join .md-enroll-consent { display: flex; gap: 10px; align-items: flex-start; }
