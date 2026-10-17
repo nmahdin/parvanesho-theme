@@ -120,9 +120,6 @@ while (have_posts()) :
                     </section>
                 <?php endif; ?>
 
-                <?php if (isset($_GET['md_enroll_result']) && 'check-email' === sanitize_key(wp_unslash($_GET['md_enroll_result']))) : ?>
-                    <p class="md-enroll-message" role="status">اگر با این ایمیل قبلاً ثبت‌نام کرده باشید، لینک خصوصی به ایمیل شما ارسال شده است. صندوق هرزنامه را هم بررسی کنید.</p>
-                <?php endif; ?>
                 <?php md_challenge_registration_form($challenge_id); ?>
                 <?php md_challenge_render_day_nav($days, $challenge_id); ?>
 
