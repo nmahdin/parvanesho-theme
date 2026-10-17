@@ -194,9 +194,8 @@ function md_challenge_day_is_unlocked($day, $challenge_id = 0) {
         return false;
     }
     $challenge_id = $challenge_id ? $challenge_id : absint(get_post_meta($day->ID, '_md_challenge_id', true));
-    if (md_challenge_is_editor($challenge_id)) {
-        return true;
-    }
+    // Front-end time restrictions apply equally to admins viewing the site.
+    // Editors can preview drafts through their dedicated admin interface.
     if ('publish' !== $day->post_status) {
         return false;
     }
@@ -206,7 +205,8 @@ function md_challenge_day_is_unlocked($day, $challenge_id = 0) {
 
     $start = md_challenge_start($challenge_id);
     if (!$start) {
-        return true;
+        // Missing scheduling data must never expose the entire programme.
+        return md_challenge_day_order($day->ID) === 1;
     }
 
     $order  = md_challenge_day_order($day->ID);
