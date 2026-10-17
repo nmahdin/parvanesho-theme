@@ -118,7 +118,17 @@ class MD_Sidebar_Card_Widget extends WP_Widget {
         }
         $markup = trim(ob_get_clean());
         if ($markup === '') {
-            return;
+            // The Appearance > Widgets editor runs through REST, outside any
+            // queried post: context-only cards would otherwise preview blank.
+            if (defined('REST_REQUEST') && REST_REQUEST &&
+                current_user_can('edit_theme_options')) {
+                $preview_title = $title !== '' ? $title : (self::types()[$type] ?? 'کارت سایدبار');
+                $markup = '<section class="md-widget md-widget-' . esc_attr($type) . '">'
+                    . '<h2 class="md-widget-title">' . esc_html($preview_title) . '</h2>'
+                    . '<p class="md-widget-preview-note">پیش‌نمایش کارت در صفحه مرتبط با محتوای سایت نمایش داده می‌شود.</p></section>';
+            } else {
+                return;
+            }
         }
         $modifier = '';
         if (preg_match('/^<section class="md-widget (md-widget-[a-z0-9_-]+)">/i', $markup, $match)) {
