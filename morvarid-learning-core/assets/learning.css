@@ -200,3 +200,11 @@
 .md-learning-profile-logout{margin:12px 0 20px}
 .md-learning-profile-logout .md-learning-logout{background:#fff4f1!important;color:#994236!important;border:1px solid #e4c5bd!important}
 .md-learning-profile-logout .md-learning-logout:hover{background:#f9e9e4!important}
+
+
+/* Softer, consistent profile and learning workspace surfaces. */
+.md-learning-workspace-hero,.md-learning-workspace-content,.md-learning-workspace-side,.md-learning-settings-panel,.md-learning-profile-meta,.md-learning-overview>div,.md-learning-status>div,.md-learning-challenge-card,.md-learning-answer-card{border-radius:26px!important}
+.md-learning-settings-form input[type=text],.md-learning-receipt input,.md-learning-form input[type=text]{border-radius:17px!important}
+.md-learning-workspace-side>a,.md-learning-side-logout button,.md-learning-settings-form .md-learning-button,.md-learning-profile-logout .md-learning-button{border-radius:999px!important}
+.md-learning-section-head,.md-learning-settings-form,.md-learning-profile-meta{overflow-wrap:anywhere}
+@media(max-width:650px){.md-learning-workspace-hero,.md-learning-workspace-content,.md-learning-workspace-side,.md-learning-settings-panel,.md-learning-profile-meta,.md-learning-overview>div{border-radius:21px!important}}
