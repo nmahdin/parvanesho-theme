@@ -133,7 +133,14 @@ function md_challenge_admin_participants_page() {
                             <?php else : ?><p>هنوز تمرین یا پاسخی ثبت نشده است.</p><?php endif; ?>
                         </details>
                     <?php endforeach; ?>
-                    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('لینک این شرکت‌کننده غیرفعال شود؟');">
+                    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('کد و لینک قبلی باطل شوند و مقادیر جدید صادر شوند؟');">
+                        <input type="hidden" name="action" value="md_challenge_rotate_member_access">
+                        <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
+                        <input type="hidden" name="member_id" value="<?php echo esc_attr($selected->ID); ?>">
+                        <?php wp_nonce_field('md_challenge_rotate_member_' . $selected->ID); ?>
+                        <button type="submit" class="button button-secondary">صدور کد و لینک جدید</button>
+                    </form>
+                    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" onsubmit="return confirm('لینک و کد این شرکت‌کننده غیرفعال شود؟');">
                         <input type="hidden" name="action" value="md_challenge_revoke_member">
                         <input type="hidden" name="challenge_id" value="<?php echo esc_attr($challenge_id); ?>">
                         <input type="hidden" name="member_id" value="<?php echo esc_attr($selected->ID); ?>">
@@ -178,6 +185,33 @@ function md_challenge_admin_create_member() {
     exit;
 }
 add_action('admin_post_md_challenge_admin_create_member', 'md_challenge_admin_create_member');
+
+/**
+ * Reissue both credentials if the participant loses them. Old links and
+ * codes immediately stop working, and progress records are preserved.
+ */
+function md_challenge_rotate_member_access() {
+    $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
+    $member_id = isset($_POST['member_id']) ? absint($_POST['member_id']) : 0;
+    if (!$challenge_id || get_post_type($challenge_id) !== 'md_challenge'
+        || !current_user_can('edit_post', $challenge_id)
+        || get_post_type($member_id) !== 'md_challenge_member'
+        || (int) get_post_meta($member_id, '_md_challenge_id', true) !== $challenge_id) {
+        wp_die('دسترسی مجاز نیست.', '', array('response' => 403));
+    }
+    check_admin_referer('md_challenge_rotate_member_' . $member_id);
+    $code = md_challenge_generate_member_code($challenge_id);
+    if (!$code) {
+        wp_die('تولید کد جدید ممکن نشد.', '', array('response' => 500));
+    }
+    update_post_meta($member_id, '_md_member_code', $code);
+    update_post_meta($member_id, '_md_member_code_hash', md_challenge_code_hash($challenge_id, $code));
+    update_post_meta($member_id, '_md_member_key', bin2hex(random_bytes(32)));
+    delete_post_meta($member_id, '_md_member_revoked');
+    wp_safe_redirect(add_query_arg('member_id', $member_id, md_challenge_admin_dashboard_url($challenge_id)) . '#md-member-detail');
+    exit;
+}
+add_action('admin_post_md_challenge_rotate_member_access', 'md_challenge_rotate_member_access');
 
 function md_challenge_revoke_member() {
     $challenge_id = isset($_POST['challenge_id']) ? absint($_POST['challenge_id']) : 0;
