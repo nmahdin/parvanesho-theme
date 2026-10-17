@@ -32,7 +32,15 @@ final class MD_Learning_Auth {
 
     /** Human-friendly URL with 128 bits of cryptographic randomness. */
     public static function register_link_route() {
-        add_rewrite_rule('^l/([A-Za-z0-9_-]{22})/?
+        add_rewrite_rule('^l/([A-Za-z0-9_-]{22})/?$', 'index.php?md_learning_link=$matches[1]', 'top');
+    }
+
+    public static function link_query_var($vars) {
+        $vars[] = 'md_learning_link';
+        return $vars;
+    }
+
+    public static function hash_secret($purpose, $secret) {
         return hash_hmac('sha256', $purpose . ':' . (string) $secret, wp_salt('auth'));
     }
 
