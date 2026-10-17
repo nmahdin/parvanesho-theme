@@ -42,10 +42,12 @@ final class MD_Learning_Pages {
     }
 
     public static function register_shortcode() {
+        $challenge_id = MD_Learning_Auth::requested_challenge();
         if (MD_Learning_Auth::current_learner_id()) {
+            $dest = $challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard');
             return self::shell_start('پروفایل شما آماده است')
                 . '<p>پیش‌تر وارد حساب یادگیری خود شده‌اید.</p>'
-                . '<a class="md-learning-button" href="' . esc_url(MD_Learning_Schema::url('dashboard')) . '">ورود به داشبورد من</a>'
+                . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
                 . self::shell_end();
         }
         ob_start();
@@ -53,6 +55,7 @@ final class MD_Learning_Pages {
         <?php echo self::shell_start('ساخت پروفایل یادگیرنده', 'بدون ایمیل و شماره همراه. یک نام وارد کنید و کد خصوصی خود را دریافت کنید.'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         <form class="md-learning-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="md_learning_register">
+            <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_register'); ?>
             <label>نام و نام خانوادگی
                 <input type="text" name="md_name" maxlength="120" autocomplete="name" required placeholder="نام شما">
@@ -74,10 +77,12 @@ final class MD_Learning_Pages {
     }
 
     public static function login_shortcode() {
+        $challenge_id = MD_Learning_Auth::requested_challenge();
         if (MD_Learning_Auth::current_learner_id()) {
+            $dest = $challenge_id ? get_permalink($challenge_id) : MD_Learning_Schema::url('dashboard');
             return self::shell_start('شما وارد شده‌اید')
                 . '<p>می‌توانید مسیر یادگیری خود را ادامه دهید.</p>'
-                . '<a class="md-learning-button" href="' . esc_url(MD_Learning_Schema::url('dashboard')) . '">داشبورد شخصی من</a>'
+                . '<a class="md-learning-button" href="' . esc_url($dest) . '">ادامه مسیر یادگیری</a>'
                 . self::shell_end();
         }
         $error = isset($_GET['md_learning_error']) && is_string($_GET['md_learning_error'])
@@ -92,6 +97,7 @@ final class MD_Learning_Pages {
         <?php endif; ?>
         <form class="md-learning-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="md_learning_login">
+            <?php if ($challenge_id) : ?><input type="hidden" name="md_challenge" value="<?php echo esc_attr($challenge_id); ?>"><?php endif; ?>
             <?php wp_nonce_field('md_learning_login'); ?>
             <label>کد ورود ۸ رقمی
                 <input type="text" name="md_code" inputmode="numeric" autocomplete="off" minlength="8" maxlength="8"
@@ -136,6 +142,14 @@ final class MD_Learning_Pages {
                 <p>لینک مستقیم به‌اندازه رمز عبور محرمانه است. با ارسال آن، دیگران نیز می‌توانند وارد حساب شما شوند.</p>
             </section>
         <?php endif; ?>
+        <?php $requested_challenge = MD_Learning_Auth::requested_challenge(); ?>
+        <?php if ($requested_challenge) : ?>
+            <div class="md-learning-challenge-next">
+                <h2>ادامهٔ ثبت‌نام در چالش</h2>
+                <p>پروفایل شما آماده است. اکنون می‌توانید با همین حساب وارد چالش شوید.</p>
+                <a class="md-learning-button" href="<?php echo esc_url(get_permalink($requested_challenge)); ?>">رفتن به چالش ←</a>
+            </div>
+        <?php endif; ?>
         <div class="md-learning-status">
             <div><span>شناسه یادگیرنده</span><strong><?php echo esc_html('L-' . $learner->id); ?></strong></div>
             <div><span>وضعیت حساب</span><strong>فعال</strong></div>
@@ -143,9 +157,17 @@ final class MD_Learning_Pages {
         </div>
         <div class="md-learning-overview">
             <div><span class="dashicons dashicons-welcome-learn-more" aria-hidden="true"></span><h3>فایل‌های آموزشی</h3><p>پاسخ‌های آموزشی در فاز D به این پروفایل متصل می‌شوند.</p></div>
-            <div><span class="dashicons dashicons-flag" aria-hidden="true"></span><h3>چالش‌ها</h3><p>عضویت‌های فعلی چالش‌ها در فاز B به هویت جدید متصل می‌شوند.</p></div>
+            <div><span class="dashicons dashicons-flag" aria-hidden="true"></span><h3>چالش‌های من</h3><p>عضویت‌ها و درصد پیشرفت در پایین این صفحه نمایش داده می‌شوند.</p></div>
             <div><span class="dashicons dashicons-book" aria-hidden="true"></span><h3>دوره‌ها</h3><p>دوره‌ها و پیشرفت درس‌ها در فاز F اضافه می‌شوند.</p></div>
         </div>
+        <section class="md-learning-my-challenges">
+            <h2>چالش‌های من</h2>
+            <?php if (class_exists('MD_Learning_Challenges')) : ?>
+                <?php echo MD_Learning_Challenges::dashboard_html($id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            <?php else : ?>
+                <p>ماژول چالش‌ها در دسترس نیست.</p>
+            <?php endif; ?>
+        </section>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-learning-logout-form">
             <input type="hidden" name="action" value="md_learning_logout">
             <?php wp_nonce_field('md_learning_logout'); ?>
