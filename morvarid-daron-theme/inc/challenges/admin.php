@@ -119,7 +119,7 @@ function md_challenge_days_box($post) {
         ?>
         <div class="md-days-manager md-days-manager-new" id="md-challenge-days" data-challenge-id="0">
             <div class="md-days-toolbar">
-                <button type="submit" class="button button-primary" form="post">ابتدا پیش‌نویس چالش را ذخیره کنید</button>
+                <button type="submit" class="button button-primary" form="post" name="save" value="ذخیره پیش‌نویس">ابتدا پیش‌نویس چالش را ذخیره کنید</button>
                 <span class="md-days-summary">پس از ذخیره، روزها و پرسش‌ها را تعریف کنید.</span>
             </div>
             <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
