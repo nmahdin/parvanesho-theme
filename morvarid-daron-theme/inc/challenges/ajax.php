@@ -416,3 +416,75 @@ function md_challenge_ajax_reorder_days() {
     ));
 }
 add_action('wp_ajax_md_challenge_reorder_days', 'md_challenge_ajax_reorder_days');
+
+/**
+ * Create a draft challenge from the "new challenge" screen.
+ *
+ * The day manager needs a real post ID, so when the editor clicks
+ * «افزودن روز جدید» before saving, the current form values are posted here,
+ * a draft is created and the browser is redirected to its edit screen with
+ * the day modal already open. Nothing the editor typed is lost.
+ */
+function md_challenge_ajax_create_draft() {
+    check_ajax_referer('md_challenge_admin', 'nonce');
+
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error(array('message' => 'شما اجازه ساخت چالش را ندارید.'), 403);
+    }
+
+    $title = isset($_POST['title']) ? sanitize_text_field(wp_unslash($_POST['title'])) : '';
+    if ('' === trim($title)) {
+        $title = 'چالش تازه';
+    }
+
+    $content = isset($_POST['content']) ? wp_kses_post(wp_unslash($_POST['content'])) : '';
+    $excerpt = isset($_POST['excerpt']) ? sanitize_textarea_field(wp_unslash($_POST['excerpt'])) : '';
+
+    $post_id = wp_insert_post(
+        array(
+            'post_type'    => 'md_challenge',
+            'post_status'  => 'draft',
+            'post_title'   => $title,
+            'post_content' => $content,
+            'post_excerpt' => $excerpt,
+        ),
+        true
+    );
+
+    if (is_wp_error($post_id) || !$post_id) {
+        wp_send_json_error(array('message' => 'ساخت پیش‌نویس چالش ممکن نشد. دوباره تلاش کنید.'), 500);
+    }
+
+    $start = md_challenge_posted_date('md_start_date');
+    $end   = md_challenge_posted_date('md_end_date');
+
+    if ($start) {
+        update_post_meta($post_id, '_md_start_date', $start);
+    }
+    if ($end) {
+        update_post_meta($post_id, '_md_end_date', $end);
+    }
+
+    $mode = isset($_POST['md_access_mode']) ? sanitize_key(wp_unslash($_POST['md_access_mode'])) : 'schedule';
+    if (!in_array($mode, array('all', 'schedule'), true)) {
+        $mode = 'schedule';
+    }
+    update_post_meta($post_id, '_md_access_mode', $mode);
+    update_post_meta($post_id, '_md_show_locked_title', empty($_POST['md_show_locked_title']) ? 0 : 1);
+
+    $enroll = isset($_POST['md_enrollment_url']) ? esc_url_raw(wp_unslash($_POST['md_enrollment_url'])) : '';
+    if ($enroll) {
+        update_post_meta($post_id, '_md_enrollment_url', $enroll);
+    }
+
+    update_post_meta($post_id, '_md_calendar_days', md_calendar_days($start, $end));
+    md_challenge_sync_counts($post_id);
+
+    wp_send_json_success(
+        array(
+            'id'      => $post_id,
+            'editUrl' => get_edit_post_link($post_id, 'raw'),
+        )
+    );
+}
+add_action('wp_ajax_md_challenge_create_draft', 'md_challenge_ajax_create_draft');

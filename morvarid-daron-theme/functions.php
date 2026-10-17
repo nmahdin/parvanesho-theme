@@ -8,6 +8,10 @@ if (!defined('MD_THEME_DIR')) define('MD_THEME_DIR', get_template_directory());
 if (!defined('MD_THEME_URI')) define('MD_THEME_URI', get_template_directory_uri());
 
 require_once MD_THEME_DIR . '/inc/helpers.php';
+require_once MD_THEME_DIR . '/inc/dates.php';
+require_once MD_THEME_DIR . '/inc/media.php';
+require_once MD_THEME_DIR . '/inc/blocks.php';
+require_once MD_THEME_DIR . '/inc/sidebars.php';
 require_once MD_THEME_DIR . '/inc/post-types.php';
 require_once MD_THEME_DIR . '/inc/academy.php';
 require_once MD_THEME_DIR . '/inc/challenges/helpers.php';
@@ -26,6 +30,7 @@ function md_assets() {
  wp_enqueue_style('md-main', MD_THEME_URI . '/assets/css/main.css', [], MD_THEME_VERSION);
  wp_enqueue_style('md-academy', MD_THEME_URI . '/assets/css/academy.css', ['md-main'], MD_THEME_VERSION);
  wp_enqueue_style('md-challenge', MD_THEME_URI . '/assets/css/challenge.css', ['md-main'], MD_THEME_VERSION);
+ wp_enqueue_style('md-sidebar', MD_THEME_URI . '/assets/css/sidebar.css', ['md-main'], MD_THEME_VERSION);
  wp_enqueue_script('md-main', MD_THEME_URI . '/assets/js/main.js', [], MD_THEME_VERSION, true);
  if (is_singular() || is_author() || is_tax() || is_attachment()) {
   wp_enqueue_style('md-comments', MD_THEME_URI . '/assets/css/comments.css', ['md-main'], MD_THEME_VERSION);
@@ -62,10 +67,7 @@ function md_editor_style(){ add_editor_style(['assets/css/fonts.css', 'assets/cs
 add_action('after_setup_theme','md_editor_style');
 
 
-// Magazine widget area and layout options.
-add_action('widgets_init', function () {
- register_sidebar(['name'=>'سایدبار مجله','id'=>'md-magazine-sidebar','description'=>'ابزارک‌های صفحه نوشته و آرشیو مجله','before_widget'=>'<section id="%1$s" class="md-widget %2$s">','after_widget'=>'</section>','before_title'=>'<h2 class="md-widget-title">','after_title'=>'</h2>']);
-});
+// Magazine layout options (sidebars are registered in inc/sidebars.php).
 add_action('customize_register', function ($wp_customize) {
  $wp_customize->add_section('md_magazine_settings',['title'=>'چیدمان مجله','priority'=>42]);
  foreach(['md_single_sidebar'=>'نمایش سایدبار در مقاله‌ها','md_archive_sidebar'=>'نمایش سایدبار در صفحه مجله'] as $id=>$label){
@@ -73,19 +75,7 @@ add_action('customize_register', function ($wp_customize) {
   $wp_customize->add_control($id,['label'=>$label,'section'=>'md_magazine_settings','type'=>'select','choices'=>['right'=>'سمت راست','left'=>'سمت چپ','none'=>'بدون سایدبار']]);
  }
 });
-function md_magazine_sidebar($layout='right') {
- if($layout==='none')return;
- echo '<aside class="md-magazine-sidebar" aria-label="سایدبار مجله">';
- if(is_active_sidebar('md-magazine-sidebar'))dynamic_sidebar('md-magazine-sidebar');
- else {
-  echo '<section class="md-widget"><h2 class="md-widget-title">جستجو در مجله</h2>';get_search_form();echo '</section>';
-  echo '<section class="md-widget"><h2 class="md-widget-title">تازه‌ترین مطالب</h2><ul>';
-  foreach(get_posts(['post_type'=>'post','numberposts'=>5]) as $item)echo '<li><a href="'.esc_url(get_permalink($item)).'">'.esc_html(get_the_title($item)).'</a></li>';
-  echo '</ul></section>';
-  echo '<section class="md-widget"><h2 class="md-widget-title">موضوعات مجله</h2><ul>';wp_list_categories(['title_li'=>'','show_count'=>true]);echo '</ul></section>';
- }
- echo '</aside>';
-}
+
 // Dynamic posts display, inserted through the standard WordPress Shortcode block.
 add_shortcode('morvarid_grid',function($atts){
  $a=shortcode_atts(['type'=>'post','count'=>'3','title'=>'','subtitle'=>'','category'=>''], $atts,'morvarid_grid');

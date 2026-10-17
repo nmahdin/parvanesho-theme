@@ -140,6 +140,264 @@ function md_academy_add_meta_box($post_type, $post) {
 add_action('add_meta_boxes', 'md_academy_add_meta_box', 10, 2);
 
 /**
+ * Lessons of a course, ordered by their position.
+ *
+ * @param int   $course_id Course ID.
+ * @param array $statuses  Post statuses to include.
+ * @return WP_Post[]
+ */
+function md_course_lessons($course_id, $statuses = array('publish', 'draft', 'pending', 'private')) {
+    $course_id = absint($course_id);
+    if (!$course_id) {
+        return array();
+    }
+
+    return get_posts(array(
+        'post_type'      => 'md_lesson',
+        'posts_per_page' => -1,
+        'post_status'    => $statuses,
+        'meta_key'       => '_md_lesson_order',
+        'orderby'        => array('meta_value_num' => 'ASC', 'date' => 'ASC'),
+        'meta_query'     => array(
+            array(
+                'key'     => '_md_course_id',
+                'value'   => $course_id,
+                'compare' => '=',
+                'type'    => 'NUMERIC',
+            ),
+        ),
+        'no_found_rows'  => true,
+    ));
+}
+
+/**
+ * Add the "course lessons" meta box.
+ *
+ * @param string  $post_type Post type.
+ * @param WP_Post $post      Post object.
+ */
+function md_course_add_lessons_meta_box($post_type, $post) {
+    if ('md_course' !== $post_type) {
+        return;
+    }
+
+    add_meta_box(
+        'md_course_lessons',
+        'جلسات دوره',
+        'md_course_lessons_box',
+        'md_course',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'md_course_add_lessons_meta_box', 11, 2);
+
+/**
+ * Render the lessons manager on the course screen.
+ *
+ * @param WP_Post $post Course post.
+ */
+function md_course_lessons_box($post) {
+    if ('auto-draft' === $post->post_status) {
+        echo '<p>ابتدا دوره را ذخیره کنید تا بتوانید جلسه‌ها را اضافه کنید.</p>';
+        return;
+    }
+
+    $lessons = md_course_lessons($post->ID);
+    $new_url = add_query_arg(
+        array('post_type' => 'md_lesson', 'md_course_id' => $post->ID),
+        admin_url('post-new.php')
+    );
+    ?>
+    <div class="md-course-lessons">
+        <?php if ($lessons) : ?>
+            <table class="widefat striped md-lessons-table">
+                <thead>
+                    <tr>
+                        <th class="md-col-number">#</th>
+                        <th>عنوان جلسه</th>
+                        <th class="md-col-status">وضعیت</th>
+                        <th class="md-col-actions">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lessons as $index => $lesson) : ?>
+                        <?php
+                        $status_object = get_post_status_object($lesson->post_status);
+                        $edit_url      = get_edit_post_link($lesson->ID, 'raw');
+                        ?>
+                        <tr>
+                            <td class="md-col-number"><?php echo esc_html(md_fa_num($index + 1)); ?></td>
+                            <td>
+                                <strong><a href="<?php echo esc_url($edit_url); ?>"><?php echo esc_html(get_the_title($lesson)); ?></a></strong>
+                            </td>
+                            <td class="md-col-status">
+                                <span class="md-status-pill md-status-<?php echo esc_attr($lesson->post_status); ?>">
+                                    <?php echo esc_html($status_object ? $status_object->label : $lesson->post_status); ?>
+                                </span>
+                            </td>
+                            <td class="md-col-actions">
+                                <a class="button button-small" href="<?php echo esc_url($edit_url); ?>">ویرایش</a>
+
+                                <?php if ($index > 0) : ?>
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-inline-form">
+                                        <input type="hidden" name="action" value="md_course_move_lesson">
+                                        <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
+                                        <input type="hidden" name="lesson_id" value="<?php echo esc_attr($lesson->ID); ?>">
+                                        <input type="hidden" name="direction" value="up">
+                                        <?php wp_nonce_field('md_course_move_lesson_' . $post->ID); ?>
+                                        <button type="submit" class="button button-small" aria-label="انتقال به بالا">↑</button>
+                                    </form>
+                                <?php endif; ?>
+
+                                <?php if ($index < count($lessons) - 1) : ?>
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-inline-form">
+                                        <input type="hidden" name="action" value="md_course_move_lesson">
+                                        <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
+                                        <input type="hidden" name="lesson_id" value="<?php echo esc_attr($lesson->ID); ?>">
+                                        <input type="hidden" name="direction" value="down">
+                                        <?php wp_nonce_field('md_course_move_lesson_' . $post->ID); ?>
+                                        <button type="submit" class="button button-small" aria-label="انتقال به پایین">↓</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else : ?>
+            <p class="md-lessons-empty">هنوز جلسه‌ای برای این دوره ثبت نشده است. از فرم پایین اولین جلسه را بسازید.</p>
+        <?php endif; ?>
+
+        <div class="md-lessons-add">
+            <h3>افزودن جلسه تازه</h3>
+            <p class="description">عنوان جلسه را وارد کنید؛ یک درس پیش‌نویس ساخته می‌شود و شما را به ویرایشگر آن می‌برد. متن، ویدیو، صوت و مدت جلسه را همان‌جا کامل کنید.</p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="md-lesson-add-form">
+                <input type="hidden" name="action" value="md_course_add_lesson">
+                <input type="hidden" name="course_id" value="<?php echo esc_attr($post->ID); ?>">
+                <?php wp_nonce_field('md_course_add_lesson_' . $post->ID); ?>
+                <input type="text" name="lesson_title" class="regular-text" placeholder="مثلاً: جلسه اول — شناخت الگوها" required>
+                <button type="submit" class="button button-primary">افزودن جلسه</button>
+                <a class="button" href="<?php echo esc_url($new_url); ?>">افزودن با ویرایشگر کامل</a>
+            </form>
+        </div>
+
+        <p class="description">ترتیب نمایش جلسه‌ها در سایت با همین ترتیب جدول تعیین می‌شود و در صفحه دوره به‌صورت فهرست شماره‌دار نمایش داده می‌شود.</p>
+    </div>
+    <?php
+}
+
+/**
+ * Handle "add lesson" submissions from the course screen.
+ */
+function md_course_add_lesson_handler() {
+    $course_id = isset($_POST['course_id']) ? absint($_POST['course_id']) : 0;
+
+    check_admin_referer('md_course_add_lesson_' . $course_id);
+
+    if (!$course_id || !current_user_can('edit_post', $course_id)) {
+        wp_die('اجازه دسترسی به این دوره را ندارید.', '', array('response' => 403));
+    }
+
+    $title = isset($_POST['lesson_title']) ? sanitize_text_field(wp_unslash($_POST['lesson_title'])) : '';
+
+    if ('' === $title) {
+        wp_safe_redirect(add_query_arg('md_notice', 'empty_title', get_edit_post_link($course_id, 'raw')));
+        exit;
+    }
+
+    $lessons = md_course_lessons($course_id);
+    $order   = 0;
+    foreach ($lessons as $lesson) {
+        $order = max($order, (int) get_post_meta($lesson->ID, '_md_lesson_order', true));
+    }
+
+    $lesson_id = wp_insert_post(
+        array(
+            'post_type'   => 'md_lesson',
+            'post_title'  => $title,
+            'post_status' => 'draft',
+        ),
+        true
+    );
+
+    if (is_wp_error($lesson_id)) {
+        wp_safe_redirect(add_query_arg('md_notice', 'error', get_edit_post_link($course_id, 'raw')));
+        exit;
+    }
+
+    update_post_meta($lesson_id, '_md_course_id', $course_id);
+    update_post_meta($lesson_id, '_md_lesson_order', $order + 1);
+
+    wp_safe_redirect(get_edit_post_link($lesson_id, 'raw'));
+    exit;
+}
+add_action('admin_post_md_course_add_lesson', 'md_course_add_lesson_handler');
+
+/**
+ * Move a lesson up or down inside its course.
+ */
+function md_course_move_lesson_handler() {
+    $course_id = isset($_POST['course_id']) ? absint($_POST['course_id']) : 0;
+
+    check_admin_referer('md_course_move_lesson_' . $course_id);
+
+    if (!$course_id || !current_user_can('edit_post', $course_id)) {
+        wp_die('اجازه دسترسی به این دوره را ندارید.', '', array('response' => 403));
+    }
+
+    $lesson_id = isset($_POST['lesson_id']) ? absint($_POST['lesson_id']) : 0;
+    $direction = isset($_POST['direction']) && 'up' === $_POST['direction'] ? 'up' : 'down';
+
+    $lessons = md_course_lessons($course_id);
+    $ids     = wp_list_pluck($lessons, 'ID');
+    $index   = array_search($lesson_id, $ids, true);
+
+    if (false !== $index) {
+        $target = 'up' === $direction ? $index - 1 : $index + 1;
+        if ($target >= 0 && $target < count($ids)) {
+            $ids[$index] = $ids[$target];
+            $ids[$target] = $lesson_id;
+        }
+    }
+
+    foreach ($ids as $position => $id) {
+        update_post_meta($id, '_md_lesson_order', $position + 1);
+    }
+
+    wp_safe_redirect(add_query_arg('md_notice', 'moved', get_edit_post_link($course_id, 'raw')));
+    exit;
+}
+add_action('admin_post_md_course_move_lesson', 'md_course_move_lesson_handler');
+
+/**
+ * Notices for the course lessons manager.
+ */
+function md_course_lessons_notices() {
+    if (!isset($_GET['md_notice'])) {
+        return;
+    }
+
+    $messages = array(
+        'empty_title' => array('error', 'عنوان جلسه را وارد کنید.'),
+        'error'       => array('error', 'ساخت جلسه انجام نشد. دوباره تلاش کنید.'),
+        'moved'       => array('success', 'ترتیب جلسه‌ها به‌روزرسانی شد.'),
+    );
+
+    $key = sanitize_key(wp_unslash($_GET['md_notice']));
+    if (!isset($messages[$key])) {
+        return;
+    }
+
+    printf(
+        '<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+        esc_attr($messages[$key][0]),
+        esc_html($messages[$key][1])
+    );
+}
+add_action('admin_notices', 'md_course_lessons_notices');
+
+/**
  * Render the academy meta box.
  *
  * @param WP_Post $post Post object.
@@ -166,6 +424,12 @@ function md_academy_render_meta_box($post) {
  */
 function md_academy_render_field($key, $field, $post_id) {
     $value = get_post_meta($post_id, $key, true);
+
+    // Creating a lesson from a course passes ?md_course_id=… in the URL.
+    if (!$value && '_md_course_id' === $key && isset($_GET['md_course_id'])) {
+        $value = absint($_GET['md_course_id']);
+    }
+
     $id    = 'md-field-' . sanitize_html_class($key);
     $type  = isset($field['type']) ? $field['type'] : 'text';
 
@@ -539,30 +803,30 @@ if (!function_exists('md_academy_media')) {
         if ('audio' === $kind) {
             $audio_id = $audio_id ? $audio_id : $legacy_id;
             if ($audio_id) {
-                $src = wp_get_attachment_url($audio_id);
-                if ($src) {
-                    $player = wp_audio_shortcode(array('src' => $src, 'preload' => 'metadata'));
-                }
+                $player = md_audio_player(array(
+                    'src'      => $audio_id,
+                    'title'    => $title ? $title : get_the_title($post_id),
+                    'subtitle' => ('md_podcast' === get_post_type($post_id)) ? 'پادکست مروارید درون' : 'جلسه صوتی',
+                ));
             }
             if (!$player && $external) {
-                $player = wp_audio_shortcode(array('src' => $external, 'preload' => 'metadata'));
+                $player = md_audio_player(array(
+                    'src'      => $external,
+                    'title'    => $title ? $title : get_the_title($post_id),
+                    'subtitle' => 'جلسه صوتی',
+                ));
             }
         } elseif ('video' === $kind) {
             if ($external) {
-                $embed = wp_oembed_get($external);
-                if ($embed) {
-                    $player = $embed;
-                } else {
-                    $player = '<p class="md-media-link"><a href="' . esc_url($external) . '" rel="nofollow noopener" target="_blank">تماشای ویدیو</a></p>';
-                }
+                $player = md_video_embed($external, $title);
             }
             if (!$player) {
                 $video_id = $video_id ? $video_id : $legacy_id;
                 if ($video_id) {
-                    $src = wp_get_attachment_url($video_id);
-                    if ($src) {
-                        $player = wp_video_shortcode(array('src' => $src, 'preload' => 'metadata'));
-                    }
+                    $player = md_video_player(array(
+                        'src'   => $video_id,
+                        'title' => $title,
+                    ));
                 }
             }
         }
@@ -572,7 +836,7 @@ if (!function_exists('md_academy_media')) {
         }
 
         $html = '<div class="md-featured-media md-learning-media">';
-        if ($title) {
+        if ($title && false === strpos($player, 'md-player')) {
             $html .= '<h3>' . esc_html($title) . '</h3>';
         }
         $html .= $player . '</div>';

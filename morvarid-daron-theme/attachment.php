@@ -31,9 +31,9 @@ while (have_posts()) :
                         <?php echo wp_get_attachment_image(get_the_ID(), 'large', false, array('class' => 'attachment-full')); ?>
                     </a>
                 <?php elseif ($md_mime && 0 === strpos($md_mime, 'audio/')) : ?>
-                    <?php echo wp_audio_shortcode(array('src' => wp_get_attachment_url())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    <?php echo md_audio_player(array('src' => wp_get_attachment_url(), 'title' => get_the_title(), 'subtitle' => 'فایل صوتی')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 <?php elseif ($md_mime && 0 === strpos($md_mime, 'video/')) : ?>
-                    <?php echo wp_video_shortcode(array('src' => wp_get_attachment_url())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    <?php echo md_video_player(array('src' => wp_get_attachment_url(), 'title' => get_the_title())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 <?php else : ?>
                     <p><a class="btn btn-primary" href="<?php echo esc_url(wp_get_attachment_url()); ?>" download>دریافت فایل ←</a></p>
                 <?php endif; ?>

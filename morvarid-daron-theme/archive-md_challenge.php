@@ -7,7 +7,8 @@
 
 get_header();
 ?>
-<main id="main" class="container md-challenge-archive">
+<main id="main" class="container md-magazine-layout sidebar-right md-challenge-archive">
+    <div class="md-magazine-main">
     <header class="md-challenge-archive-head">
         <span class="eyebrow">همراهی گام‌به‌گام / مروارید درون</span>
         <h1><?php echo esc_html(md_theme_option('challenges_title', 'چالش‌های مروارید درون')); ?></h1>
@@ -29,6 +30,9 @@ get_header();
     <?php else : ?>
         <p class="empty-note">هنوز چالشی منتشر نشده است. به‌زودی چالش‌های تازه اینجا نمایش داده می‌شوند.</p>
     <?php endif; ?>
+    </div>
+
+    <?php md_render_sidebar('challenge', 'right'); ?>
 </main>
 <?php
 get_footer();

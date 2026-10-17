@@ -13,7 +13,8 @@ while (have_posts()) :
     $podcast_id = get_the_ID();
     $pairs      = md_academy_meta_pairs($podcast_id);
     ?>
-    <main id="main" class="container reading-layout md-academy-single">
+    <main id="main" class="container md-magazine-layout sidebar-right md-academy-single">
+        <div class="md-magazine-main">
         <article <?php post_class('article-single'); ?>>
             <a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_podcast')); ?>">← همه پادکست‌ها</a>
             <div class="eyebrow">آکادمی مروارید درون / پادکست</div>
@@ -45,6 +46,8 @@ while (have_posts()) :
                 <a class="btn btn-light" href="<?php echo esc_url(get_post_type_archive_link('md_podcast')); ?>">آرشیو پادکست‌ها</a>
             </div>
         </article>
+        </div>
+        <?php md_render_sidebar('academy', 'right'); ?>
     </main>
     <?php
 endwhile;

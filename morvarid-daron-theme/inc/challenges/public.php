@@ -37,32 +37,28 @@ function md_challenge_day_media_html($day) {
     $sections = array();
 
     if ($audio_id) {
-        $src = wp_get_attachment_url($audio_id);
-        if ($src) {
-            $sections[] = '<div class="md-day-media-item">'
-                . ($audio_title ? '<h3>' . esc_html($audio_title) . '</h3>' : '')
-                . wp_audio_shortcode(array('src' => $src, 'preload' => 'metadata'))
-                . '</div>';
+        $player = md_audio_player(array(
+            'src'      => $audio_id,
+            'title'    => $audio_title ? $audio_title : get_the_title($day),
+            'subtitle' => 'صوت روز',
+        ));
+        if ($player) {
+            $sections[] = '<div class="md-day-media-item">' . $player . '</div>';
         }
     }
 
     if ($video_url) {
-        $embed = wp_oembed_get($video_url);
-        if ($embed) {
-            $sections[] = '<div class="md-day-media-item">'
-                . ($video_title ? '<h3>' . esc_html($video_title) . '</h3>' : '')
-                . $embed
-                . '</div>';
-        } else {
-            $sections[] = '<div class="md-day-media-item"><p><a class="btn btn-light" href="' . esc_url($video_url) . '" rel="nofollow noopener" target="_blank">تماشای ویدیو</a></p></div>';
+        $player = md_video_embed($video_url, $video_title);
+        if ($player) {
+            $sections[] = '<div class="md-day-media-item">' . $player . '</div>';
         }
     } elseif ($video_id) {
-        $src = wp_get_attachment_url($video_id);
-        if ($src) {
-            $sections[] = '<div class="md-day-media-item">'
-                . ($video_title ? '<h3>' . esc_html($video_title) . '</h3>' : '')
-                . wp_video_shortcode(array('src' => $src, 'preload' => 'metadata'))
-                . '</div>';
+        $player = md_video_player(array(
+            'src'   => $video_id,
+            'title' => $video_title,
+        ));
+        if ($player) {
+            $sections[] = '<div class="md-day-media-item">' . $player . '</div>';
         }
     }
 

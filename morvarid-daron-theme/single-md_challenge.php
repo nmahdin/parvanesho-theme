@@ -97,25 +97,31 @@ while (have_posts()) :
             </div>
         </section>
 
-        <?php
-        $intro = apply_filters('the_content', get_the_content());
-        if ('' !== trim(wp_strip_all_tags($intro))) :
-            ?>
-            <section class="container md-challenge-intro entry-content">
-                <?php echo $intro; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </section>
-        <?php endif; ?>
+        <div class="container md-challenge-layout">
+            <div class="md-challenge-main">
+                <?php
+                $intro = apply_filters('the_content', get_the_content());
+                if ('' !== trim(wp_strip_all_tags($intro))) :
+                    ?>
+                    <section class="md-challenge-intro entry-content">
+                        <?php echo $intro; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </section>
+                <?php endif; ?>
 
-        <?php md_challenge_render_day_nav($days, $challenge_id); ?>
+                <?php md_challenge_render_day_nav($days, $challenge_id); ?>
 
-        <div class="container md-challenge-days">
-            <?php if ($days) : ?>
-                <?php foreach ($days as $day) : ?>
-                    <?php md_challenge_render_day($day, $challenge_id); ?>
-                <?php endforeach; ?>
-            <?php else : ?>
-                <p class="empty-note">هنوز روزی برای این چالش تعریف نشده است. به‌زودی محتوای روزها اینجا منتشر می‌شود.</p>
-            <?php endif; ?>
+                <div class="md-challenge-days" id="md-days">
+                    <?php if ($days) : ?>
+                        <?php foreach ($days as $day) : ?>
+                            <?php md_challenge_render_day($day, $challenge_id); ?>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <p class="empty-note">هنوز روزی برای این چالش تعریف نشده است. به‌زودی محتوای روزها اینجا منتشر می‌شود.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <?php md_render_sidebar('challenge', 'right'); ?>
         </div>
 
         <?php if ($enroll) : ?>

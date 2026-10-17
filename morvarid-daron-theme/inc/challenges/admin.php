@@ -60,14 +60,12 @@ function md_challenge_details_box($post) {
     <div class="md-challenge-details">
         <div class="md-challenge-dates">
             <div class="md-admin-field">
-                <label for="md_start_date">تاریخ شروع <span class="md-field-hint">(میلادی)</span></label>
-                <input type="date" id="md_start_date" name="md_start_date" value="<?php echo esc_attr($start); ?>">
-                <p class="description md-jalali-line">معادل شمسی: <strong id="md_start_date_jalali"><?php echo esc_html($start ? md_format_jalali($start) : '—'); ?></strong></p>
+                <label for="md_start_date_jalali">تاریخ شروع <span class="md-field-hint">(شمسی)</span></label>
+                <?php echo md_jalali_date_field(array('name' => 'md_start_date', 'value' => $start, 'required' => true)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
             <div class="md-admin-field">
-                <label for="md_end_date">تاریخ پایان <span class="md-field-hint">(میلادی)</span></label>
-                <input type="date" id="md_end_date" name="md_end_date" value="<?php echo esc_attr($end); ?>">
-                <p class="description md-jalali-line">معادل شمسی: <strong id="md_end_date_jalali"><?php echo esc_html($end ? md_format_jalali($end) : '—'); ?></strong></p>
+                <label for="md_end_date_jalali">تاریخ پایان <span class="md-field-hint">(شمسی)</span></label>
+                <?php echo md_jalali_date_field(array('name' => 'md_end_date', 'value' => $end, 'required' => true)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
         </div>
 
@@ -106,7 +104,7 @@ function md_challenge_details_box($post) {
                 <input type="url" id="md_enrollment_url" name="md_enrollment_url" class="regular-text" value="<?php echo esc_attr($enroll); ?>" placeholder="<?php echo esc_attr(home_url('/contact/')); ?>">
             </div>
         </div>
-        <p class="description">تاریخ‌ها به میلادی ذخیره می‌شوند و در سایت به شمسی نمایش داده می‌شوند. برای انتشار چالش، تاریخ شروع و پایان الزامی است.</p>
+        <p class="description">تاریخ شروع و پایان را به شمسی وارد کنید؛ معادل میلادی برای محاسبات ذخیره می‌شود. برای انتشار چالش، تاریخ شروع و پایان الزامی است.</p>
     </div>
     <?php
 }
@@ -118,7 +116,18 @@ function md_challenge_details_box($post) {
  */
 function md_challenge_days_box($post) {
     if ('auto-draft' === $post->post_status) {
-        echo '<p class="md-days-save-first">ابتدا چالش را ذخیره کنید تا بتوانید روزها را اضافه و مدیریت کنید.</p>';
+        ?>
+        <div class="md-days-manager md-days-manager-new" id="md-challenge-days" data-challenge-id="0">
+            <div class="md-days-toolbar">
+                <button type="button" class="button button-primary" id="md-add-day">افزودن روز جدید</button>
+                <span class="md-days-summary">پیش‌نویس چالش به‌صورت خودکار ساخته می‌شود.</span>
+            </div>
+            <div class="md-days-notice" id="md-days-notice" role="status" hidden></div>
+            <p class="md-days-save-first">
+                با کلیک روی «افزودن روز جدید» یک پیش‌نویس از چالش با همین اطلاعات ساخته می‌شود، صفحه دوباره باز می‌شود و پنجره افزودن روز مستقیماً نمایش داده می‌شود. پس از تکمیل، چالش را منتشر کنید.
+            </p>
+        </div>
+        <?php
         return;
     }
 
@@ -171,9 +180,23 @@ function md_challenge_render_days_manager($challenge_id, $days) {
         <p class="description">برای تغییر ترتیب، ردیف‌ها را با دستگیره بکشید یا از دکمه‌های ↑ و ↓ استفاده کنید. تغییر ترتیب به‌صورت خودکار ذخیره می‌شود.</p>
     </div>
 
-    <?php md_challenge_render_day_modal(); ?>
     <?php
 }
+
+/**
+ * Print the day editor once per screen, outside the meta box.
+ *
+ * Keeping the modal in admin_footer means it survives meta box re-renders and
+ * is never clipped by a collapsed or re-rendered postbox.
+ */
+function md_challenge_print_day_modal() {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || 'md_challenge' !== $screen->post_type) {
+        return;
+    }
+    md_challenge_render_day_modal();
+}
+add_action('admin_footer', 'md_challenge_print_day_modal');
 
 /**
  * Render the day editor modal.
@@ -306,6 +329,27 @@ function md_challenge_render_day_modal() {
 }
 
 /**
+ * Read a date posted by the challenge editor.
+ *
+ * The Jalali field is authoritative; the hidden Gregorian value is only a
+ * fallback for requests where JavaScript did not run.
+ *
+ * @param string $key Meta key without the leading underscore (md_start_date…).
+ * @return string Gregorian Y-m-d or an empty string.
+ */
+function md_challenge_posted_date($key) {
+    $jalali = isset($_POST[$key . '_jalali']) && is_scalar($_POST[$key . '_jalali']) ? wp_unslash($_POST[$key . '_jalali']) : '';
+    $date   = md_parse_jalali($jalali);
+
+    if (!$date) {
+        $fallback = isset($_POST[$key]) && is_scalar($_POST[$key]) ? wp_unslash($_POST[$key]) : '';
+        $date     = md_sanitize_date($fallback);
+    }
+
+    return $date;
+}
+
+/**
  * Save challenge details.
  *
  * @param int     $post_id Post ID.
@@ -326,8 +370,8 @@ function md_challenge_save_details($post_id, $post) {
         return;
     }
 
-    $start = md_sanitize_date(isset($_POST['md_start_date']) && is_scalar($_POST['md_start_date']) ? wp_unslash($_POST['md_start_date']) : '');
-    $end   = md_sanitize_date(isset($_POST['md_end_date']) && is_scalar($_POST['md_end_date']) ? wp_unslash($_POST['md_end_date']) : '');
+    $start = md_challenge_posted_date('md_start_date');
+    $end   = md_challenge_posted_date('md_end_date');
 
     if ($start) {
         update_post_meta($post_id, '_md_start_date', $start);
@@ -393,8 +437,8 @@ function md_challenge_validate_publish($data, $postarr) {
         return $data;
     }
 
-    $start = md_sanitize_date(isset($_POST['md_start_date']) ? wp_unslash($_POST['md_start_date']) : '');
-    $end   = md_sanitize_date(isset($_POST['md_end_date']) ? wp_unslash($_POST['md_end_date']) : '');
+    $start = md_challenge_posted_date('md_start_date');
+    $end   = md_challenge_posted_date('md_end_date');
     $mode  = isset($_POST['md_access_mode']) ? sanitize_key(wp_unslash($_POST['md_access_mode'])) : 'schedule';
 
     $errors = array();
@@ -611,9 +655,16 @@ function md_challenge_admin_assets($hook) {
     wp_enqueue_style('md-admin-fields', MD_THEME_URI . '/assets/css/admin-fields.css', array(), MD_THEME_VERSION);
     wp_enqueue_style('md-admin-challenge', MD_THEME_URI . '/assets/css/admin-challenge.css', array('md-admin-fields'), MD_THEME_VERSION);
     wp_enqueue_script(
+        'md-jalali',
+        MD_THEME_URI . '/assets/js/jalali.js',
+        array(),
+        MD_THEME_VERSION,
+        true
+    );
+    wp_enqueue_script(
         'md-admin-challenge',
         MD_THEME_URI . '/assets/js/admin-challenge.js',
-        array('jquery', 'jquery-ui-sortable', 'wp-editor', 'wp-media', 'wp-util'),
+        array('jquery', 'jquery-ui-sortable', 'wp-editor', 'wp-media', 'wp-util', 'md-jalali'),
         MD_THEME_VERSION,
         true
     );
@@ -622,6 +673,7 @@ function md_challenge_admin_assets($hook) {
         'ajaxUrl'      => admin_url('admin-ajax.php'),
         'nonce'        => wp_create_nonce('md_challenge_admin'),
         'challengeId'  => $post_id,
+        'autoOpenDay'  => (bool) ($post_id && isset($_GET['md_add_day']) && '1' === $_GET['md_add_day']),
         'contentDays'  => count(md_challenge_days($post_id, true)),
         'calendarDays' => md_challenge_calendar_days($post_id),
         'i18n'         => array(
@@ -653,3 +705,19 @@ function md_challenge_admin_assets($hook) {
     ));
 }
 add_action('admin_enqueue_scripts', 'md_challenge_admin_assets');
+
+/**
+ * Challenge screens rely on classic meta boxes and their own modal editor.
+ * Gutenberg re-renders meta boxes, which used to detach their event handlers.
+ *
+ * @param bool   $use       Whether to use the block editor.
+ * @param string $post_type Post type.
+ * @return bool
+ */
+function md_challenge_classic_editor($use, $post_type) {
+    if (in_array($post_type, array('md_challenge', 'md_challenge_day'), true)) {
+        return false;
+    }
+    return $use;
+}
+add_filter('use_block_editor_for_post_type', 'md_challenge_classic_editor', 10, 2);

@@ -12,7 +12,6 @@
     var dayDirty = false;
     var challengeDirty = false;
 
-    var monthNames = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
 
     function faNum(value) {
         return String(value).replace(/\d/g, function (digit) {
@@ -67,15 +66,6 @@
         }
         var j = toJalali(parts[0], parts[1], parts[2]);
         return faNum(pad(j[0], 4) + '/' + pad(j[1], 2) + '/' + pad(j[2], 2));
-    }
-
-    function jalaliLong(value) {
-        var parts = parseYmd(value);
-        if (!parts) {
-            return '—';
-        }
-        var j = toJalali(parts[0], parts[1], parts[2]);
-        return faNum(j[2]) + ' ' + monthNames[j[1] - 1] + ' ' + faNum(j[0]);
     }
 
     function calendarDays(start, end) {
@@ -138,8 +128,6 @@
         var contentDays = $('#md-days-list tr').length;
         var warning = '';
 
-        $('#md_start_date_jalali').text(start ? jalaliLong(start) : '—');
-        $('#md_end_date_jalali').text(end ? jalaliLong(end) : '—');
         $('#md-calendar-days').text(days > 0 ? faNum(days) : '—');
         $('#md-manager-calendar-days').text(days > 0 ? faNum(days) : '—');
         $('#md-content-days').text(faNum(contentDays));
@@ -361,9 +349,70 @@
         }, 60);
     }
 
+    /* The classic editor keeps the real markup in the hidden textarea until the
+     * next save, so read TinyMCE's live content when it is active. */
+    function editorContent() {
+        var editor = window.tinymce && window.tinymce.get ? window.tinymce.get('content') : null;
+        if (editor && !editor.isHidden()) {
+            return editor.getContent();
+        }
+        return $('#content').val() || '';
+    }
+
+    function fieldValue(name) {
+        return $('input[name="' + name + '"], textarea[name="' + name + '"], select[name="' + name + '"]').first().val() || '';
+    }
+
+    /*
+     * On post-new.php the challenge has no ID yet, so the day cannot be saved.
+     * The first click creates a draft from the values currently in the form,
+     * then reloads the edit screen with the day modal open. This keeps the
+     * «افزودن روز جدید» button working from the very first click.
+     */
+    function bootstrapChallenge() {
+        var $button = $('#md-add-day');
+        if (!$button.length || $button.data('mdBusy')) {
+            return;
+        }
+
+        $button.data('mdBusy', true).prop('disabled', true);
+
+        $.ajax({
+            url: cfg.ajaxUrl,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'md_challenge_create_draft',
+                nonce: cfg.nonce,
+                title: $('#title').val() || '',
+                content: editorContent(),
+                excerpt: $('#excerpt').val() || '',
+                md_start_date: fieldValue('md_start_date'),
+                md_start_date_jalali: fieldValue('md_start_date_jalali'),
+                md_end_date: fieldValue('md_end_date'),
+                md_end_date_jalali: fieldValue('md_end_date_jalali'),
+                md_access_mode: fieldValue('md_access_mode'),
+                md_show_locked_title: $('#md_show_locked_title').is(':checked') ? '1' : '',
+                md_enrollment_url: fieldValue('md_enrollment_url')
+            }
+        }).done(function (response) {
+            if (!response || !response.success || !response.data || !response.data.editUrl) {
+                $button.data('mdBusy', false).prop('disabled', false);
+                window.alert(errorMessage(response));
+                return;
+            }
+
+            var url = response.data.editUrl;
+            window.location.href = url + (url.indexOf('?') === -1 ? '?' : '&') + 'md_add_day=1';
+        }).fail(function (xhr) {
+            $button.data('mdBusy', false).prop('disabled', false);
+            window.alert(errorMessage(xhr.responseJSON));
+        });
+    }
+
     function openModal(dayId) {
         if (!challengeId) {
-            window.alert(strings.noChallenge || 'ابتدا چالش را ذخیره کنید.');
+            bootstrapChallenge();
             return;
         }
 
@@ -583,10 +632,6 @@
         updateCounts();
         toggleEmpty();
 
-        if (!challengeId) {
-            $('#md-add-day').prop('disabled', true);
-        }
-
         if ($.fn.sortable) {
             $('#md-days-list').sortable({
                 handle: '.md-drag-handle',
@@ -598,25 +643,35 @@
             });
         }
 
-        $('#md-add-day').on('click', function () {
+        /*
+         * Delegated handlers: WordPress may re-render the meta box (for for
+         * example after an autosave or in the block editor) and direct
+         * bindings on the button would be lost with the old DOM node.
+         */
+        $(document).on('click', '#md-add-day', function (event) {
+            event.preventDefault();
             openModal(0);
         });
 
-        $('#md-days-list').on('click', '.md-edit-day', function () {
+        $(document).on('click', '#md-days-list .md-edit-day', function (event) {
+            event.preventDefault();
             openModal($(this).closest('tr').data('day-id'));
         });
 
-        $('#md-days-list').on('click', '.md-duplicate-day', function () {
+        $(document).on('click', '#md-days-list .md-duplicate-day', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('tr');
             duplicateDay($row.data('day-id'), $row);
         });
 
-        $('#md-days-list').on('click', '.md-delete-day', function () {
+        $(document).on('click', '#md-days-list .md-delete-day', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('tr');
             deleteDay($row.data('day-id'), $row);
         });
 
-        $('#md-days-list').on('click', '.md-move-up', function () {
+        $(document).on('click', '#md-days-list .md-move-up', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('tr');
             var $previous = $row.prev('tr');
             if ($previous.length) {
@@ -625,7 +680,8 @@
             }
         });
 
-        $('#md-days-list').on('click', '.md-move-down', function () {
+        $(document).on('click', '#md-days-list .md-move-down', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('tr');
             var $next = $row.next('tr');
             if ($next.length) {
@@ -645,12 +701,14 @@
             appendQa('', '');
         });
 
-        $('#md-qa-list').on('click', '.md-qa-remove', function () {
+        $(document).on('click', '#md-qa-list .md-qa-remove', function (event) {
+            event.preventDefault();
             $(this).closest('.md-qa-row').remove();
             dayDirty = true;
         });
 
-        $('#md-qa-list').on('click', '.md-qa-up', function () {
+        $(document).on('click', '#md-qa-list .md-qa-up', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('.md-qa-row');
             var $previous = $row.prev('.md-qa-row');
             if ($previous.length) {
@@ -659,7 +717,8 @@
             }
         });
 
-        $('#md-qa-list').on('click', '.md-qa-down', function () {
+        $(document).on('click', '#md-qa-list .md-qa-down', function (event) {
+            event.preventDefault();
             var $row = $(this).closest('.md-qa-row');
             var $next = $row.next('.md-qa-row');
             if ($next.length) {
@@ -668,19 +727,19 @@
             }
         });
 
-        $('#md-day-modal').on('click', '.md-day-media-select', function () {
+        $(document).on('click', '#md-day-modal .md-day-media-select', function () {
             openMedia($(this).data('media'));
         });
 
-        $('#md-day-modal').on('click', '.md-day-media-remove', function () {
+        $(document).on('click', '#md-day-modal .md-day-media-remove', function () {
             clearMedia($(this).data('media'));
         });
 
-        $('#md-day-modal').on('input change', ':input', function () {
+        $(document).on('input change', '#md-day-modal :input', function () {
             dayDirty = true;
         });
 
-        $('#md_start_date, #md_end_date').on('input change', function () {
+        $(document).on('input change', '#md_start_date, #md_end_date', function () {
             challengeDirty = true;
             updateCounts();
         });
@@ -699,6 +758,17 @@
                 closeModal(false);
             }
         });
+
+        if (cfg.autoOpenDay) {
+            if (window.history && window.history.replaceState) {
+                var cleanUrl = new window.URL(window.location.href);
+                cleanUrl.searchParams.delete('md_add_day');
+                window.history.replaceState({}, document.title, cleanUrl.toString());
+            }
+            window.setTimeout(function () {
+                openModal(0);
+            }, 250);
+        }
 
         $(window).on('beforeunload', function () {
             if (dayDirty || challengeDirty) {

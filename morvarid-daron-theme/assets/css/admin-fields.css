@@ -53,3 +53,243 @@
 .md-required {
     color: #b32d2e;
 }
+
+/* ---------------------------------------------------------------- Jalali date field */
+
+.md-date-field {
+    position: relative;
+    max-width: 420px;
+}
+
+.md-date-field-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.md-date-field .md-jalali-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    text-align: center;
+    direction: ltr;
+}
+
+.md-date-field .md-jalali-input.is-invalid {
+    border-color: #d63638;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.md-jalali-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.md-jalali-toggle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.md-jalali-hint {
+    margin: 6px 0 0 !important;
+    font-size: 12px;
+    color: #646970;
+}
+
+.md-jalali-popover {
+    position: absolute;
+    z-index: 100;
+    top: calc(100% - 18px);
+    inset-inline-start: 0;
+    width: 284px;
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+.md-jalali-popover[hidden] {
+    display: none;
+}
+
+.md-jalali-cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.md-jalali-cal-head strong {
+    font-size: 13.5px;
+    color: #1d3d35;
+}
+
+.md-jalali-nav {
+    border: 0;
+    background: #f0f0f1;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    color: #2c3338;
+}
+
+.md-jalali-nav:hover {
+    background: #e0e0e1;
+}
+
+.md-jalali-cal-week,
+.md-jalali-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.md-jalali-cal-week span {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8c8f94;
+    padding: 3px 0;
+}
+
+.md-jalali-day {
+    border: 0;
+    background: transparent;
+    border-radius: 7px;
+    height: 32px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12.5px;
+    color: #2c3338;
+}
+
+.md-jalali-day:hover {
+    background: #edf3ec;
+    color: #1d3d35;
+}
+
+.md-jalali-day.is-today {
+    box-shadow: inset 0 0 0 1px #c99370;
+}
+
+.md-jalali-day.is-selected {
+    background: #28594b;
+    color: #fff;
+    font-weight: 700;
+}
+
+.md-jalali-empty {
+    height: 32px;
+}
+
+.md-jalali-cal-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f1;
+}
+
+.md-jalali-cal-foot .button-link {
+    text-decoration: none;
+    color: #28594b;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.md-jalali-cal-foot .md-jalali-clear {
+    color: #b32d2e;
+}
+
+/* ------------------------------------------------------- course lessons box */
+
+.md-course-lessons .md-lessons-table {
+    margin: 10px 0 18px;
+}
+
+.md-course-lessons .md-lessons-table td,
+.md-course-lessons .md-lessons-table th {
+    vertical-align: middle;
+}
+
+.md-course-lessons .md-col-number {
+    width: 40px;
+    text-align: center;
+    color: #646970;
+}
+
+.md-course-lessons .md-col-status {
+    width: 110px;
+}
+
+.md-course-lessons .md-col-actions {
+    width: 220px;
+}
+
+.md-course-lessons .md-inline-form {
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.md-status-pill {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #f0f0f1;
+    color: #50575e;
+}
+
+.md-status-pill.md-status-publish {
+    background: #edfaef;
+    color: #1a7f37;
+}
+
+.md-status-pill.md-status-draft {
+    background: #fcf3e6;
+    color: #8a5a00;
+}
+
+.md-lessons-add {
+    margin-top: 8px;
+    padding: 14px 16px 16px;
+    border: 1px solid #dde7df;
+    border-radius: 10px;
+    background: #f7faf7;
+}
+
+.md-lessons-add h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.md-lesson-add-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.md-lesson-add-form .regular-text {
+    flex: 1 1 260px;
+}
+
+.md-lessons-empty {
+    background: #fcf9f3;
+    border: 1px dashed #e2d6c7;
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: #6b6258;
+}

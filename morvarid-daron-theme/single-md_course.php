@@ -19,7 +19,8 @@ while (have_posts()) :
     }
     $lessons   = md_get_course_lessons($course_id, current_user_can('edit_post', $course_id));
     ?>
-    <main id="main" class="container reading-layout md-academy-single">
+    <main id="main" class="container md-magazine-layout sidebar-right md-academy-single">
+        <div class="md-magazine-main">
         <article <?php post_class('article-single'); ?>>
             <a class="text-link" href="<?php echo esc_url(get_post_type_archive_link('md_course')); ?>">← همه دوره‌ها</a>
             <div class="eyebrow">آکادمی مروارید درون / دوره آموزشی</div>
@@ -63,6 +64,8 @@ while (have_posts()) :
                 <?php echo md_academy_lessons($course_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </section>
         </article>
+        </div>
+        <?php md_render_sidebar('academy', 'right'); ?>
     </main>
     <?php
 endwhile;

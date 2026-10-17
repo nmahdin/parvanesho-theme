@@ -239,3 +239,14 @@
         align-items: flex-start;
     }
 }
+
+/* --------------------------------------------------- lessons block wrapper */
+
+.md-course-lessons-block {
+    padding-block: 10px 30px;
+}
+
+.md-course-lessons-block .md-gb-section-head h2 {
+    font-size: clamp(23px, 3vw, 34px);
+    margin-bottom: 8px;
+}

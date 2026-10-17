@@ -42,6 +42,6 @@ $md_author_desc = $md_author ? get_the_author_meta('description', $md_author_id)
 
         <div class="pagination"><?php the_posts_pagination(); ?></div>
     </div>
-    <?php md_magazine_sidebar($md_layout); ?>
+    <?php md_render_sidebar('magazine', $md_layout); ?>
 </main>
 <?php get_footer(); ?>

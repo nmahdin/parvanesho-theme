@@ -14,7 +14,8 @@ while (have_posts()) :
     $course_id = absint(get_post_meta($lesson_id, '_md_course_id', true));
     $pairs     = md_academy_meta_pairs($lesson_id);
     ?>
-    <main id="main" class="container reading-layout md-academy-single">
+    <main id="main" class="container md-magazine-layout sidebar-right md-academy-single">
+        <div class="md-magazine-main">
         <article <?php post_class('article-single'); ?>>
             <?php if ($course_id) : ?>
                 <a class="text-link" href="<?php echo esc_url(get_permalink($course_id)); ?>">← بازگشت به دوره: <?php echo esc_html(get_the_title($course_id)); ?></a>
@@ -52,6 +53,8 @@ while (have_posts()) :
 
             <?php echo md_academy_lesson_navigation($lesson_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
         </article>
+        </div>
+        <?php md_render_sidebar('academy', 'right'); ?>
     </main>
     <?php
 endwhile;

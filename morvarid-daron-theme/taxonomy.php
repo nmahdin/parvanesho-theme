@@ -37,6 +37,6 @@ $md_is_magazine = is_category() || is_tag();
 
         <div class="pagination"><?php the_posts_pagination(); ?></div>
     </div>
-    <?php if ($md_is_magazine) { md_magazine_sidebar($md_layout); } ?>
+    <?php md_render_sidebar('', $md_layout); ?>
 </main>
 <?php get_footer(); ?>

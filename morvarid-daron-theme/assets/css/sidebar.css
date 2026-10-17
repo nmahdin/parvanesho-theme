@@ -1,0 +1,599 @@
+/*
+ * Morvarid Daron — redesigned sidebars.
+ *
+ * Magazine, academy and challenge sidebars share one card system. Every
+ * widget keeps its own personality through a modifier class.
+ */
+
+.md-magazine-sidebar {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    min-width: 0;
+}
+
+@media (min-width: 721px) {
+    .md-sidebar {
+        position: sticky;
+        top: 110px;
+    }
+
+    body.admin-bar .md-sidebar {
+        top: 142px;
+    }
+}
+
+/* ------------------------------------------------------------------- base */
+
+.md-widget {
+    position: relative;
+    padding: 22px;
+    border: 1px solid #e7ede5;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(30, 65, 50, 0.055);
+    overflow: hidden;
+}
+
+.md-widget-title {
+    position: relative;
+    margin: 0 0 16px;
+    padding-inline-start: 14px;
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--green, #28594b);
+}
+
+.md-widget-title::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.42em;
+    width: 5px;
+    height: 1.05em;
+    border-radius: 99px;
+    background: linear-gradient(180deg, #c99370, #e7cdb7);
+}
+
+.md-widget ul,
+.md-widget ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.md-widget a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.md-widget a:hover {
+    color: var(--green, #28594b);
+}
+
+.md-widget p {
+    margin: 0 0 10px;
+    color: var(--muted, #60716a);
+    font-size: 13.5px;
+    line-height: 2;
+}
+
+.md-widget-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--green, #28594b);
+}
+
+/* ----------------------------------------------------------------- search */
+
+.md-widget-search {
+    background:
+        radial-gradient(120% 120% at 100% 0%, #f9efe5 0%, rgba(249, 239, 229, 0) 55%),
+        #fffdfa;
+}
+
+.md-sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 5px 5px 12px;
+    border: 1px solid #dbe6db;
+    border-radius: 14px;
+    background: #fff;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.md-sidebar-search:focus-within {
+    border-color: #9dbdae;
+    box-shadow: 0 0 0 3px rgba(40, 89, 75, 0.1);
+}
+
+.md-sidebar-search input[type='search'] {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 8px 2px;
+    font: inherit;
+    font-size: 13.5px;
+    color: var(--ink, #233b35);
+    outline: 0;
+}
+
+.md-sidebar-search button {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 11px;
+    background: var(--green, #28594b);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.18s ease;
+}
+
+.md-sidebar-search button:hover {
+    background: #1c4639;
+}
+
+.md-sidebar-search svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* ----------------------------------------------------------------- author */
+
+.md-widget-author {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.md-author-card {
+    text-align: center;
+    padding: 26px 22px 22px;
+    border-radius: 22px;
+    background:
+        radial-gradient(120% 120% at 50% 0%, #f7ece0 0%, rgba(247, 236, 224, 0) 60%),
+        linear-gradient(160deg, #fffdfa, #f1f6ef);
+    border: 1px solid #e7ede5;
+    box-shadow: 0 12px 30px rgba(30, 65, 50, 0.06);
+}
+
+.md-author-card img {
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 8px 20px rgba(30, 65, 50, 0.14);
+    width: 74px;
+    height: 74px;
+}
+
+.md-author-eyebrow {
+    display: block;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #b17c60;
+}
+
+.md-author-name {
+    margin: 2px 0 8px;
+    font-size: 17px;
+    color: var(--ink, #233b35);
+}
+
+.md-author-bio {
+    font-size: 13px;
+    color: var(--muted, #60716a);
+    line-height: 1.9;
+    margin: 0 0 12px;
+}
+
+.md-author-link {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--green, #28594b);
+    background: #edf4ee;
+    border-radius: 999px;
+    padding: 7px 15px;
+}
+
+/* ------------------------------------------------------------------ posts */
+
+.md-sidebar-posts {
+    display: grid;
+    gap: 12px;
+}
+
+.md-sidebar-post {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.md-sidebar-post-thumb {
+    flex: 0 0 auto;
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #eef3ea;
+    display: grid;
+    place-items: center;
+    color: #a9c0b2;
+    font-size: 20px;
+}
+
+.md-sidebar-post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+}
+
+.md-sidebar-post:hover .md-sidebar-post-thumb img {
+    transform: scale(1.06);
+}
+
+.md-sidebar-post-body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.md-sidebar-post-body strong {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--ink, #233b35);
+    font-weight: 700;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.md-sidebar-post-date {
+    font-size: 11.5px;
+    color: #93a09a;
+}
+
+/* ------------------------------------------------------------------ terms */
+
+.md-term-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.md-term-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f4f7f2;
+    border: 1px solid #e4ece1;
+    font-size: 12.5px;
+    color: #3d5a50;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.md-term-pill span {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #fff;
+    color: #8a9b92;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.md-term-pill:hover {
+    background: var(--green, #28594b);
+    border-color: var(--green, #28594b);
+    color: #fff;
+}
+
+.md-term-pill:hover span {
+    color: var(--green, #28594b);
+}
+
+/* --------------------------------------------------------------- challenge */
+
+.md-widget-challenge {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+.md-widget-challenge .md-widget-title {
+    padding-inline-start: 0;
+    margin-bottom: 10px;
+}
+
+.md-widget-challenge .md-widget-title::before {
+    display: none;
+}
+
+.md-challenge-promo {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    padding: 22px;
+    border-radius: 22px;
+    overflow: hidden;
+    background:
+        radial-gradient(120% 150% at 100% 0%, #f6e7d9 0%, rgba(246, 231, 217, 0) 62%),
+        linear-gradient(150deg, #28594b 0%, #1d463b 100%);
+    color: #fff;
+    box-shadow: 0 18px 38px rgba(29, 70, 59, 0.28);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.md-challenge-promo:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 46px rgba(29, 70, 59, 0.34);
+    color: #fff;
+}
+
+.md-challenge-promo-glow {
+    position: absolute;
+    top: -60px;
+    inset-inline-start: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 253, 248, 0.55), rgba(255, 253, 248, 0) 70%);
+    pointer-events: none;
+}
+
+.md-challenge-promo-badge {
+    justify-self: start;
+    position: relative;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: rgba(255, 253, 250, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.md-challenge-promo-title {
+    position: relative;
+    font-size: 16.5px;
+    line-height: 1.75;
+    font-weight: 800;
+}
+
+.md-challenge-promo-meta {
+    position: relative;
+    font-size: 11.5px;
+    color: #d9e8df;
+    direction: rtl;
+}
+
+.md-challenge-promo-cta {
+    position: relative;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f4d9c3;
+}
+
+/* ---------------------------------------------------------------- progress */
+
+.md-progress-head {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.md-progress-count {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink, #233b35);
+}
+
+.md-progress-caption {
+    font-size: 11.5px;
+    color: var(--muted, #60716a);
+}
+
+.md-progress-track {
+    height: 9px;
+    border-radius: 999px;
+    background: #e8efe7;
+    overflow: hidden;
+}
+
+.md-progress-bar {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #c99370, #2f6b5b);
+    transition: width 0.4s ease;
+}
+
+.md-progress-percent {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--muted, #60716a);
+}
+
+.md-progress-dates {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--peach, #b17c60);
+}
+
+.md-progress-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--green, #28594b);
+}
+
+/* ----------------------------------------------------------------- courses */
+
+.md-sidebar-courses,
+.md-sidebar-lessons {
+    display: grid;
+    gap: 12px;
+}
+
+.md-sidebar-courses a,
+.md-sidebar-lessons a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.md-sidebar-course-thumb {
+    flex: 0 0 auto;
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(140deg, #eef4ec, #f8ece0);
+    display: grid;
+    place-items: center;
+    color: #9db8a8;
+    font-size: 20px;
+}
+
+.md-sidebar-course-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.md-sidebar-course-body,
+.md-sidebar-lesson-body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.md-sidebar-course-body strong,
+.md-sidebar-lesson-body strong {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink, #233b35);
+    font-weight: 700;
+}
+
+.md-sidebar-course-body span,
+.md-sidebar-lesson-body span {
+    font-size: 11px;
+    color: #93a09a;
+}
+
+.md-sidebar-lesson-icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #edf4ee;
+    color: var(--green, #28594b);
+    font-size: 15px;
+}
+
+/* --------------------------------------------------------------- newsletter */
+
+.md-widget-newsletter {
+    background:
+        radial-gradient(130% 120% at 0% 0%, rgba(244, 217, 195, 0.22) 0%, rgba(244, 217, 195, 0) 60%),
+        #173e34;
+    border-color: #173e34;
+    color: #fff;
+}
+
+.md-widget-newsletter .md-widget-title {
+    color: #fff;
+    padding-inline-start: 0;
+    margin-bottom: 6px;
+}
+
+.md-widget-newsletter .md-widget-title::before {
+    display: none;
+}
+
+.md-widget-newsletter p {
+    color: #d6e4da;
+}
+
+.md-newsletter-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #e3b995;
+}
+
+.md-newsletter-cta {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 6px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: #fffdfa;
+    color: var(--green, #28594b) !important;
+    font-size: 12.5px;
+    font-weight: 800;
+    transition: transform 0.18s ease;
+}
+
+.md-newsletter-cta:hover {
+    transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 720px) {
+    .md-sidebar {
+        position: static;
+    }
+
+    .md-widget {
+        padding: 18px;
+        border-radius: 18px;
+    }
+}
+
+/* ---------------------------------------------- card grids beside a sidebar */
+
+/*
+ * The main column is about 300px narrower than a full-width page, so three
+ * fixed columns make the cards cramped. Two columns read better until the
+ * layout collapses to a single column on small screens.
+ */
+.md-magazine-layout:not(.without-sidebar) .md-magazine-main .three-col.card-grid,
+.md-magazine-layout:not(.without-sidebar) .md-magazine-main .md-exercise-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 720px) {
+    .md-magazine-layout:not(.without-sidebar) .md-magazine-main .three-col.card-grid,
+    .md-magazine-layout:not(.without-sidebar) .md-magazine-main .md-exercise-grid {
+        grid-template-columns: 1fr;
+    }
+}
